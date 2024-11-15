@@ -12,9 +12,6 @@ exclude = ["README.md"]
 [features]
 fips = ["aws-lc-rs/fips", "aws-smithy-experimental/crypto-aws-lc-fips", "rustls/fips"]
 
-[package.metadata.build-package]
-source-groups = ["aws-smithy-experimental"]
-
 [dependencies]
 aws-config.workspace = true
 aws-lc-rs = { workspace = true, features = ["bindgen"] }
