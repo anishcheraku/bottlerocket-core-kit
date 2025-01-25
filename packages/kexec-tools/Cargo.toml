@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://kernel.org/pub/linux/utils/kernel/kexec"
 
 [[package.metadata.build-package.external-files]]
-url = "https://kernel.org/pub/linux/utils/kernel/kexec/kexec-tools-2.0.29.tar.xz"
-sha512 = "4c9e0b3df47b240f0eac2c31e8b515465f626ce043f64daa32b0b032d7132e54dada5d70875dab256345f66cf94a25dc3c160a9009ba60addd8dcb1e5205f5ca"
+url = "https://kernel.org/pub/linux/utils/kernel/kexec/kexec-tools-2.0.30.tar.xz"
+sha512 = "4550607ad7eb51d169c2565cfee9195441634624d1c8859e21bca6bd7f15031713c39ba475301c1ef5fc67c009bc6599d254da184be25e68b226155e515e3852"
 
 [[package.metadata.build-package.external-files]]
-url = "https://kernel.org/pub/linux/utils/kernel/kexec/kexec-tools-2.0.29.tar.sign"
-sha512 = "d8113d60991335f31fb21c0528ba6e619bf77c5305556c993a441af502fcc6ad8a3f3624b256847c59cbfecdc343df7dd93f7af3859b0ecf4d4f2e7f93ab2643"
+url = "https://kernel.org/pub/linux/utils/kernel/kexec/kexec-tools-2.0.30.tar.sign"
+sha512 = "6c326270b34fc805139c548a205a1283e1bf0815507313c5cd1b097ee3b386750634c51008a5c2d61cf58589a1db5976130f4bece5c787ba95b739a21fa24f04"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
