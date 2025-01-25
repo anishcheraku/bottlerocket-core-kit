@@ -1,5 +1,5 @@
 Name: %{_cross_os}makedumpfile
-Version: 1.7.5
+Version: 1.7.6
 Release: 1%{?dist}
 Epoch: 1
 Summary: Tool to create dumps from kernel memory images
