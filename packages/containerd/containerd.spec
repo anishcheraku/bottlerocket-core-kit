@@ -31,6 +31,10 @@ Source110: prepare-var-lib-containerd.service
 
 Source1000: clarify.toml
 
+# Backport of upstream patches for igzip support.
+Patch1001: 1001-Use-Intel-ISA-L-s-igzip-if-available.patch
+Patch1002: 1002-Skip-exec.LookPath-if-a-specific-gzip-implementation.patch
+
 BuildRequires: git
 BuildRequires: %{_cross_os}glibc-devel
 Requires: %{_cross_os}runc
