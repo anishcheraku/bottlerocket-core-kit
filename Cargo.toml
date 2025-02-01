@@ -62,6 +62,7 @@ members = [
   "packages/libgcc",
   "packages/libglib",
   "packages/libinih",
+  "packages/libisal",
   "packages/libiw",
   "packages/libmnl",
   "packages/libncurses",
