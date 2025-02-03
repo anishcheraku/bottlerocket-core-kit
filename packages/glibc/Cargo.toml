@@ -12,9 +12,9 @@ path = "../packages.rs"
 releases-url = "https://ftp.gnu.org/gnu/glibc"
 
 [[package.metadata.build-package.external-files]]
-url = "https://ftp.gnu.org/gnu/glibc/glibc-2.40.tar.xz"
-sha512 = "33caf91dbfddde6480b7cdf7a68b36aff8c522bfee56160af26af297f1b768668edb08bc4e1a7ff61c64721e3c1d49c347a5dd01c5edd3b914ee6479c8b27885"
+url = "https://ftp.gnu.org/gnu/glibc/glibc-2.41.tar.xz"
+sha512 = "894a3e5a796bc13df30c26a5bfbe4d60b5dbdaac54e7763432235124b547070c7dda88c50584536870cab79183d8cad73a3ac6ed09bfe54fa8482aad07253169"
 
 [[package.metadata.build-package.external-files]]
-url = "https://ftp.gnu.org/gnu/glibc/glibc-2.40.tar.xz.sig"
-sha512 = "c38a5d11b6d9272966e8e6492fe8c92ab75cd3755189f8f768c038376a4f3c83fb07b3d671fd31cd327f65092554ca412f85f94c896abae78b6d255e93026163"
+url = "https://ftp.gnu.org/gnu/glibc/glibc-2.41.tar.xz.sig"
+sha512 = "98462e1a1abce7ae7214b48bce160ff95ffb6634708d9952a0997575ae1fb06f4499e01953bace0933e07fddf583f0dfe93221c44192957a894a4126ab073ce8"
