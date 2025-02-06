@@ -16,6 +16,7 @@ Source0: https://%{goimport}/archive/v%{gover}/v%{gover}.tar.gz#/k8s-device-plug
 Source1: nvidia-k8s-device-plugin.service
 Source2: nvidia-k8s-device-plugin-conf
 Source3: nvidia-k8s-device-plugin-exec-start-conf
+Source4: nvidia-k8s-device-plugin-mig-conf
 
 
 BuildRequires: %{_cross_os}glibc-devel
@@ -69,6 +70,7 @@ install -p -m 0644 %{S:1} %{buildroot}%{_cross_unitdir}
 install -d %{buildroot}%{_cross_unitdir}/nvidia-k8s-device-plugin.service.d
 install -D -m 0644 %{S:2} %{buildroot}%{_cross_templatedir}/nvidia-k8s-device-plugin-conf
 install -D -m 0644 %{S:3} %{buildroot}%{_cross_templatedir}/nvidia-k8s-device-plugin-exec-start-conf
+install -D -m 0644 %{S:4} %{buildroot}%{_cross_templatedir}/nvidia-k8s-device-plugin-mig-conf
 
 
 %files
@@ -78,6 +80,7 @@ install -D -m 0644 %{S:3} %{buildroot}%{_cross_templatedir}/nvidia-k8s-device-pl
 %dir %{_cross_unitdir}/nvidia-k8s-device-plugin.service.d
 %{_cross_templatedir}/nvidia-k8s-device-plugin-conf
 %{_cross_templatedir}/nvidia-k8s-device-plugin-exec-start-conf
+%{_cross_templatedir}/nvidia-k8s-device-plugin-mig-conf
 
 %files bin
 %{_cross_bindir}/nvidia-device-plugin

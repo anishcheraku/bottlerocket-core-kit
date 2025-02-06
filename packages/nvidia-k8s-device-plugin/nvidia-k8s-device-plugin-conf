@@ -5,7 +5,11 @@ std = { version = "v1", helpers = ["default"] }
 +++
 version: v1
 flags:
+  {{#if (eq settings.kubelet-device-plugins.nvidia.device-partitioning-strategy "mig")}}
+  migStrategy: "single"
+  {{else}}
   migStrategy: "none"
+  {{/if}}
   failOnInitError: true
   plugin:
     passDeviceSpecs: {{default true settings.kubelet-device-plugins.nvidia.pass-device-specs}}
