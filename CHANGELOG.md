@@ -1,3 +1,28 @@
+# v6.0.0 (2025-02-07)
+
+## OS Changes
+* Add the ability to run custom transaction checks when committing transactions to Bottlerocket’s datastore ([#294])
+* Add support for `weak` settings values, which are deleted on update ([#294])
+* Only return `strong` settings-generators from the apiserver’s /metadata/settings-generator route ([#294])
+* Always delete and re-populate metadata on first boot or update ([#294])
+* Add support for dynamic settings-generators via the depth attribute ([#294])
+* Add NVIDIA Multi-Instance GPU (MIG) settings to nvidia-k8s-device-plugin ([#258])
+* Conditionalize source and mode in Bootstrap container template ([#335])
+* Update host-ctr dependencies ([#337])
+* Accept comment lines in boot config ([#361])
+
+## Orchestrator Changes
+
+### Kubernetes
+* Drop Kubernetes 1.24 variants ([#364])
+
+[#258]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/258
+[#294]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/294
+[#335]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/335
+[#337]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/337
+[#361]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/361
+[#364]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/364
+
 # v5.4.2 (2025-01-24)
 
 ## OS Changes
