@@ -8,6 +8,8 @@ build = "../build.rs"
 [package.metadata.build-package]
 source-groups = [
     "api",
+    "constants",
+    "generate-readme",
     "aws-smithy-experimental",
     "bottlerocket-release",
     "metricdog",
