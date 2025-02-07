@@ -10,8 +10,9 @@ path = "../packages.rs"
 
 [package.metadata.build-package]
 source-groups = [
-    "netdog",
     "dogtag",
+    "generate-readme",
+    "netdog",
 ]
 
 # RPM BuildRequires
