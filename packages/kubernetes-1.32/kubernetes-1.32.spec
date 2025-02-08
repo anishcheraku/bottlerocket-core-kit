@@ -80,7 +80,7 @@ Requires: %{_cross_os}conntrack-tools
 Requires: %{_cross_os}containerd
 Requires: %{_cross_os}findutils
 Requires: %{_cross_os}ecr-credential-provider-1.32
-Requires: %{_cross_os}aws-signing-helper
+Requires: %{_cross_os}aws-iam-authenticator
 Requires: %{_cross_os}static-pods
 Requires: %{_cross_os}kubelet-1.32(binaries)
 
