@@ -8,7 +8,7 @@ corndog also provides a settings generator for hugepages, subcommand "generate-h
 */
 
 use bottlerocket_modeled_types::{Lockdown, SysctlKey};
-use log::{debug, error, info, trace, warn};
+use log::{debug, info, trace, warn};
 use serde::{Deserialize, Serialize};
 use simplelog::{Config as LogConfig, LevelFilter, SimpleLogger};
 use snafu::ResultExt;
@@ -18,10 +18,13 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::string::String;
 use std::{env, process};
+use tempfile::NamedTempFile;
 
-const SYSCTL_PATH_PREFIX: &str = "/proc/sys";
 const LOCKDOWN_PATH: &str = "/sys/kernel/security/lockdown";
 const DEFAULT_CONFIG_PATH: &str = "/etc/corndog.toml";
+const SYSCTL_CONFIG_DIR: &str = "/etc/sysctl.d";
+const SYSCTL_CONFIG_FILENAME: &str = "95-corndog.conf";
+const SYSTEMD_SYSCTL_BIN: &str = "/usr/lib/systemd/systemd-sysctl";
 const NR_HUGEPAGES_PATH_SYSCTL: &str = "/proc/sys/vm/nr_hugepages";
 /// Number of hugepages we will assign per core.
 /// See [`compute_hugepages_for_efa`] for more detail on the computation consideration.
@@ -43,6 +46,22 @@ struct KernelSettings {
     sysctl: Option<HashMap<SysctlKey, String>>,
 }
 
+/// Trait for executing system commands
+trait CommandExecutor {
+    fn execute(&self, cmd: &str) -> std::io::Result<(std::process::ExitStatus, String)>;
+}
+
+/// Real command executor that runs actual system commands
+struct SystemCommandExecutor;
+
+impl CommandExecutor for SystemCommandExecutor {
+    fn execute(&self, cmd: &str) -> std::io::Result<(std::process::ExitStatus, String)> {
+        let output = process::Command::new(cmd).output()?;
+        let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+        Ok((output.status, stderr))
+    }
+}
+
 /// Main entry point.
 fn run() -> Result<()> {
     let args = parse_args(env::args());
@@ -56,7 +75,7 @@ fn run() -> Result<()> {
             let kernel = get_kernel_settings(args.config_path)?;
             if let Some(sysctls) = kernel.sysctl {
                 debug!("Applying sysctls: {:#?}", sysctls);
-                set_sysctls(sysctls);
+                set_sysctls(sysctls)?;
             }
         }
         "lockdown" => {
@@ -93,34 +112,75 @@ where
     toml::from_str(config_str.as_str()).context(error::DeserializationSnafu)
 }
 
-fn sysctl_path<S>(name: S) -> PathBuf
-where
-    S: AsRef<str>,
-{
-    let name = name.as_ref();
-    let mut path = PathBuf::from(SYSCTL_PATH_PREFIX);
-    path.extend(name.replace('.', "/").split('/'));
-    trace!("Path for {}: {}", name, path.display());
-    path
-}
-
-/// Applies the requested sysctls to the system.  The keys are used to generate the appropriate
-/// path, and the value its contents.
-fn set_sysctls<K>(sysctls: HashMap<K, String>)
+/// Generate sysctl config file content from key-value pairs
+fn generate_sysctl_config<K>(sysctls: &HashMap<K, String>) -> String
 where
     K: AsRef<str>,
 {
+    let mut config_content = String::new();
     for (key, value) in sysctls {
         let key = key.as_ref();
-        let path = sysctl_path(key);
-        if let Err(e) = fs::write(path, value) {
-            // We don't fail because sysctl keys can vary between kernel versions and depend on
-            // loaded modules.  It wouldn't be possible to deploy settings to a mixed-kernel fleet
-            // if newer sysctl values failed on your older kernels, for example, and we believe
-            // it's too cumbersome to have to specify in settings which keys are allowed to fail.
-            error!("Failed to write sysctl value '{}': {}", key, e);
-        }
+        // Prepend a dash to keys that don't already start with one to ensure systemd-sysctl
+        // doesn't fail on applying any sysctls.
+        //
+        // We don't fail because sysctl keys can vary between kernel versions and depend on
+        // loaded modules.  It wouldn't be possible to deploy settings to a mixed-kernel fleet
+        // if newer sysctl values failed on your older kernels, for example, and we believe
+        // it's too cumbersome to have to specify in settings which keys are allowed to fail.
+        let prefix = if !key.starts_with('-') { "-" } else { "" };
+        config_content.push_str(&format!("{}{} = {}\n", prefix, key, value.trim()));
     }
+    config_content
+}
+
+/// Write sysctl config to a file, using a temporary file and atomic rename
+fn persist_sysctl_config(
+    config_content: &str,
+    config_dir: &str,
+    config_filename: &str,
+) -> Result<PathBuf> {
+    // Create a temporary file in the sysctl config directory
+    let tempfile = NamedTempFile::new_in(config_dir).context(error::CreateTempFileSnafu {
+        path: PathBuf::from(config_dir),
+    })?;
+
+    // Write the config to the temporary file
+    fs::write(tempfile.path(), config_content).context(error::WriteTempFileSnafu)?;
+
+    // Construct the final path and atomically move the temporary file to it
+    let config_path = Path::new(config_dir).join(config_filename);
+    tempfile
+        .persist(&config_path)
+        .context(error::PersistTempFileSnafu {
+            path: config_path.clone(),
+        })?;
+
+    Ok(config_path)
+}
+
+/// Apply sysctl settings using the given systemd-sysctl binary
+fn apply_sysctl_config(systemd_sysctl_bin: &str, executor: &dyn CommandExecutor) -> Result<()> {
+    let (status, output) = executor
+        .execute(systemd_sysctl_bin)
+        .context(error::RunSystemdSysctlSnafu)?;
+
+    if !status.success() {
+        error::SystemdSysctlFailedSnafu { status, output }.fail()?;
+    }
+
+    debug!("Successfully applied sysctl settings");
+    Ok(())
+}
+
+/// Applies the requested sysctls to the system by writing them to a config file and using systemd-sysctl.
+/// The keys are used to generate the appropriate path, and the value its contents.
+fn set_sysctls<K>(sysctls: HashMap<K, String>) -> Result<()>
+where
+    K: AsRef<str>,
+{
+    let config_content = generate_sysctl_config(&sysctls);
+    persist_sysctl_config(&config_content, SYSCTL_CONFIG_DIR, SYSCTL_CONFIG_FILENAME)?;
+    apply_sysctl_config(SYSTEMD_SYSCTL_BIN, &SystemCommandExecutor)
 }
 
 /// Generate the hugepages setting for defaults.
@@ -301,6 +361,7 @@ fn main() {
 mod error {
     use snafu::Snafu;
     use std::io;
+    use std::path::PathBuf;
 
     #[derive(Debug, Snafu)]
     #[snafu(visibility(pub(super)))]
@@ -334,22 +395,138 @@ mod error {
 
         #[snafu(display("Logger setup error: {}", source))]
         Logger { source: log::SetLoggerError },
+
+        #[snafu(display("Failed to create temporary file in {}: {}", path.display(), source))]
+        CreateTempFile { path: PathBuf, source: io::Error },
+
+        #[snafu(display("Failed to write sysctl config to temporary file: {}", source))]
+        WriteTempFile { source: io::Error },
+
+        #[snafu(display("Failed to move temporary file to {}: {}", path.display(), source))]
+        PersistTempFile {
+            path: PathBuf,
+            source: tempfile::PersistError,
+        },
+
+        #[snafu(display("Failed to run systemd-sysctl: {}", source))]
+        RunSystemdSysctl { source: io::Error },
+
+        #[snafu(display(
+            "systemd-sysctl failed with exit code: {} and output: {}",
+            status,
+            output
+        ))]
+        SystemdSysctlFailed {
+            status: std::process::ExitStatus,
+            output: String,
+        },
     }
 }
 type Result<T> = std::result::Result<T, error::Error>;
 
 #[cfg(test)]
 mod test {
+    use super::*;
+    use std::os::unix::process::ExitStatusExt;
+    use std::process::ExitStatus;
+    use tempfile::TempDir;
     use test_case::test_case;
 
-    use super::*;
+    /// Mock command executor for testing
+    struct MockCommandExecutor {
+        success: bool,
+        output: String,
+    }
+
+    impl MockCommandExecutor {
+        fn new(success: bool) -> Self {
+            Self {
+                success,
+                output: String::from("mock output"),
+            }
+        }
+    }
+
+    impl CommandExecutor for MockCommandExecutor {
+        fn execute(&self, _cmd: &str) -> std::io::Result<(std::process::ExitStatus, String)> {
+            Ok((
+                ExitStatus::from_raw(if self.success { 0 } else { 1 }),
+                self.output.clone(),
+            ))
+        }
+    }
+
+    // Helper to create a temporary directory for testing
+    fn setup_test_dir() -> TempDir {
+        TempDir::new().expect("Failed to create temp directory")
+    }
 
     #[test]
-    fn no_traversal() {
+    fn test_generate_sysctl_config() {
+        let mut sysctls = HashMap::new();
+        sysctls.insert("net.ipv4.ip_forward", "1".to_string());
+        sysctls.insert("vm.swappiness", "60".to_string());
+        sysctls.insert("kernel.pid_max", "4194304 ".to_string()); // Note the trailing space
+
+        let config = generate_sysctl_config(&sysctls);
+
+        // Split into lines and sort for consistent comparison
+        let mut lines: Vec<&str> = config.lines().collect();
+        lines.sort();
+
         assert_eq!(
-            sysctl_path("../../root/file").to_string_lossy(),
-            format!("{}/root/file", SYSCTL_PATH_PREFIX)
+            lines,
+            vec![
+                "-kernel.pid_max = 4194304",
+                "-net.ipv4.ip_forward = 1",
+                "-vm.swappiness = 60"
+            ]
         );
+    }
+
+    #[test]
+    fn test_generate_sysctl_config_empty() {
+        let sysctls: HashMap<String, String> = HashMap::new();
+        let config = generate_sysctl_config(&sysctls);
+        assert_eq!(config, "");
+    }
+
+    #[test]
+    fn test_persist_sysctl_config() {
+        let temp_dir = setup_test_dir();
+        let config = "net.ipv4.ip_forward = 1\nvm.swappiness = 60\n";
+        let filename = "test-sysctl.conf";
+
+        let config_path =
+            persist_sysctl_config(config, temp_dir.path().to_str().unwrap(), filename).unwrap();
+
+        // Verify the config file was written correctly
+        let written_config = fs::read_to_string(&config_path).unwrap();
+        assert_eq!(written_config, config);
+    }
+
+    #[test]
+    fn test_persist_sysctl_config_invalid_dir() {
+        let config = "net.ipv4.ip_forward = 1\n";
+        let result = persist_sysctl_config(config, "/nonexistent", "test.conf");
+        assert!(matches!(result, Err(error::Error::CreateTempFile { .. })));
+    }
+
+    #[test]
+    fn test_apply_sysctl_config_success() {
+        let executor = MockCommandExecutor::new(true);
+        let result = apply_sysctl_config(SYSTEMD_SYSCTL_BIN, &executor);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_apply_sysctl_config_failure() {
+        let executor = MockCommandExecutor::new(false);
+        let result = apply_sysctl_config(SYSTEMD_SYSCTL_BIN, &executor);
+        assert!(matches!(
+            result,
+            Err(error::Error::SystemdSysctlFailed { .. })
+        ));
     }
 
     #[test]
@@ -392,5 +569,37 @@ mod test {
     fn test_check_for_existing_hugepages(existing_value: String, expected_hugepages: String) {
         let actual_hugepages = check_for_existing_hugepages(existing_value);
         assert_eq!(actual_hugepages, expected_hugepages);
+    }
+
+    #[test]
+    fn test_generate_sysctl_config_dash_prefix() {
+        let mut sysctls = HashMap::new();
+        // Test with a mix of keys - some with dash prefix, some without
+        sysctls.insert("net.ipv4.ip_forward", "1".to_string());
+        sysctls.insert("-vm.swappiness", "60".to_string());
+        sysctls.insert("-kernel.pid_max", "4194304".to_string());
+
+        let config = generate_sysctl_config(&sysctls);
+
+        // Validate each line is a valid sysctl line
+        for line in config.lines() {
+            // Split the line into key and value
+            let parts: Vec<&str> = line.splitn(2, " = ").collect();
+            assert_eq!(
+                parts.len(),
+                2,
+                "Line should contain key-value pair: {}",
+                line
+            );
+
+            // Verify key portion starts with dash and contains no additional dashes
+            let key = parts[0];
+            assert!(key.starts_with('-'), "Key should start with dash: {}", key);
+            assert!(
+                !key[1..].contains('-'),
+                "Key should not contain additional dashes after prefix: {}",
+                key
+            );
+        }
     }
 }
