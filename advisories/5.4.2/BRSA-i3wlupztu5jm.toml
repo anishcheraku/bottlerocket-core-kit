@@ -1,0 +1,22 @@
+[advisory]
+id = "BRSA-i3wlupztu5jm"
+title = "nvidia-container-toolkit CVE‑2025‑23359"
+cve = "CVE‑2025-23359"
+severity = "high"
+description = "A flaw was found in the NVIDIA Container Toolkit with its default configuration where a specially crafted container could gain access to the host filesystem"
+
+[[advisory.products]]
+package-name = "nvidia-container-toolkit"
+patched-version = "1.17.4"
+patched-epoch = "1"
+
+[[advisory.products]]
+package-name = "libnvidia-container"
+patched-version = "1.17.4"
+patched-epoch = "1"
+
+[updateinfo]
+author = "giinglis"
+issue-date = 2025-01-25T00:03:32Z
+arches = ["aarch64", "x86_64"]
+version = "5.4.2"
