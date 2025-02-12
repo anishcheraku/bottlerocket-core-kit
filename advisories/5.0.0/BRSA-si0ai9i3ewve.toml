@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-si0ai9i3ewve"
+title = "binutils CVE-2022-45703"
+cve = "CVE-2022-45703"
+severity = "high"
+description = "A flaw was found in binutils readelf in the display_debug_section function in readelf.c which could lead to a heap buffer overflow vulnerability."
+
+[[advisory.products]]
+package-name = "binutils"
+patched-version = "2.41"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2024-12-12T20:18:48Z
+arches = ["aarch64", "x86_64"]
+version = "5.0.0"

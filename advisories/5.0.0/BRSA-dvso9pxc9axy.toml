@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-dvso9pxc9axy"
+title = "binutils CVE-2022-48063"
+cve = "CVE-2022-48063"
+severity = "moderate"
+description = "A flaw was found in binutils where an excessive memory consumption vulnerability via the function load_separate_debug_files at dwarf2.c. could be triggered by a specially crafted ELF file and cause a DNS attack."
+
+[[advisory.products]]
+package-name = "binutils"
+patched-version = "2.41"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2024-12-12T20:18:48Z
+arches = ["aarch64", "x86_64"]
+version = "5.0.0"

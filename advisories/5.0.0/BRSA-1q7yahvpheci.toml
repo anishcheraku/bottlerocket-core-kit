@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-1q7yahvpheci"
+title = "binutils CVE-2023-1579"
+cve = "CVE-2023-1579"
+severity = "high"
+description = "A flaw was found in binutils where bfd_getl64 in binutils-gdb/bfd/libbfd.c could cause a heap-based buffer overflow."
+
+[[advisory.products]]
+package-name = "binutils"
+patched-version = "2.41"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2024-12-12T20:18:48Z
+arches = ["aarch64", "x86_64"]
+version = "5.0.0"

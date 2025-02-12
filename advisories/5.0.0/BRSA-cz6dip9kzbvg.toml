@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-cz6dip9kzbvg"
+title = "binutils CVE-2023-25586"
+cve = "CVE-2023-25586"
+severity = "moderate"
+description = "A flaw was found in binutils where a logic fail in the bfd_init_section_decompress_status function could lead to the use of an uninitialized variable that can cause a crash and local denial of service."
+
+[[advisory.products]]
+package-name = "binutils"
+patched-version = "2.41"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2024-12-12T20:18:48Z
+arches = ["aarch64", "x86_64"]
+version = "5.0.0"

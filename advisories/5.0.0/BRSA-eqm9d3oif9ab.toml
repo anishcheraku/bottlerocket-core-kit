@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-eqm9d3oif9ab"
+title = "binutils CVE-2023-25588"
+cve = "CVE-2023-25588"
+severity = "moderate"
+description = "A flaw was found in binutils where the uninitialized field of struct in the bfd_mach_o_get_synthetic_symtab function could lead to an application crash and local denial of service."
+
+[[advisory.products]]
+package-name = "binutils"
+patched-version = "2.41"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2024-12-12T20:18:48Z
+arches = ["aarch64", "x86_64"]
+version = "5.0.0"

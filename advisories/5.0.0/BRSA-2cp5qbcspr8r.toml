@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-2cp5qbcspr8r"
+title = "binutils CVE-2023-1972"
+cve = "CVE-2023-1972"
+severity = "moderate"
+description = "A flaw was found in binutils in _bfd_elf_slurp_version_tables() in bfd/elf.c where a potential heap based buffer overflow could lead to loss of availability."
+
+[[advisory.products]]
+package-name = "binutils"
+patched-version = "2.41"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2024-12-12T20:18:48Z
+arches = ["aarch64", "x86_64"]
+version = "5.0.0"

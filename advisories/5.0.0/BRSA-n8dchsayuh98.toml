@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-n8dchsayuh98"
+title = "binutils CVE-2022-4285"
+cve = "CVE-2022-4285"
+severity = "moderate"
+description = "A flaw was found in binutils where parsing an ELF file containing corrupt symbol version information could result in an illegal memory access and cause a denial of service."
+
+[[advisory.products]]
+package-name = "binutils"
+patched-version = "2.41"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2024-12-12T20:18:48Z
+arches = ["aarch64", "x86_64"]
+version = "5.0.0"
