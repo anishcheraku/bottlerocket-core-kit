@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-kvhzdpsmxquk"
+title = "binutils CVE-2022-38533"
+cve = "CVE-2022-38533"
+severity = "moderate"
+description = "A flaw was found in binutils in the bfd_getl32 function when called from the strip_main function in strip-new via a crafted file, which could cause a heap-buffer-overflow."
+
+[[advisory.products]]
+package-name = "binutils"
+patched-version = "2.41"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2024-12-12T20:18:48Z
+arches = ["aarch64", "x86_64"]
+version = "5.0.0"

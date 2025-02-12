@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-2vcgxe5a1gi8"
+title = "binutils CVE-2022-48065"
+cve = "CVE-2022-48065"
+severity = "moderate"
+description = "A flaw was found in binutils in the find_abstract_instance function in dwarf2.c which could cause a memory leak vulnerability."
+
+[[advisory.products]]
+package-name = "binutils"
+patched-version = "2.41"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2024-12-12T20:18:48Z
+arches = ["aarch64", "x86_64"]
+version = "5.0.0"

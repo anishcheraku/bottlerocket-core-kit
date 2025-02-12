@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-bvc4l89azoro"
+title = "binutils CVE-2022-47673"
+cve = "CVE-2022-47673"
+severity = "high"
+description = "A flaw was found in binutils addr2line where the parse_module function contains multiple out-of-bounds reads which could cause a denial of service."
+
+[[advisory.products]]
+package-name = "binutils"
+patched-version = "2.41"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2024-12-12T20:18:48Z
+arches = ["aarch64", "x86_64"]
+version = "5.0.0"

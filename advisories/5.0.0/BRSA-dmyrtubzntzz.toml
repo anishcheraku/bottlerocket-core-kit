@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-dmyrtubzntzz"
+title = "binutils CVE-2022-47011"
+cve = "CVE-2022-47011"
+severity = "moderate"
+description = "A flaw was found in binutils in the parse_stab_struct_fields function in stabs.c which could cause memory leaks and a denial of service."
+
+[[advisory.products]]
+package-name = "binutils"
+patched-version = "2.41"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2024-12-12T20:18:48Z
+arches = ["aarch64", "x86_64"]
+version = "5.0.0"

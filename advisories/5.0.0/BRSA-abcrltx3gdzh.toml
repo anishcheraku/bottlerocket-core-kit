@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-abcrltx3gdzh"
+title = "binutils CVE-2022-35205"
+cve = "CVE-2022-35205"
+severity = "moderate"
+description = "A flaw was found in binutils readelf where a reachable assertion failure in the display_debug_names function could cause a denial of service."
+
+[[advisory.products]]
+package-name = "binutils"
+patched-version = "2.41"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2024-12-12T20:18:48Z
+arches = ["aarch64", "x86_64"]
+version = "5.0.0"
