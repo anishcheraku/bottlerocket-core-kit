@@ -1,7 +1,7 @@
 [advisory]
 id = "BRSA-i3wlupztu5jm"
-title = "nvidia-container-toolkit CVE‑2025‑23359"
-cve = "CVE‑2025-23359"
+title = "nvidia-container-toolkit CVE-2025-23359"
+cve = "CVE-2025-23359"
 severity = "high"
 description = "A flaw was found in the NVIDIA Container Toolkit with its default configuration where a specially crafted container could gain access to the host filesystem"
 
