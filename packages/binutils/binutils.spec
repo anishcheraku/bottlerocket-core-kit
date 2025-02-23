@@ -1,5 +1,5 @@
 Name: %{_cross_os}binutils
-Version: 2.41
+Version: 2.43.1
 Release: 1%{?dist}
 Epoch: 1
 Summary: Tools for working with binaries
