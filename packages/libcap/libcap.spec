@@ -37,7 +37,7 @@ make\\\
   CFLAGS="%{_cross_cflags} -fPIC"\\\
   LDFLAGS="%{_cross_ldflags}"\\\
   BUILD_CC="gcc"\\\
-  BUILD_CFLAGS="%{optflags}"\\\
+  BUILD_CFLAGS="%{__global_compiler_flags}"\\\
   BUILD_LDFLAGS="%{build_ldflags}"\\\
   prefix=%{_cross_prefix}\\\
   lib=%{_cross_lib}\\\
