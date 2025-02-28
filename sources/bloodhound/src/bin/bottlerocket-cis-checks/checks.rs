@@ -701,7 +701,7 @@ impl Checker for BR03040102Checker {
         if let Some(found) = look_for_string_in_output(
             IPTABLES_CMD,
             ["-L", "OUTPUT", "-v", "-n"],
-            "ACCEPT     0    --  *      lo      0.0.0.0/0            0.0.0.0/0",
+            "ACCEPT     all  --  *      lo      0.0.0.0/0            0.0.0.0/0",
         ) {
             if !found {
                 result.error = "iptables OUTPUT rule not found".to_string();
@@ -808,7 +808,7 @@ impl Checker for BR03040202Checker {
         if let Some(found) = look_for_string_in_output(
             IP6TABLES_CMD,
             ["-L", "OUTPUT", "-v", "-n"],
-            "ACCEPT     0    --  *      lo      ::/0                 ::/0",
+            "ACCEPT     all  --  *      lo      ::/0                 ::/0",
         ) {
             if !found {
                 result.error = "iptables OUTPUT rule not found".to_string();
