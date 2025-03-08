@@ -28,7 +28,6 @@ members = [
 
     "bottlerocket-release",
 
-    "bottlerocket-variant",
 
     "imdsclient",
 
