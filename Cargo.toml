@@ -58,6 +58,7 @@ members = [
   "packages/libaudit",
   "packages/libbpf",
   "packages/libcap",
+  "packages/libcrypto",
   "packages/libdbus",
   "packages/libdevmapper",
   "packages/libelf",

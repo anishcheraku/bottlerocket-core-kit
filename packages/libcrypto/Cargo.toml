@@ -1,0 +1,19 @@
+[package]
+name = "libcrypto"
+version = "0.1.0"
+edition = "2021"
+publish = false
+build = "../build.rs"
+
+[lib]
+path = "../packages.rs"
+
+[package.metadata.build-package]
+releases-url = "https://github.com/aws/aws-lc/commits/fips-2024-09-27/"
+
+[[package.metadata.build-package.external-files]]
+url = "https://github.com/aws/aws-lc/archive/AWS-LC-FIPS-3.0.0/aws-lc-AWS-LC-FIPS-3.0.0.tar.gz"
+sha512 = "d5d951a7aeba2986503249c02ada8fef36d0022d894ba3095bb9619155fffc66d4328028689327fefe28cfb66674123645d70153c83110e6f3c9dfe6d79c5f26"
+
+[build-dependencies]
+glibc = { path = "../glibc" }

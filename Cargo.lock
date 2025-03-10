@@ -121,6 +121,7 @@ dependencies = [
  "libaudit",
  "libbpf",
  "libcap",
+ "libcrypto",
  "libdbus",
  "libdevmapper",
  "libelf",
@@ -549,6 +550,13 @@ version = "0.1.0"
 dependencies = [
  "glibc",
  "libattr",
+]
+
+[[package]]
+name = "libcrypto"
+version = "0.1.0"
+dependencies = [
+ "glibc",
 ]
 
 [[package]]
