@@ -98,6 +98,7 @@ libsemanage = { path = "../../packages/libsemanage" }
 libsepol = { path = "../../packages/libsepol" }
 libstd-rust = { path = "../../packages/libstd-rust" }
 libtirpc = { path = "../../packages/libtirpc" }
+libtss2 = { path = "../../packages/libtss2" }
 liburcu = { path = "../../packages/liburcu" }
 libxcrypt = { path = "../../packages/libxcrypt" }
 libz = { path = "../../packages/libz" }

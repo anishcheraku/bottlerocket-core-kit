@@ -151,6 +151,7 @@ dependencies = [
  "libsepol",
  "libstd-rust",
  "libtirpc",
+ "libtss2",
  "liburcu",
  "libxcrypt",
  "libz",
@@ -781,6 +782,14 @@ name = "libtirpc"
 version = "0.1.0"
 dependencies = [
  "glibc",
+]
+
+[[package]]
+name = "libtss2"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+ "libcrypto",
 ]
 
 [[package]]

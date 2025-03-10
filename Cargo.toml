@@ -87,6 +87,7 @@ members = [
   "packages/libsepol",
   "packages/libstd-rust",
   "packages/libtirpc",
+  "packages/libtss2",
   "packages/liburcu",
   "packages/libxcrypt",
   "packages/libz",
