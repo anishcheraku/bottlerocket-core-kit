@@ -16,6 +16,7 @@ members = [
   "packages/conntrack-tools",
   "packages/containerd",
   "packages/coreutils",
+  "packages/cryptsetup",
   "packages/dbus-broker",
   "packages/docker-cli",
   "packages/docker-engine",

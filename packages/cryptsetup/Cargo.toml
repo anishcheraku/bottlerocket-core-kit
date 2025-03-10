@@ -1,0 +1,29 @@
+[package]
+name = "cryptsetup"
+version = "0.1.0"
+edition = "2021"
+publish = false
+build = "../build.rs"
+
+[lib]
+path = "../packages.rs"
+
+[package.metadata.build-package]
+releases-url = "https://www.kernel.org/pub/linux/utils/cryptsetup/v2.7"
+
+[[package.metadata.build-package.external-files]]
+url = "https://www.kernel.org/pub/linux/utils/cryptsetup/v2.7/cryptsetup-2.7.5.tar.xz"
+sha512 = "13eca93cdb00a143d2ca60b6f66ede5adc4072ca0c4bfebd8454a3541e69d269fcdb4afc97ad799e87a999b2bd46c1f31fa924a3d616d72a3337970b1e718d55"
+
+[[package.metadata.build-package.external-files]]
+url = "https://www.kernel.org/pub/linux/utils/cryptsetup/v2.7/cryptsetup-2.7.5.tar.sign"
+sha512 = "8bee88462a306f9e57bededd69e129b1b51e757cac20e2ae804c5250c382e24cea1ba90d80703303d83903751f9401a3de1ae39a5781600dc0df15c8167ff0e0"
+
+[build-dependencies]
+glibc = { path = "../glibc" }
+libcrypto = { path = "../libcrypto" }
+libdevmapper = { path = "../libdevmapper" }
+libjson-c = { path = "../libjson-c" }
+libpopt = { path = "../libpopt" }
+libselinux = { path = "../libselinux" }
+util-linux = { path = "../util-linux" }

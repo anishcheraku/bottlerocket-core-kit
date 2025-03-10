@@ -79,6 +79,7 @@ dependencies = [
  "conntrack-tools",
  "containerd",
  "coreutils",
+ "cryptsetup",
  "dbus-broker",
  "docker-cli",
  "docker-engine",
@@ -242,6 +243,19 @@ dependencies = [
  "libcap",
  "libselinux",
  "libxcrypt",
+]
+
+[[package]]
+name = "cryptsetup"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+ "libcrypto",
+ "libdevmapper",
+ "libjson-c",
+ "libpopt",
+ "libselinux",
+ "util-linux",
 ]
 
 [[package]]

@@ -26,6 +26,7 @@ cni-plugins = { path = "../../packages/cni-plugins" }
 conntrack-tools = { path = "../../packages/conntrack-tools" }
 containerd = { path = "../../packages/containerd" }
 coreutils = { path = "../../packages/coreutils" }
+cryptsetup = { path = "../../packages/cryptsetup" }
 dbus-broker = { path = "../../packages/dbus-broker" }
 docker-cli = { path = "../../packages/docker-cli" }
 docker-engine = { path = "../../packages/docker-engine" }
