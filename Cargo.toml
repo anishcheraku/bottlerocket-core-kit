@@ -81,6 +81,7 @@ members = [
   "packages/libnvidia-container",
   "packages/libnvme",
   "packages/libpcre",
+  "packages/libpopt",
   "packages/libseccomp",
   "packages/libselinux",
   "packages/libsemanage",

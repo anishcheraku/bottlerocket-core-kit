@@ -92,6 +92,7 @@ libnl = { path = "../../packages/libnl" }
 libnvidia-container = { path = "../../packages/libnvidia-container" }
 libnvme = { path = "../../packages/libnvme" }
 libpcre = { path = "../../packages/libpcre" }
+libpopt = { path = "../../packages/libpopt" }
 libseccomp = { path = "../../packages/libseccomp" }
 libselinux = { path = "../../packages/libselinux" }
 libsemanage = { path = "../../packages/libsemanage" }

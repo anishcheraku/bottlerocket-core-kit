@@ -145,6 +145,7 @@ dependencies = [
  "libnvidia-container",
  "libnvme",
  "libpcre",
+ "libpopt",
  "libseccomp",
  "libselinux",
  "libsemanage",
@@ -736,6 +737,13 @@ dependencies = [
 
 [[package]]
 name = "libpcre"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+]
+
+[[package]]
+name = "libpopt"
 version = "0.1.0"
 dependencies = [
  "glibc",
