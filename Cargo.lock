@@ -122,6 +122,7 @@ dependencies = [
  "libbpf",
  "libcap",
  "libdbus",
+ "libdevmapper",
  "libelf",
  "libexpat",
  "libffi",
@@ -557,6 +558,16 @@ dependencies = [
  "glibc",
  "libcap",
  "libexpat",
+]
+
+[[package]]
+name = "libdevmapper"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+ "libaio",
+ "libselinux",
+ "util-linux",
 ]
 
 [[package]]

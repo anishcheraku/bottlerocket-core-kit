@@ -59,6 +59,7 @@ members = [
   "packages/libbpf",
   "packages/libcap",
   "packages/libdbus",
+  "packages/libdevmapper",
   "packages/libelf",
   "packages/libexpat",
   "packages/libffi",

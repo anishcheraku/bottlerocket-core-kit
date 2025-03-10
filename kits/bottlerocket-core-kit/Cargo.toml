@@ -69,6 +69,7 @@ libaudit = { path = "../../packages/libaudit" }
 libbpf = { path = "../../packages/libbpf" }
 libcap = { path = "../../packages/libcap" }
 libdbus = { path = "../../packages/libdbus" }
+libdevmapper = { path = "../../packages/libdevmapper" }
 libelf = { path = "../../packages/libelf" }
 libexpat = { path = "../../packages/libexpat" }
 libffi = { path = "../../packages/libffi" }
