@@ -116,6 +116,7 @@ dependencies = [
  "kubernetes-1_31",
  "kubernetes-1_32",
  "libacl",
+ "libaio",
  "libattr",
  "libaudit",
  "libbpf",
@@ -509,6 +510,13 @@ version = "0.1.0"
 dependencies = [
  "glibc",
  "libattr",
+]
+
+[[package]]
+name = "libaio"
+version = "0.1.0"
+dependencies = [
+ "glibc",
 ]
 
 [[package]]
