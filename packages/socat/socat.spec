@@ -1,5 +1,5 @@
 Name: %{_cross_os}socat
-Version: 1.8.0.1
+Version: 1.8.0.3
 Release: 1%{?dist}
 Epoch: 1
 Summary: Transfer data between two channels

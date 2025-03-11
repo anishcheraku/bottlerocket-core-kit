@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://ftp.gnu.org/gnu/coreutils"
 
 [[package.metadata.build-package.external-files]]
-url = "https://ftp.gnu.org/gnu/coreutils/coreutils-9.5.tar.xz"
-sha512 = "2ca0deac4dc10a80fd0c6fd131252e99d457fd03b7bd626a6bc74fe5a0529c0a3d48ce1f5da1d3b3a7a150a1ce44f0fbb6b68a6ac543dfd5baa3e71f5d65401c"
+url = "https://ftp.gnu.org/gnu/coreutils/coreutils-9.6.tar.xz"
+sha512 = "398391d7f9d77e6117b750abb8711eebdd9cd2549e7846cab26884fb2dd522b6bcfb8bf7fef35a12683e213ada7f89b817bf615628628d42aee3fa3102647b28"
 
 [[package.metadata.build-package.external-files]]
-url = "https://ftp.gnu.org/gnu/coreutils/coreutils-9.5.tar.xz.sig"
-sha512 = "029997e0f4ee64e561853cff7c8a124f58cc891598595b44c4a46f9813b4b71c9d677464bc8a26d294e9971832f4b87c23777fea4fac6e8e30f06ad93b9957d5"
+url = "https://ftp.gnu.org/gnu/coreutils/coreutils-9.6.tar.xz.sig"
+sha512 = "a8e578b5e1d053b49e3e2c5dc94431d17c6a14662f459b2174cea23865ccca32e5ae5c13fedb0a8345d25269a9b98cb7f463a897c9663f9f9bcaf61e5c781378"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
