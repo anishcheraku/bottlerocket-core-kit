@@ -11,7 +11,7 @@ KIT ?= bottlerocket-core-kit
 UNAME_ARCH = $(shell uname -m)
 ARCH ?= $(UNAME_ARCH)
 VENDOR ?= bottlerocket
-UPSTREAM_SOURCE_FALLBACK = false
+UPSTREAM_SOURCE_FALLBACK ?= false
 
 ifeq ($(UNAME_ARCH), aarch64)
 	TWOLITER_SHA256=$(TWOLITER_SHA256_AARCH64)
@@ -42,7 +42,7 @@ fetch: prep
 	@$(TWOLITER) fetch --arch $(ARCH)
 
 build: fetch
-ifeq ($(UPSTREAM_SOURCE_FALLBACK), "false")
+ifeq ($(UPSTREAM_SOURCE_FALLBACK), false)
 	@$(TWOLITER) build kit $(KIT) --arch $(ARCH)
 else
 	@$(TWOLITER) build kit $(KIT) --arch $(ARCH) --upstream-source-fallback
