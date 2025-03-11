@@ -5,8 +5,12 @@ std = { version = "v1", helpers = ["default"] }
 +++
 version: v1
 flags:
+  {{#if settings.kubelet-device-plugins.nvidia.device-partitioning-strategy}}
   {{#if (eq settings.kubelet-device-plugins.nvidia.device-partitioning-strategy "mig")}}
   migStrategy: "single"
+  {{else}}
+  migStrategy: "none"
+  {{/if}}
   {{else}}
   migStrategy: "none"
   {{/if}}
