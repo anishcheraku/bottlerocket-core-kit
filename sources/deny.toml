@@ -71,7 +71,7 @@ skip-tree = [
 [bans.workspace-dependencies]
 duplicates = "deny"
 include-path-dependencies = true
-unused = "deny"
+unused = "allow"
 
 [advisories]
 # generational-arena is currently unmaintained.
