@@ -620,7 +620,7 @@ where
             Dhcp4ConfigV1::DhcpEnabled(enabled) => *enabled,
             // If "optional" isn't set, assume DHCP is required.
             // If optional==true, DHCP is NOT required
-            Dhcp4ConfigV1::WithOptions(o) => o.optional.map_or(true, |b| !b),
+            Dhcp4ConfigV1::WithOptions(o) => o.optional.is_none_or(|b| !b),
         }
     }
 
@@ -644,7 +644,7 @@ where
             Dhcp6ConfigV1::DhcpEnabled(enabled) => *enabled,
             // If "optional" isn't set, assume DHCP is required
             // If optional==true, DHCP is NOT required
-            Dhcp6ConfigV1::WithOptions(o) => o.optional.map_or(true, |b| !b),
+            Dhcp6ConfigV1::WithOptions(o) => o.optional.is_none_or(|b| !b),
         }
     }
 }
