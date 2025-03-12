@@ -1,3 +1,37 @@
+# v6.1.0 (2025-03-14)
+
+## OS Changes
+* Persist sysctl setting changes to /etc/sysctl.d ([#333]) - Thanks @aetimmes
+* Updated cis report to account for formatting change in iptables ([#390])
+* Update MIG template to handle the no-default case ([#399])
+* Third party package updates ([#365], [#371], [#383], [#384], [#403], [#404], [#406])
+
+## Build Changes
+* Update `bottlerocket-sdk` from 0.50.1 to 0.60.0 ([#375], [#402])
+* Update `twoliter` from 0.7.3 to 0.8.0 ([#368], [#398])
+
+## Orchestrator Changes
+
+### Kubernetes
+* Apply upstream patches for Kubernetes 1.25-1.32 ([#379], [#400])
+
+[#333]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/333
+[#365]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/365
+[#368]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/368
+[#371]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/371
+[#375]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/375
+[#379]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/379
+[#383]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/383
+[#384]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/384
+[#390]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/390
+[#398]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/398
+[#399]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/399
+[#400]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/400
+[#402]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/402
+[#403]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/403
+[#404]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/404
+[#406]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/406
+
 # v6.0.2 (2025-02-26)
 
 ## Build Changes
