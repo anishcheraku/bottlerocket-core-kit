@@ -12,8 +12,8 @@ path = "../packages.rs"
 releases-url = "https://github.com/containerd/containerd/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/containerd/containerd/archive/v1.7.25/containerd-1.7.25.tar.gz"
-sha512 = "83477f9ed1d5d0653f5a4829d1ac6299cdd8958ca5534de1b22d7b5858d0118e97c9d3ce4c5d58e5b06393be007007f7bf4ac511e1903d1fe407579fa96ab36d"
+url = "https://github.com/containerd/containerd/archive/v1.7.26/containerd-1.7.26.tar.gz"
+sha512 = "1b563f554ffc5314ee5e83c91885ed380b9b57e1fe7c6f146d45bfcf5b638490b702cafdb4c17cb48caac3ba4141b2391fcfd3e4286d6e258071a71ca9968505"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
