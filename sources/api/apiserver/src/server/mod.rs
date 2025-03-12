@@ -13,7 +13,6 @@ use actix_web::{
 };
 use datastore::{serialize_scalar, Committed, FilesystemDataStore, Key, KeyType, Value};
 use error::Result;
-use fs2::FileExt;
 use http::StatusCode;
 use log::info;
 use model::ephemeral_storage::{Bind, Init};
@@ -598,9 +597,7 @@ async fn get_configuration_files(
 /// Get the update status from 'thar-be-updates'
 async fn get_update_status() -> Result<UpdateStatusResponse> {
     let lockfile = File::create(UPDATE_LOCKFILE).context(error::UpdateLockOpenSnafu)?;
-    lockfile
-        .try_lock_shared()
-        .context(error::UpdateShareLockSnafu)?;
+    fs2::FileExt::try_lock_shared(&lockfile).context(error::UpdateShareLockSnafu)?;
     let result = thar_be_updates::status::get_update_status(&lockfile);
     match result {
         Ok(update_status) => Ok(UpdateStatusResponse(update_status)),
