@@ -22,10 +22,8 @@ pub(crate) fn generate_initrd(bootconfig: &[u8]) -> Result<Vec<u8>> {
             .context(error::AddU32OverflowSnafu)?;
     }
     // Bottlerocket does not use an initrd, so the base initrd image size is 0
-    let total_size = BASE_INITRD_SIZE
-        + bootconfig_size
-        + size_of::<u32>() * 2
-        + BOOTCONFIG_MAGIC.as_bytes().len();
+    let total_size =
+        BASE_INITRD_SIZE + bootconfig_size + size_of::<u32>() * 2 + BOOTCONFIG_MAGIC.len();
     let mut initrd = bootconfig.to_owned();
     // initrd image file needs to be 4-byte aligned, so we add padding as necessary.
     let padding_size = (BOOTCONFIG_ALIGN - (total_size % BOOTCONFIG_ALIGN)) % BOOTCONFIG_ALIGN;
