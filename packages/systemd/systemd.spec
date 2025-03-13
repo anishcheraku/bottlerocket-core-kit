@@ -78,6 +78,17 @@ Patch9014: 9014-meson-make-gpt-auto-generator-selectable-at-build-ti.patch
 # Local patch to allow resolving .local domains
 Patch9015: 9015-allow-lookups-of-local-domains-using-unicast-DNS.patch
 
+# Do not enable OpenSSL for systemd-resolved, to keep DNSSEC disabled.
+Patch9016: 9016-meson-always-set-HAVE_OPENSSL_OR_GCRYPT-to-false.patch
+
+# Do not enable OpenSSL for systemd-dissect, since AWS-LC doesn't support the
+# PKCS7_verify function it wants.
+Patch9017: 9017-dissect-image-disable-openssl-support.patch
+
+# Have pkgconfig find "libcrypto.pc" instead of "openssl.pc" to avoid the
+# unneeded dependency on libssl.
+Patch9018: 9018-meson-replace-openssl-dependency-with-libcrypto.patch
+
 BuildRequires: gperf
 BuildRequires: intltool
 BuildRequires: meson
@@ -87,21 +98,28 @@ BuildRequires: %{_cross_os}libacl-devel
 BuildRequires: %{_cross_os}libattr-devel
 BuildRequires: %{_cross_os}libblkid-devel
 BuildRequires: %{_cross_os}libcap-devel
+BuildRequires: %{_cross_os}libcrypto-devel
+BuildRequires: %{_cross_os}libcryptsetup-devel
 BuildRequires: %{_cross_os}libfdisk-devel
 BuildRequires: %{_cross_os}libmount-devel
 BuildRequires: %{_cross_os}libseccomp-devel
 BuildRequires: %{_cross_os}libselinux-devel
+BuildRequires: %{_cross_os}libtss2-devel
 BuildRequires: %{_cross_os}libuuid-devel
 BuildRequires: %{_cross_os}libxcrypt-devel
+
 Requires: %{_cross_os}kmod
 Requires: %{_cross_os}libacl
 Requires: %{_cross_os}libattr
 Requires: %{_cross_os}libblkid
 Requires: %{_cross_os}libcap
+Requires: %{_cross_os}libcrypto
+Requires: %{_cross_os}libcryptsetup
 Requires: %{_cross_os}libfdisk
 Requires: %{_cross_os}libmount
 Requires: %{_cross_os}libseccomp
 Requires: %{_cross_os}libselinux
+Requires: %{_cross_os}libtss2
 Requires: %{_cross_os}libuuid
 Requires: %{_cross_os}libxcrypt
 
@@ -112,6 +130,14 @@ Requires: %{_cross_os}libxcrypt
 Summary: Files for console login using the System and Service Manager
 
 %description console
+%{summary}.
+
+%package cryptsetup
+Summary: Files for cryptsetup support in systemd
+Requires: %{name}
+Requires: %{_cross_os}cryptsetup
+
+%description cryptsetup
 %{summary}.
 
 %package devel
@@ -162,7 +188,7 @@ CONFIGURE_OPTS=(
  -Dldconfig=true
  -Dresolve=true
  -Defi=true
- -Dtpm=false
+ -Dtpm=true
  -Denvironment-d=false
  -Dbinfmt=true
  -Drepart=true
@@ -238,7 +264,8 @@ CONFIGURE_OPTS=(
  -Dpam=false
  -Dpwquality=false
  -Dmicrohttpd=false
- -Dlibcryptsetup=false
+ -Dlibcryptsetup=true
+ -Dlibcryptsetup-plugins=true
  -Dlibcurl=false
  -Didn=false
  -Dlibidn2=false
@@ -247,10 +274,10 @@ CONFIGURE_OPTS=(
  -Dqrencode=false
  -Dgcrypt=false
  -Dgnutls=false
- -Dopenssl=false
+ -Dopenssl=true
  -Dp11kit=false
  -Dlibfido2=false
- -Dtpm2=false
+ -Dtpm2=true
  -Delfutils=false
  -Dzlib=false
  -Dbzip2=false
@@ -549,6 +576,8 @@ find %{buildroot} -type f -name README -print -delete
 # Exclude remote filesystem targets.
 %exclude %{_cross_unitdir}/remote-fs-pre.target
 %exclude %{_cross_unitdir}/remote-fs.target
+%exclude %{_cross_unitdir}/remote-cryptsetup.target
+%exclude %{_cross_unitdir}/remote-veritysetup.target
 
 # Exclude user-related functionality.
 %exclude %{_cross_unitdir}/user-runtime-dir@.service
@@ -751,3 +780,22 @@ find %{buildroot} -type f -name README -print -delete
 %exclude %{_cross_bindir}/systemd-resolve
 %exclude %{_cross_sbindir}/resolvconf
 
+%files cryptsetup
+%{_cross_bindir}/systemd-cryptenroll
+%{_cross_libdir}/cryptsetup/libcryptsetup-token-systemd-tpm2.so
+%{_cross_libdir}/systemd/systemd-cryptsetup
+%{_cross_libdir}/systemd/systemd-integritysetup
+%{_cross_libdir}/systemd/systemd-veritysetup
+%{_cross_systemdgeneratordir}/systemd-cryptsetup-generator
+%{_cross_systemdgeneratordir}/systemd-integritysetup-generator
+%{_cross_systemdgeneratordir}/systemd-veritysetup-generator
+%{_cross_unitdir}/cryptsetup.target
+%{_cross_unitdir}/cryptsetup-pre.target
+%{_cross_unitdir}/integritysetup.target
+%{_cross_unitdir}/integritysetup-pre.target
+%{_cross_unitdir}/veritysetup.target
+%{_cross_unitdir}/veritysetup-pre.target
+%{_cross_unitdir}/*cryptsetup.slice
+%{_cross_unitdir}/sysinit.target.wants/cryptsetup.target
+%{_cross_unitdir}/sysinit.target.wants/integritysetup.target
+%{_cross_unitdir}/sysinit.target.wants/veritysetup.target

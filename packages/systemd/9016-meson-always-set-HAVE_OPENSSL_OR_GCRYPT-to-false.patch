@@ -1,0 +1,31 @@
+From ade376ab3dbb4d6706202e330b8f902c84732803 Mon Sep 17 00:00:00 2001
+From: Ben Cressey <bcressey@amazon.com>
+Date: Sat, 5 Apr 2025 23:59:09 +0000
+Subject: [PATCH] meson: always set HAVE_OPENSSL_OR_GCRYPT to false
+
+Avoid systemd-resolved taking a dependency on libcrypto for unwanted
+DNSSEC support by setting the directive to indicate no crypto library
+is available.
+
+Signed-off-by: Ben Cressey <bcressey@amazon.com>
+---
+ meson.build | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index 604bd99..de9693a 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1698,8 +1698,7 @@ if opt == 'openssl' and conf.get('HAVE_OPENSSL') == 0
+ endif
+ conf.set10('PREFER_OPENSSL',
+            opt == 'openssl' or (opt == 'auto' and conf.get('HAVE_OPENSSL') == 1 and conf.get('HAVE_GCRYPT') == 0))
+-conf.set10('HAVE_OPENSSL_OR_GCRYPT',
+-           conf.get('HAVE_OPENSSL') == 1 or conf.get('HAVE_GCRYPT') == 1)
++conf.set10('HAVE_OPENSSL_OR_GCRYPT', false)
+ lib_openssl_or_gcrypt = conf.get('PREFER_OPENSSL') == 1 ? [libopenssl] : [libgcrypt, libgpg_error]
+ 
+ dns_over_tls = get_option('dns-over-tls')
+-- 
+2.49.0
+
