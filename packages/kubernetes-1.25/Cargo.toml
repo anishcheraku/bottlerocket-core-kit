@@ -113,5 +113,13 @@ sha512 = "3b6cd81edaf9758fa6ef8d2843c96f075a47b13dd97f37a3ef01c7584e47c877cdce3d
 url = "https://raw.githubusercontent.com/aws/eks-distro/refs/heads/main/projects/kubernetes/kubernetes/1-25/patches/0025-EKS-PATCH-Add-sourceARN-to-sts-headers.patch"
 sha512 = "521976beffc6b26dc837c767280100188f4be55583cb9d4001206dd028ef044cf98eef86f77bfecd3d4297dbfd5d1949af33d6990ab4f353f28e2dedf6a01ca8"
 
+[[package.metadata.build-package.external-files]]
+url = "https://raw.githubusercontent.com/aws/eks-distro/37af6ed15a285e4293c1ef83d55e5439b4ebd7b7/projects/kubernetes/kubernetes/1-25/patches/0026-EKS-PATCH-skip-TestCreateBlobDisk-test.patch"
+sha512 = "a69769131fd0e8ffdefa79e02ea2691bc2ab39762cc786d02b0e5fe2df4618b9ba3bb063ca05ada6f0f83fcbf3acd6c3dc8b526e367e40da4e1184af22740e0b"
+
+[[package.metadata.build-package.external-files]]
+url = "https://raw.githubusercontent.com/aws/eks-distro/37af6ed15a285e4293c1ef83d55e5439b4ebd7b7/projects/kubernetes/kubernetes/1-25/patches/0027-EKS-PATCH-Updated-added-visibility-to-apiserver-x509.patch"
+sha512 = "0e542d4c060086366b8cfeccc502e89e5cca3f8ae3c65aad443b90ab99aadd7d81cab88be6cb2549f1430dde6db4c491ecddd881b59ec90f33b581c4a39699b4"
+
 [build-dependencies]
 glibc = { path = "../glibc" }
