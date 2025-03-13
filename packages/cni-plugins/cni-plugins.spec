@@ -2,7 +2,7 @@
 %global gorepo plugins
 %global goimport %{goproject}/%{gorepo}
 
-%global gover 1.6.1
+%global gover 1.6.2
 %global rpmver %{gover}
 
 %global _dwz_low_mem_die_limit 0

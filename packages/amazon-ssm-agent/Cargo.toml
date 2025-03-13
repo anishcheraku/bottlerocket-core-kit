@@ -12,8 +12,8 @@ path = "../packages.rs"
 releases-url = "https://github.com/aws/amazon-ssm-agent/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/aws/amazon-ssm-agent/archive/3.3.1345.0/amazon-ssm-agent-3.3.1345.0.tar.gz"
-sha512 = "c147a59509db081c5bc8d7aeca6870fb1e907b252e62513164935549a11d4276dda7c214d349af9d9e7cf136058e0cd9cd77e15088b5fd38ae14c0472a064923"
+url = "https://github.com/aws/amazon-ssm-agent/archive/3.3.1802.0/amazon-ssm-agent-3.3.1802.0.tar.gz"
+sha512 = "16be1f20b423b194cf8836fa27534523c988ceea6017241fbd35eb33274bcbfe05eae5ad5034ea89705cf24ad60611863d8a0e776c449c046c5835585015bc3a"
 
 [build-dependencies]
 glibc = { path = "../glibc" }

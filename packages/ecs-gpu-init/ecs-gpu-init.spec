@@ -19,6 +19,8 @@ BuildRequires: %{_cross_os}glibc-devel
 cp -r %{_builddir}/sources/%{workspace_name}/* .
 
 %build
+export GO_MAJOR="1.23"
+
 %set_cross_go_flags
 # We don't set `-Wl,-z,now`, because the binary uses lazy loading
 # to load the NVIDIA libraries in the host
