@@ -78,6 +78,9 @@ Patch0012: 0012-EKS-PATCH-add-resource-to-the-transformation-metrics.patch
 Patch0013: 0013-EKS-PATCH-Check-git-directory-to-be-max-1-level-deep.patch
 Patch0014: 0014-EKS-PATCH-Bumps-runc-version-to-fix-CVE-2024-45310.patch
 Patch0015: 0015-EKS-PATCH-Add-apf-queue-wait-audit-log-latency-annot.patch
+Patch0016: 0016-EKS-PATCH-fix-CVE-2023-47108.patch
+Patch0017: 0017-EKS-PATCH-kubelet-use-env-vars-in-node-log-query-PS-.patch
+Patch0018: 0018-EKS-PATCH-Lower-verbosity-for-topologycache-messages.patch
 
 BuildRequires: git
 BuildRequires: rsync

@@ -91,6 +91,8 @@ Patch0022: 0022-EKS-PATCH-Update-aws-sdk-go-to-include-new-regions.patch
 Patch0023: 0023-EKS-PATCH-Fix-CVE-2024-5321.patch
 Patch0024: 0024-EKS-PATCH-Check-git-directory-to-be-max-1-level-deep.patch
 Patch0025: 0025-EKS-PATCH-Add-sourceARN-to-sts-headers.patch
+Patch0026: 0026-EKS-PATCH-skip-TestCreateBlobDisk-test.patch
+Patch0027: 0027-EKS-PATCH-Updated-added-visibility-to-apiserver-x509.patch
 
 BuildRequires: git
 BuildRequires: rsync

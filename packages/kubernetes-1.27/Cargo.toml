@@ -69,5 +69,17 @@ sha512 = "e36830d54594aa9ccca4b2ff3b44105b69522beceee8455846338292b7ab5127c6f4ed
 url = "https://raw.githubusercontent.com/aws/eks-distro/refs/heads/main/projects/kubernetes/kubernetes/1-27/patches/0015-EKS-PATCH-Add-apf-queue-wait-audit-log-latency-annot.patch"
 sha512 = "489e9baba81a3683e7be5de260e82c56628c0546f7032695e2107d3bc42dfbaf059f424f8d423d15ded5d7845ebb21966a886af9eefed132b8c361b8393efe44"
 
+[[package.metadata.build-package.external-files]]
+url = "https://raw.githubusercontent.com/aws/eks-distro/c84a10a53ba8fac3a0f056297d767609b8997bdb/projects/kubernetes/kubernetes/1-27/patches/0016-EKS-PATCH-fix-CVE-2023-47108.patch"
+sha512 = "30d29b129b3527273545b9aa4bb6a69daab3a74935faa7b58c11eb6e140af6574c349afac928539bb348159751961f3c2cbfe82437ec05384efb9cd7ce27b498"
+
+[[package.metadata.build-package.external-files]]
+url = "https://raw.githubusercontent.com/aws/eks-distro/37af6ed15a285e4293c1ef83d55e5439b4ebd7b7/projects/kubernetes/kubernetes/1-27/patches/0017-EKS-PATCH-kubelet-use-env-vars-in-node-log-query-PS-.patch"
+sha512 = "24a955f2a672338ab5d69993f6d40708617ac85ac5c9437cc03b85e0521ea5dd1c30bfa75a587139b9672bd4f7b5a47aee6e6324f54ed9a26f5d5b1bbb78d2ba"
+
+[[package.metadata.build-package.external-files]]
+url = "https://raw.githubusercontent.com/aws/eks-distro/7771e87603c3ae1fd29d04044689ff4cf5e349d4/projects/kubernetes/kubernetes/1-27/patches/0018-EKS-PATCH-Lower-verbosity-for-topologycache-messages.patch"
+sha512 = "d26e1886dc8661666fd7469b469a1cbd24d4f4d7d240c56d6d6d2148abe5e4bc278cb00f288bec9c7a0f6458a3eb857e4a1a2571c635ab4d83b347eac81d5eab"
+
 [build-dependencies]
 glibc = { path = "../glibc" }

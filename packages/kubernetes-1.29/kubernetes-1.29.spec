@@ -10,8 +10,8 @@
 %global gorepo kubernetes
 %global goimport %{goproject}/%{gorepo}
 
-%global releasever 32
-%global gover 1.29.13
+%global releasever 33
+%global gover 1.29.14
 %global rpmver %{gover}
 
 %global _dwz_low_mem_die_limit 0
