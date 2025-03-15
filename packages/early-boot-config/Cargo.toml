@@ -10,6 +10,8 @@ path = "../packages.rs"
 
 [package.metadata.build-package]
 source-groups = [
+    "api",
+    "constants",
     "early-boot-config/early-boot-config",
     "early-boot-config/early-boot-config-provider",
 
@@ -20,6 +22,8 @@ source-groups = [
     "early-boot-config/user-data-providers/local-overrides",
     "early-boot-config/user-data-providers/vmware-cd-rom",
     "early-boot-config/user-data-providers/vmware-guestinfo",
+    "generate-readme",
+    "imdsclient",
 ]
 
 [build-dependencies]
