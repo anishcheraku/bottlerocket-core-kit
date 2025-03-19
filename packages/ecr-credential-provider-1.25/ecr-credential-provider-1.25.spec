@@ -7,7 +7,7 @@
 
 %global _dwz_low_mem_die_limit 0
 
-Name: %{_cross_os}ecr-credential-provider
+Name: %{_cross_os}ecr-credential-provider-1.25
 Version: %{rpmver}
 Release: 1%{?dist}
 Epoch: 1
