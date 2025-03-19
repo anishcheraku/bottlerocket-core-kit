@@ -5,6 +5,10 @@ Summary: Library for Intel ISA
 License: BSD-3-Clause
 URL: https://github.com/intel/isa-l
 Source0: https://github.com/intel/isa-l/archive/v%{version}/isa-l-%{version}.tar.gz
+
+# Patch to optimize stdin / stdout pipe usage for containerd.
+Patch0001: 0001-igzip-increase-stdin-and-stdout-pipe-sizes.patch
+
 BuildRequires: %{_cross_os}glibc-devel
 
 %description
