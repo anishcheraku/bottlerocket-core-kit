@@ -81,5 +81,9 @@ sha512 = "ff03c0d516e61ccc5d41984318088722f8a5cc83296f24cd40f9ea9c52cc5c3075568d
 url = "https://raw.githubusercontent.com/aws/eks-distro/37af6ed15a285e4293c1ef83d55e5439b4ebd7b7/projects/kubernetes/kubernetes/1-26/patches/0018-EKS-PATCH-Updated-added-visibility-to-apiserver-x509.patch"
 sha512 = "0e542d4c060086366b8cfeccc502e89e5cca3f8ae3c65aad443b90ab99aadd7d81cab88be6cb2549f1430dde6db4c491ecddd881b59ec90f33b581c4a39699b4"
 
+[[package.metadata.build-package.external-files]]
+url = "https://raw.githubusercontent.com/aws/eks-distro/93c82ae30d0c044196bd0b0bcb1f1d98be9b0102/projects/kubernetes/kubernetes/1-26/patches/0019-EKS-PATCH-Lower-verbosity-for-topologycache-messages.patch"
+sha512 = "d26e1886dc8661666fd7469b469a1cbd24d4f4d7d240c56d6d6d2148abe5e4bc278cb00f288bec9c7a0f6458a3eb857e4a1a2571c635ab4d83b347eac81d5eab"
+
 [build-dependencies]
 glibc = { path = "../glibc" }
