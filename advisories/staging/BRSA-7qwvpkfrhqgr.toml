@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-7qwvpkfrhqgr"
+title = "containerd CVE-2024-40635"
+cve = "CVE-2024-40635"
+severity = "moderate"
+description = "A flaw was found in containerd where containers launched with a User set as a UID:GID larger than the maximum 32-bit signed integer can cause an overflow condition where the container runs as root, which could lead to unexpected behavior for environments that require containers to run as a non-root user."
+
+[[advisory.products]]
+package-name = "containerd"
+patched-version = "1.7.27"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2025-03-19T21:57:49Z
+arches = ["x86_64", "aarch64"]
+version = "staging"
