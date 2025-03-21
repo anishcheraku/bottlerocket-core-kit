@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-etyl1dz8fjvy"
+title = "libexpat CVE-2024-8176"
+cve = "CVE-2024-8176"
+severity = "moderate"
+description = "A vulnerability was found in libexpat where improper handling of recursive entity expansion in XML documents could cause a stack overflow and lead to denial of service or memory corruption."
+
+[[advisory.products]]
+package-name = "libexpat"
+patched-version = "2.7.0"
+patched-epoch = "1"
+
+[updateinfo]
+author = "jepiyush"
+issue-date = 2025-03-20T21:23:49Z
+arches = ["x86_64", "aarch64"]
+version = "staging"

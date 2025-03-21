@@ -1,5 +1,5 @@
 Name: %{_cross_os}libdbus
-Version: 1.15.12
+Version: 1.16.2
 Release: 1%{?dist}
 Epoch: 1
 Summary: Library for a message bus
@@ -8,6 +8,7 @@ URL: http://www.freedesktop.org/Software/dbus/
 Source0: https://dbus.freedesktop.org/releases/dbus/dbus-%{version}.tar.xz
 Source1: https://dbus.freedesktop.org/releases/dbus/dbus-%{version}.tar.xz.asc
 Source2: gpgkey-7A073AD1AE694FA25BFF62E5235C099D3EB33076.asc
+
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libcap-devel
 BuildRequires: %{_cross_os}libexpat-devel
@@ -31,8 +32,6 @@ Requires: %{name}
 %build
 CONFIGURE_OPTS=(
  -Dasserts=false
- -Dcontainers=false
- -Dembedded_tests=false
  -Dinstalled_tests=false
  -Dmessage_bus=false
  -Dstats=false

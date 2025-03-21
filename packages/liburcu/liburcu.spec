@@ -1,5 +1,5 @@
 Name: %{_cross_os}liburcu
-Version: 0.14.1
+Version: 0.15.1
 Release: 1%{?dist}
 Epoch: 1
 Summary: Library for userspace RCU
@@ -36,7 +36,7 @@ Requires: %{name}
 %make_install
 
 %files
-%license LICENSE gpl-2.0.txt lgpl-relicensing.txt lgpl-2.1.txt
+%license LICENSE.md lgpl-relicensing.md
 %{_cross_attribution_file}
 
 %{_cross_libdir}/liburcu.so.8*
@@ -47,7 +47,6 @@ Requires: %{name}
 %exclude %{_cross_libdir}/liburcu-mb.so.8*
 %exclude %{_cross_libdir}/liburcu-memb.so.8*
 %exclude %{_cross_libdir}/liburcu-qsbr.so.8*
-%exclude %{_cross_libdir}/liburcu-signal.so.8*
 %exclude %{_cross_docdir}
 
 %files devel
