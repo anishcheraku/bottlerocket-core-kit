@@ -1,3 +1,24 @@
+# v6.1.1 (2025-03-24)
+
+## OS Changes
+* Third party package updates ([#432], [#434])
+* Update host-ctr dependencies ([#431])
+* Update containerd from 1.7.26 to 1.7.27 ([#434])
+
+## Build Changes
+* Update `twoliter` from 0.8.0 to 0.8.1 ([#428])
+
+## Orchestrator Changes
+### Kubernetes
+* Apply upstream patches for EKS 1.25-1.26 ([#434])
+* Update ecr-credential-provider 1.29-1.32 to latest ([#434])
+* Add ecr-credential-provider 1.26 and 1.28 ([#434])
+
+[#428]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/428
+[#431]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/431
+[#432]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/432
+[#434]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/434
+
 # v6.1.0 (2025-03-14)
 
 ## OS Changes
