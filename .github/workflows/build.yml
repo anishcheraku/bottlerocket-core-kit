@@ -21,6 +21,8 @@ on:
       - 'advisories/**'
       # VSCode configurations
       - '.vscode/**'
+      # Mailmap
+      - '.mailmap'
 
 concurrency:
   group: ${{ github.ref }}
