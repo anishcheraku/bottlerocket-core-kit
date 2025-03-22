@@ -180,6 +180,7 @@ dependencies = [
  "static-pods",
  "strace",
  "systemd",
+ "tpm2-tools",
  "util-linux",
  "wicked",
  "xfsprogs",
@@ -1006,6 +1007,14 @@ dependencies = [
  "libselinux",
  "libxcrypt",
  "util-linux",
+]
+
+[[package]]
+name = "tpm2-tools"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+ "libtss2",
 ]
 
 [[package]]

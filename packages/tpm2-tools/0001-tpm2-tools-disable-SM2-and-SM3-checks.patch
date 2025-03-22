@@ -1,0 +1,51 @@
+From 4220a33dcddbde9bf8f8a3e8e934119c316d3efa Mon Sep 17 00:00:00 2001
+From: Ben Cressey <bcressey@amazon.com>
+Date: Sat, 22 Mar 2025 16:57:25 +0000
+Subject: [PATCH] tpm2-tools: disable SM2 and SM3 checks
+
+These aren't supported by AWS-LC despite its library version.
+
+Signed-off-by: Ben Cressey <bcressey@amazon.com>
+---
+ lib/tpm2_openssl.c           | 4 ++--
+ tools/misc/tpm2_checkquote.c | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/lib/tpm2_openssl.c b/lib/tpm2_openssl.c
+index 516d8b6..37e4ef9 100644
+--- a/lib/tpm2_openssl.c
++++ b/lib/tpm2_openssl.c
+@@ -36,7 +36,7 @@ int tpm2_openssl_halgid_from_tpmhalg(TPMI_ALG_HASH algorithm) {
+         return NID_sha384;
+     case TPM2_ALG_SHA512:
+         return NID_sha512;
+-#if OPENSSL_VERSION_NUMBER >= 0x10101000L
++#if 0
+ 	case TPM2_ALG_SM3_256:
+ 		return NID_sm3;
+ #endif
+@@ -666,7 +666,7 @@ static const struct {
+     { TPM2_ECC_NIST_P256, NID_X9_62_prime256v1 },
+     { TPM2_ECC_NIST_P384, NID_secp384r1        },
+     { TPM2_ECC_NIST_P521, NID_secp521r1        },
+-#if OPENSSL_VERSION_NUMBER >= 0x10101003L
++#if 0
+     { TPM2_ECC_SM2_P256,  NID_sm2              },
+ #endif
+     /*
+diff --git a/tools/misc/tpm2_checkquote.c b/tools/misc/tpm2_checkquote.c
+index 498dffb..502327f 100644
+--- a/tools/misc/tpm2_checkquote.c
++++ b/tools/misc/tpm2_checkquote.c
+@@ -110,7 +110,7 @@ static bool verify(void) {
+         return false;
+     }
+ 
+-#if OPENSSL_VERSION_NUMBER >= 0x10101003L
++#if 0
+ #if OPENSSL_VERSION_MAJOR < 3
+     if (ctx.halg == TPM2_ALG_SM3_256) {
+         ret = EVP_PKEY_set_alias_type(pkey, EVP_PKEY_SM2);
+-- 
+2.48.1
+

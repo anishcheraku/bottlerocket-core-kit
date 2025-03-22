@@ -116,6 +116,7 @@ members = [
   "packages/static-pods",
   "packages/strace",
   "packages/systemd",
+  "packages/tpm2-tools",
   "packages/util-linux",
   "packages/wicked",
   "packages/xfsprogs"

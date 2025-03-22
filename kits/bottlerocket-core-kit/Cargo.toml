@@ -127,6 +127,7 @@ soci-snapshotter = { path = "../../packages/soci-snapshotter" }
 static-pods = { path = "../../packages/static-pods" }
 strace = { path = "../../packages/strace" }
 systemd = { path = "../../packages/systemd" }
+tpm2-tools = { path = "../../packages/tpm2-tools" }
 util-linux = { path = "../../packages/util-linux" }
 wicked = { path = "../../packages/wicked" }
 xfsprogs = { path = "../../packages/xfsprogs" }
