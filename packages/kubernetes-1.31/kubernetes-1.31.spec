@@ -145,7 +145,7 @@ cp third_party/forked/golang/PATENTS PATENTS.golang
 %build
 export FORCE_HOST_GO=1
 
-export GO_VERSION="1.22.2"
+export GO_MAJOR="1.23"
 
 # Build codegen programs with the host toolchain.
 make hack/update-codegen.sh
