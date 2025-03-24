@@ -1,7 +1,7 @@
 [package]
 # "." is not allowed in crate names, but we want a friendlier name for the
 # directory and spec file, so we override it below.
-name = "ecr-credential-provider-1_31"
+name = "ecr-credential-provider-1_28"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -11,13 +11,13 @@ build = "../build.rs"
 path = "../packages.rs"
 
 [package.metadata.build-package]
-package-name = "ecr-credential-provider-1.31"
+package-name = "ecr-credential-provider-1.28"
 releases-url = "https://github.com/kubernetes/cloud-provider-aws/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://codeload.github.com/kubernetes/cloud-provider-aws/tar.gz/v1.31.5"
-path = "cloud-provider-aws-1.31.5.tar.gz"
-sha512 = "a2fefd9be3106d373ac0fb4547008b19442f056676c876cb9c08b5d9f2674435456393da531ac1ffe90e814c636e70c9f2a720140857cf639d420507322a59b3"
+url = "https://codeload.github.com/kubernetes/cloud-provider-aws/tar.gz/v1.28.11"
+path = "cloud-provider-aws-1.28.11.tar.gz"
+sha512 = "7ba7141318733f6f0bdc94ff99d1043fe358a10cab5ac1014ccd608f2ab79b6f4ba6f851b8a505e6f67027e2f44fc2e8a2fb9cf650d4a00709950b0d26334666"
 bundle-modules = [ "go" ]
 
 [build-dependencies]

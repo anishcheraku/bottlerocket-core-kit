@@ -32,12 +32,14 @@ docker-engine = { path = "../../packages/docker-engine" }
 docker-init = { path = "../../packages/docker-init" }
 e2fsprogs = { path = "../../packages/e2fsprogs" }
 early-boot-config = { path = "../../packages/early-boot-config" }
+ecr-credential-provider-1_25 = { path = "../../packages/ecr-credential-provider-1.25" }
+ecr-credential-provider-1_26 = { path = "../../packages/ecr-credential-provider-1.26" }
 ecr-credential-provider-1_27 = { path = "../../packages/ecr-credential-provider-1.27" }
+ecr-credential-provider-1_28 = { path = "../../packages/ecr-credential-provider-1.28" }
 ecr-credential-provider-1_29 = { path = "../../packages/ecr-credential-provider-1.29" }
 ecr-credential-provider-1_30 = { path = "../../packages/ecr-credential-provider-1.30" }
 ecr-credential-provider-1_31 = { path = "../../packages/ecr-credential-provider-1.31" }
 ecr-credential-provider-1_32 = { path = "../../packages/ecr-credential-provider-1.32" }
-ecr-credential-provider = { path = "../../packages/ecr-credential-provider" }
 ecs-agent = { path = "../../packages/ecs-agent" }
 ecs-gpu-init = { path = "../../packages/ecs-gpu-init" }
 ethtool = { path = "../../packages/ethtool" }

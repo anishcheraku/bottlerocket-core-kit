@@ -83,6 +83,7 @@ Patch0015: 0015-EKS-PATCH-Check-git-directory-to-be-max-1-level-deep.patch
 Patch0016: 0016-EKS-PATCH-Add-sourceARN-to-sts-headers.patch
 Patch0017: 0017-EKS-PATCH-fix-CVE-2023-47108.patch
 Patch0018: 0018-EKS-PATCH-Updated-added-visibility-to-apiserver-x509.patch
+Patch0019: 0019-EKS-PATCH-Lower-verbosity-for-topologycache-messages.patch
 
 BuildRequires: git
 BuildRequires: rsync
@@ -96,7 +97,7 @@ Summary: Container cluster node agent
 Requires: %{_cross_os}conntrack-tools
 Requires: %{_cross_os}containerd
 Requires: %{_cross_os}findutils
-Requires: %{_cross_os}ecr-credential-provider
+Requires: %{_cross_os}ecr-credential-provider-1.26
 Requires: %{_cross_os}aws-signing-helper
 Requires: %{_cross_os}static-pods
 Requires: %{_cross_os}kubelet-1.26(binaries)
