@@ -1,5 +1,5 @@
 Name: %{_cross_os}glibc
-Version: 2.40
+Version: 2.41
 Release: 1%{?dist}
 Epoch: 1
 Summary: The GNU libc libraries
@@ -7,7 +7,7 @@ License: LGPL-2.1-or-later AND (LGPL-2.1-or-later WITH GCC-exception-2.0) AND GP
 URL: http://www.gnu.org/software/glibc/
 Source0: https://ftp.gnu.org/gnu/glibc/glibc-%{version}.tar.xz
 Source1: https://ftp.gnu.org/gnu/glibc/glibc-%{version}.tar.xz.sig
-Source2: gpgkey-7273542B39962DF7B299931416792B4EA25340F8.asc
+Source2: gpgkey-35B17DF5752577CA0C541CEB94BFDF4484AD142F.asc
 
 Source11: glibc-tmpfiles.conf
 Source12: ld.so.conf
@@ -18,68 +18,49 @@ Source14: tz-utc.txt
 # applied and reverted during the build.
 Source99: HACK-only-build-and-install-localedef.patch
 
-# Upstream patches from 2.40 release branch:
+# Upstream patches from 2.41 release branch:
 # ```
-# git checkout origin/release/2.40/master
-# git format-patch --no-numbered glibc-2.40..
+# git checkout origin/release/2.41/master
+# git format-patch --no-numbered glibc-2.41..
 # ```
-Patch0001: 0001-Replace-advisories-directory.patch
-Patch0002: 0002-resolv-Allow-short-error-responses-to-match-any-quer.patch
-Patch0003: 0003-resolv-Do-not-wait-for-non-existing-second-DNS-respo.patch
-Patch0004: 0004-manual-Do-not-mention-STATIC_TLS-in-dynamic-linker-h.patch
-Patch0005: 0005-Fix-version-number-in-NEWS-file.patch
-Patch0006: 0006-malloc-avoid-global-locks-in-tst-aligned_alloc-lib.c.patch
-Patch0007: 0007-malloc-add-multi-threaded-tests-for-aligned_alloc-ca.patch
-Patch0008: 0008-manual-stdio-Clarify-putc-and-putwc.patch
-Patch0009: 0009-manual-make-setrlimit-description-less-ambiguous.patch
-Patch0010: 0010-Enhance-test-coverage-for-strnlen-wcsnlen.patch
-Patch0011: 0011-Enhanced-test-coverage-for-strncmp-wcsncmp.patch
-Patch0012: 0012-linux-Update-the-mremap-C-implementation-BZ-31968.patch
-Patch0013: 0013-mremap-Update-manual-entry.patch
-Patch0014: 0014-Add-mremap-tests.patch
-Patch0015: 0015-resolv-Fix-tst-resolv-short-response-for-older-GCC-b.patch
-Patch0016: 0016-x86-Tunables-may-incorrectly-set-Prefer_PMINUB_for_s.patch
-Patch0017: 0017-Fix-name-space-violation-in-fortify-wrappers-bug-320.patch
-Patch0018: 0018-manual-stdio-Further-clarify-putc-putwc-getc-and-get.patch
-Patch0019: 0019-support-Add-options-list-terminator-to-the-test-driv.patch
-Patch0020: 0020-x86-64-Remove-sysdeps-x86_64-x32-dl-machine.h.patch
-Patch0021: 0021-x32-cet-Support-shadow-stack-during-startup-for-Linu.patch
-Patch0022: 0022-x86-Fix-bug-in-strchrnul-evex512-BZ-32078.patch
-Patch0023: 0023-Define-__libc_initial-for-the-static-libc.patch
-Patch0024: 0024-string-strerror-strsignal-cannot-use-buffer-after-dl.patch
-Patch0025: 0025-support-Add-FAIL-test-failure-helper.patch
-Patch0026: 0026-stdio-common-Add-test-for-vfscanf-with-matches-longe.patch
-Patch0027: 0027-Make-tst-ungetc-use-libsupport.patch
-Patch0028: 0028-ungetc-Fix-uninitialized-read-when-putting-into-unus.patch
-Patch0029: 0029-ungetc-Fix-backup-buffer-leak-on-program-exit-BZ-278.patch
-Patch0030: 0030-posix-Use-support-check.h-facilities-in-tst-truncate.patch
-Patch0031: 0031-nptl-Use-support-check.h-facilities-in-tst-setuid3.patch
-Patch0032: 0032-elf-Clarify-and-invert-second-argument-of-_dl_alloca.patch
-Patch0033: 0033-elf-Avoid-re-initializing-already-allocated-TLS-in-d.patch
-Patch0034: 0034-elf-Fix-tst-dlopen-tlsreinit1.out-test-dependency.patch
-Patch0035: 0035-debug-Fix-read-error-handling-in-pcprofiledump.patch
-Patch0036: 0036-libio-Attempt-wide-backup-free-only-for-non-legacy-c.patch
-Patch0037: 0037-stdio-common-Add-new-test-for-fdopen.patch
-Patch0038: 0038-Add-tests-of-fread.patch
-Patch0039: 0039-Test-errno-setting-on-strtod-overflow-in-tst-strtod-.patch
-Patch0040: 0040-More-thoroughly-test-underflow-errno-in-tst-strtod-r.patch
-Patch0041: 0041-Fix-strtod-subnormal-rounding-bug-30220.patch
-Patch0042: 0042-Make-__strtod_internal-tests-type-generic.patch
-Patch0043: 0043-Improve-NaN-payload-testing.patch
-Patch0044: 0044-Do-not-set-errno-for-overflowing-NaN-payload-in-strt.patch
-Patch0045: 0045-powerpc64le-Build-new-strtod-tests-with-long-double-.patch
-Patch0046: 0046-Make-tst-strtod2-and-tst-strtod5-type-generic.patch
-Patch0047: 0047-Add-more-tests-of-strtod-end-pointer.patch
-Patch0048: 0048-Add-tests-of-more-strtod-special-cases.patch
-Patch0049: 0049-libio-Set-_vtable_offset-before-calling-_IO_link_in-.patch
-Patch0050: 0050-Make-tst-strtod-underflow-type-generic.patch
-Patch0051: 0051-elf-Change-ldconfig-auxcache-magic-number-bug-32231.patch
-Patch0052: 0052-Mitigation-for-clone-on-sparc-might-fail-with-EFAULT.patch
-Patch0053: 0053-linux-sparc-Fix-clone-for-LEON-sparcv8-BZ-31394.patch
-Patch0054: 0054-elf-handle-addition-overflow-in-_dl_find_object_upda.patch
-Patch0055: 0055-nptl-initialize-rseq-area-prior-to-registration.patch
-Patch0056: 0056-nptl-initialize-cpu_id_start-prior-to-rseq-registrat.patch
-Patch0057: 0057-malloc-add-indirection-for-malloc-like-functions-in-.patch
+Patch0001: 0001-Remove-advisories-from-release-branch.patch
+Patch0002: 0002-NEWS-start-new-section.patch
+Patch0003: 0003-math-Fix-log10p1f-internal-table-value-BZ-32626.patch
+Patch0004: 0004-math-Fix-sinhf-for-some-inputs-BZ-32627.patch
+Patch0005: 0005-nptl-Correct-stack-size-attribute-when-stack-grows-u.patch
+Patch0006: 0006-math-Fix-tanf-for-some-inputs-BZ-32630.patch
+Patch0007: 0007-assert-Add-test-for-CVE-2025-0395.patch
+Patch0008: 0008-Fix-tst-aarch64-pkey-to-handle-ENOSPC-as-not-support.patch
+Patch0009: 0009-x86-__HAVE_FLOAT128-Defined-to-0-for-Intel-SYCL-comp.patch
+Patch0010: 0010-math-Fix-unknown-type-name-__float128-for-clang-3.4-.patch
+Patch0011: 0011-math-Add-optimization-barrier-to-ensure-a1-u.d-is-no.patch
+Patch0012: 0012-RISC-V-Fix-IFUNC-resolver-cannot-access-gp-pointer.patch
+Patch0013: 0013-Aarch64-Improve-codegen-in-SVE-asinh.patch
+Patch0014: 0014-Aarch64-Improve-codegen-in-SVE-exp-and-users-and-upd.patch
+Patch0015: 0015-AArch64-Improve-codegen-for-SVE-erfcf.patch
+Patch0016: 0016-AArch64-Improve-codegen-for-SVE-pow.patch
+Patch0017: 0017-AArch64-Improve-codegen-for-SVE-powf.patch
+Patch0018: 0018-aarch64-Add-configure-checks-for-GCS-support.patch
+Patch0019: 0019-aarch64-Add-tests-for-Guarded-Control-Stack.patch
+Patch0020: 0020-aarch64-Add-GCS-tests-for-transitive-dependencies.patch
+Patch0021: 0021-aarch64-Add-GCS-tests-for-dlopen.patch
+Patch0022: 0022-aarch64-Add-GCS-test-with-signal-handler.patch
+Patch0023: 0023-math-Improve-layout-of-exp-exp10-data.patch
+Patch0024: 0024-AArch64-Add-SVE-memset.patch
+Patch0025: 0025-AArch64-Use-prefer_sve_ifuncs-for-SVE-memset.patch
+Patch0026: 0026-Pass-Wl-no-error-execstack-for-tests-where-Wl-z-exec.patch
+Patch0027: 0027-static-pie-Skip-the-empty-PT_LOAD-segment-at-offset-.patch
+Patch0028: 0028-elf-Check-if-__attribute__-aligned-65536-is-supporte.patch
+Patch0029: 0029-configure-Fix-spelling-of-Wl-no-error-execstack-opti.patch
+Patch0030: 0030-posix-Move-environ-helper-variables-next-to-environ-.patch
+Patch0031: 0031-math-Remove-an-extra-semicolon-in-math-function-decl.patch
+Patch0032: 0032-Linux-Remove-attribute-access-from-sched_getattr-bug.patch
+Patch0033: 0033-nptl-clear-the-whole-rseq-area-before-registration.patch
+Patch0034: 0034-nptl-PTHREAD_COND_INITIALIZER-compatibility-with-pre.patch
+Patch0035: 0035-nptl-Check-if-thread-is-already-terminated-in-sigcan.patch
+Patch0036: 0036-x86_64-Add-tanh-with-FMA.patch
+Patch0037: 0037-x86_64-Add-sinh-with-FMA.patch
+Patch0038: 0038-x86_64-Add-atanh-with-FMA.patch
 
 # Fedora patches
 Patch1001: glibc-cs-path.patch
