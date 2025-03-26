@@ -1407,15 +1407,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bottlerocket-variant"
-version = "0.1.0"
-dependencies = [
- "generate-readme",
- "serde",
- "snafu",
-]
-
-[[package]]
 name = "bounded-integer"
 version = "0.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
