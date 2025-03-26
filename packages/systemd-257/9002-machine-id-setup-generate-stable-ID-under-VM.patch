@@ -1,0 +1,32 @@
+From dd1d0221bb0ff143277faa4a7341e290a3941587 Mon Sep 17 00:00:00 2001
+From: Ben Cressey <bcressey@amazon.com>
+Date: Mon, 3 Jan 2022 21:57:11 +0000
+Subject: [PATCH] machine-id-setup: generate stable ID under VMware
+
+Signed-off-by: Ben Cressey <bcressey@amazon.com>
+Signed-off-by: Arnaldo Garcia Rincon <agarrcia@amazon.com>
+
+[vighmah:
+Ported to work with the changes introduced in
+4cdaff292c8918511b88d9a05a4111c366702c3c.
+]
+Signed-off-by: Vighnesh Maheshwari <vighmah@amazon.com>
+---
+ src/shared/machine-id-setup.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/shared/machine-id-setup.c b/src/shared/machine-id-setup.c
+index 4c478c82ba..782e5e3b6d 100644
+--- a/src/shared/machine-id-setup.c
++++ b/src/shared/machine-id-setup.c
+@@ -108,7 +108,7 @@ static int acquire_machine_id(const char *root, bool machine_id_from_firmware, s
+                                 return 0;
+                         }
+
+-                } else if (IN_SET(detect_vm(), VIRTUALIZATION_KVM, VIRTUALIZATION_AMAZON, VIRTUALIZATION_QEMU, VIRTUALIZATION_XEN, VIRTUALIZATION_BHYVE) || machine_id_from_firmware) {
++                } else if (IN_SET(detect_vm(), VIRTUALIZATION_KVM, VIRTUALIZATION_AMAZON, VIRTUALIZATION_QEMU, VIRTUALIZATION_XEN, VIRTUALIZATION_BHYVE, VIRTUALIZATION_VMWARE) || machine_id_from_firmware) {
+
+                         /* If we are not running in a container, see if we are running in a VM that provides
+                          * a system UUID via the SMBIOS/DMI interfaces.  Such environments include QEMU/KVM
+--
+2.47.1

@@ -1,0 +1,29 @@
+From 0eddf16bbde2e91a429abbd42e192be253f14b20 Mon Sep 17 00:00:00 2001
+From: Ben Cressey <bcressey@amazon.com>
+Date: Sat, 17 May 2025 17:30:05 +0000
+Subject: [PATCH] meson: replace openssl dependency with libcrypto
+
+`systemd-resolved` requires both libssl and libcrypto, but the other
+programs only depend on libcrypto. Override the dependency lookup for
+"openssl" to have pkgconfig find "libcrypto" instead.
+
+Signed-off-by: Ben Cressey <bcressey@amazon.com>
+---
+ meson.build | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/meson.build b/meson.build
+index 8134313..7bf6038 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1390,7 +1390,7 @@ libgnutls = dependency('gnutls',
+                        required : get_option('gnutls'))
+ conf.set10('HAVE_GNUTLS', libgnutls.found())
+
+-libopenssl = dependency('openssl',
++libopenssl = dependency('libcrypto',
+                         version : '>= 1.1.0',
+                         required : get_option('openssl'))
+ conf.set10('HAVE_OPENSSL', libopenssl.found())
+--
+2.49.0

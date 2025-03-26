@@ -1,0 +1,39 @@
+From 5802b8c057a15d9aafc20e29bd40a621a64d71ce Mon Sep 17 00:00:00 2001
+From: Ben Cressey <bcressey@amazon.com>
+Date: Tue, 13 May 2025 23:22:12 +0000
+Subject: [PATCH] dissect-image: disable openssl support
+
+dissect-image currently depends on PKCS7_verify, which is not (yet)
+available in AWS-LC FIPS.
+
+Co-authored-by: Mikael Knutsson (mikn) <mikael.knutsson@gmail.com>
+Co-authored-by: Ben Cressey <bcressey@amazon.com>
+---
+ src/shared/dissect-image.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/shared/dissect-image.c b/src/shared/dissect-image.c
+index d2446de..ced72f6 100644
+--- a/src/shared/dissect-image.c
++++ b/src/shared/dissect-image.c
+@@ -12,7 +12,7 @@
+ #include <sys/wait.h>
+ #include <sysexits.h>
+
+-#if HAVE_OPENSSL
++#if 0
+ #include <openssl/err.h>
+ #include <openssl/pem.h>
+ #include <openssl/x509.h>
+@@ -2622,7 +2622,7 @@ static int validate_signature_userspace(const VeritySettings *verity, DissectIma
+                 return 0;
+         }
+
+-#if HAVE_OPENSSL
++#if 0
+         _cleanup_(sk_X509_free_allp) STACK_OF(X509) *sk = NULL;
+         _cleanup_strv_free_ char **certs = NULL;
+         _cleanup_(PKCS7_freep) PKCS7 *p7 = NULL;
+-- 
+2.49.0
+
