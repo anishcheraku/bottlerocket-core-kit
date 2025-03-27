@@ -1,0 +1,19 @@
+[package]
+name = "libisal"
+version = "0.1.0"
+edition = "2021"
+publish = false
+build = "../build.rs"
+
+[lib]
+path = "../packages.rs"
+
+[package.metadata.build-package]
+releases-url = "https://github.com/intel/isa-l/releases"
+
+[[package.metadata.build-package.external-files]]
+url = "https://github.com/intel/isa-l/archive/v2.31.1/isa-l-2.31.1.tar.gz"
+sha512 = "65199d054af1edc26d477883f7878f25fd4db65622aa98247069f1296c5f07b75da24f0361a6c3889ddb3168d940b508cd2f6340548a62ff3157977179fd002d"
+
+[build-dependencies]
+glibc = { path = "../glibc" }

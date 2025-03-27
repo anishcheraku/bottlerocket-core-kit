@@ -75,6 +75,7 @@ libjson-c = { path = "../../packages/libjson-c" }
 libgcc = { path = "../../packages/libgcc" }
 libglib = { path = "../../packages/libglib" }
 libinih = { path = "../../packages/libinih" }
+libisal = { path = "../../packages/libisal" }
 libiw = { path = "../../packages/libiw" }
 libmnl = { path = "../../packages/libmnl" }
 libncurses = { path = "../../packages/libncurses" }

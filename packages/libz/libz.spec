@@ -1,13 +1,11 @@
 Name: %{_cross_os}libz
-Version: 1.3.1
+Version: 2.2.4
 Release: 1%{?dist}
 Epoch: 1
 Summary: Library for zlib compression
-URL: https://www.zlib.net/
+URL: https://github.com/zlib-ng/zlib-ng
 License: Zlib
-Source0: https://www.zlib.net/zlib-%{version}.tar.xz
-Source1: https://www.zlib.net/zlib-%{version}.tar.xz.asc
-Source2: gpgkey-5ED46A6721D365587791E2AA783FCD8E58BCAFBA.asc
+Source0: https://github.com/zlib-ng/zlib-ng/archive/%{version}/zlib-ng-%{version}.tar.gz
 BuildRequires: %{_cross_os}glibc-devel
 
 %description
@@ -21,8 +19,7 @@ Requires: %{name}
 %{summary}.
 
 %prep
-%{gpgverify} --data=%{S:0} --signature=%{S:1} --keyring=%{S:2}
-%autosetup -n zlib-%{version} -p1
+%autosetup -n zlib-ng-%{version} -p1
 
 # Sets cross build flags, target cross compiler, and env variables
 # required to `make install` libz
@@ -33,8 +30,10 @@ export CROSS_PREFIX="%{_cross_target}-" \\\
 
 %build
 %set_env
-# zlib only reads prefix from this argument, not the environment
-./configure --prefix='%{_cross_prefix}'
+./configure \
+  --prefix='%{_cross_prefix}' \
+  --without-new-strategies \
+  --zlib-compat
 %make_build
 
 %install
@@ -42,7 +41,7 @@ export CROSS_PREFIX="%{_cross_target}-" \\\
 %make_install
 
 %files
-%license README
+%license LICENSE.md
 %{_cross_attribution_file}
 %{_cross_libdir}/*.so.*
 %exclude %{_cross_mandir}

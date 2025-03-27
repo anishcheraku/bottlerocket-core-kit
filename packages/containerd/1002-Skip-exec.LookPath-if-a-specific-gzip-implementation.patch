@@ -1,0 +1,60 @@
+From 8a769caffd5dcae9b59f7ddc8a9e54331e3ae870 Mon Sep 17 00:00:00 2001
+From: kaz <kato.kazuyoshi@gmail.com>
+Date: Fri, 6 Oct 2023 09:20:08 -0700
+Subject: [PATCH 2/2] Skip exec.LookPath if a specific gzip implementation is
+ disabled
+
+Both pigz and igzip can be disabled via the environment variables.
+If disabled, calling exec.LookPath and logging "not found" message is,
+even in the debug level, doesn't make much sense.
+
+Signed-off-by: Kazuyoshi Kato <kaz@fly.io>
+(cherry picked from commit 535916d1d0a586acad617ceb37f07be487a09847)
+---
+ archive/compression/compression.go | 25 +++++++++++--------------
+ 1 file changed, 11 insertions(+), 14 deletions(-)
+
+diff --git a/archive/compression/compression.go b/archive/compression/compression.go
+index 5ad13eccf..91cb2305d 100644
+--- a/archive/compression/compression.go
++++ b/archive/compression/compression.go
+@@ -303,25 +303,22 @@ func cmdStream(cmd *exec.Cmd, in io.Reader) (io.ReadCloser, error) {
+ }
+ 
+ func detectCommand(path, disableEnvName string) string {
+-	path, err := exec.LookPath(path)
+-	if err != nil {
+-		log.L.WithError(err).Debugf("%s not found", path)
+-		return ""
+-	}
+-
+ 	// Check if this command is disabled via the env variable
+ 	value := os.Getenv(disableEnvName)
+-	if value == "" {
+-		return path
+-	}
++	if value != "" {
++		disable, err := strconv.ParseBool(value)
++		if err != nil {
++			log.L.WithError(err).Warnf("could not parse %s: %s", disableEnvName, value)
++		}
+ 
+-	disable, err := strconv.ParseBool(value)
+-	if err != nil {
+-		log.L.WithError(err).Warnf("could not parse %s: %s", disableEnvName, value)
+-		return path
++		if disable {
++			return ""
++		}
+ 	}
+ 
+-	if disable {
++	path, err := exec.LookPath(path)
++	if err != nil {
++		log.L.WithError(err).Debugf("%s not found", path)
+ 		return ""
+ 	}
+ 
+-- 
+2.47.0
+

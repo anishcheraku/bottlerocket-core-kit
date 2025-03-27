@@ -29,12 +29,20 @@ Source100: etc-containerd.mount
 # Create container storage mount point.
 Source110: prepare-var-lib-containerd.service
 
+# Drop-ins to disable igzip or pigz if the other implementation is preferred.
+Source200: containerd-disable-igzip.conf
+Source201: containerd-disable-pigz.conf
+
 Source1000: clarify.toml
+
+# Backport of upstream patches for igzip support.
+Patch1001: 1001-Use-Intel-ISA-L-s-igzip-if-available.patch
+Patch1002: 1002-Skip-exec.LookPath-if-a-specific-gzip-implementation.patch
 
 BuildRequires: git
 BuildRequires: %{_cross_os}glibc-devel
 Requires: %{_cross_os}runc
-Requires: %{_cross_os}pigz
+Requires: %{_cross_os}containerd(optimized-gunzip)
 Requires: %{name}(binaries)
 
 %description
@@ -56,6 +64,30 @@ Requires: (%{_cross_os}image-feature(fips) and %{name})
 Conflicts: (%{_cross_os}image-feature(no-fips) or %{name}-bin)
 
 %description fips-bin
+%{summary}.
+
+%package pigz
+Summary: Prefer pigz for gzip decompression
+Requires: %{_cross_os}pigz
+Requires: %{name}
+Conflicts: %{name}-igzip
+Provides: %{_cross_os}containerd(optimized-gunzip) = 1:
+
+%description pigz
+%{summary}.
+
+%package igzip
+Summary: Prefer igzip for gzip decompression
+Requires: %{_cross_os}igzip
+Requires: %{name}
+Conflicts: %{name}-pigz
+%if "%{_cross_arch}" == "x86_64"
+Provides: %{_cross_os}containerd(optimized-gunzip) = 2:
+%else
+Provides: %{_cross_os}containerd(optimized-gunzip) = 0:
+%endif
+
+%description igzip
 %{summary}.
 
 %prep
@@ -108,6 +140,10 @@ install -p -m 0644 %{S:2} %{S:3} %{S:4} %{S:6} %{buildroot}%{_cross_templatedir}
 install -d %{buildroot}%{_cross_tmpfilesdir}
 install -p -m 0644 %{S:5} %{buildroot}%{_cross_tmpfilesdir}/containerd.conf
 
+install -d %{buildroot}%{_cross_unitdir}/containerd.service.d
+install -p -m 0644 %{S:200} %{buildroot}%{_cross_unitdir}/containerd.service.d/005-disable-igzip.conf
+install -p -m 0644 %{S:201} %{buildroot}%{_cross_unitdir}/containerd.service.d/005-disable-pigz.conf
+
 %cross_scan_attribution --clarify %{S:1000} go-vendor vendor
 
 %files
@@ -135,5 +171,11 @@ install -p -m 0644 %{S:5} %{buildroot}%{_cross_tmpfilesdir}/containerd.conf
 %{_cross_fips_bindir}/containerd-shim-runc-v1
 %{_cross_fips_bindir}/containerd-shim-runc-v2
 %{_cross_fips_bindir}/ctr
+
+%files pigz
+%{_cross_unitdir}/containerd.service.d/005-disable-igzip.conf
+
+%files igzip
+%{_cross_unitdir}/containerd.service.d/005-disable-pigz.conf
 
 %changelog
