@@ -21,6 +21,10 @@ Source1000: clarify.toml
 BuildRequires: %{_cross_os}glibc-devel
 Requires: %{name}(binaries)
 
+# For IAM Roles Anywhere, the signing helper might be set as the credential
+# process.
+Requires: %{_cross_os}aws-signing-helper
+
 %description
 %{summary}.
 
