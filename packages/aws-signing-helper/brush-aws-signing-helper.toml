@@ -1,0 +1,7 @@
+# The only expected use for the signing helper is for it to be invoked as a
+# credential process by the AWS SDK, so we require that argument.
+required-args = ["credential-process"]
+
+# Passing the debug flag confuses aws-iam-authenticator and results in kubelet
+# logging signed requests, so we block that argument.
+blocked-args = ["--debug"]
