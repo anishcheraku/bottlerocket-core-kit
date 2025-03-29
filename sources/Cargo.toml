@@ -28,6 +28,7 @@ members = [
 
     "bottlerocket-release",
 
+    "brush",
 
     "imdsclient",
 
@@ -166,6 +167,7 @@ num-derive = "0.4"
 num-traits = "0.2"
 num_cpus = "1"
 once_cell = "1"
+pathdiff = "0.2"
 pentacle = "1"
 percent-encoding = "2"
 pest = "2.5"
@@ -205,6 +207,7 @@ tracing = "0.1"
 unindent = "0.2"
 url = "2"
 walkdir = "2.4"
+which = "4"
 x509-parser = "0.16"
 base64 = "0.22"
 
