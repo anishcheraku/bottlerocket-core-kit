@@ -18,13 +18,13 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecrpublic"
 	"github.com/awslabs/amazon-ecr-containerd-resolver/ecr"
 	"github.com/containerd/containerd"
+	"github.com/containerd/containerd/api/types/runc/options"
 	"github.com/containerd/containerd/cio"
 	"github.com/containerd/containerd/containers"
 	"github.com/containerd/containerd/contrib/seccomp"
 	"github.com/containerd/containerd/namespaces"
 	"github.com/containerd/containerd/oci"
 	"github.com/containerd/containerd/remotes/docker"
-	"github.com/containerd/containerd/runtime/v2/runc/options"
 	"github.com/containerd/errdefs"
 	"github.com/containerd/log"
 	runtimespec "github.com/opencontainers/runtime-spec/specs-go"
@@ -39,13 +39,21 @@ import (
 // Example 2: 777777777777.dkr.ecr.cn-north-1.amazonaws.com.cn/my_image:latest
 // Example 3: 777777777777.dkr.ecr.eu-isoe-west-1.cloud.adc-e.uk/my_image:latest
 // Example 4: 777777777777.dkr.ecr-fips.us-west-2.amazonaws.com/my_image:latest
-var ecrRegex = regexp.MustCompile(`(^[a-zA-Z0-9][a-zA-Z0-9-_]*)\.dkr\.ecr(-fips)?\.([a-zA-Z0-9][a-zA-Z0-9-_]*)\.(amazonaws\.com(\.cn)?|cloud\.adc-e\.uk).*`)
+
+// ECR hostname pattern also used in the ecr-credential-provider:
+// https://github.com/kubernetes/cloud-provider-aws/blob/212135d0d7b448cd34e2e11e5e81f59e3e6c2d7a/cmd/ecr-credential-provider/main.go#L45
+var ecrRegex = regexp.MustCompile(`^(\d{12})\.dkr[\.\-]ecr(-fips)?\.([a-zA-Z0-9][a-zA-Z0-9-_]*)\.(amazonaws\.com(?:\.cn)?|on\.(?:aws|amazonwebservices\.com\.cn)|sc2s\.sgov\.gov|c2s\.ic\.gov|cloud\.adc-e\.uk|csp\.hci\.ic\.gov).*$`)
 
 // A set of currently supported ECR regions which are not yet present in the golang SDK
 var ecrRefPrefixMapping = map[string]string{
-	"ap-southeast-7": "ecr.aws/arn:aws:ecr:ap-southeast-7:",
-	"eu-isoe-west-1": "ecr.aws/arn:aws-iso-e:ecr:eu-isoe-west-1:",
-	"mx-central-1":   "ecr.aws/arn:aws:ecr:mx-central-1:",
+	"ap-southeast-7":  "ecr.aws/arn:aws:ecr:ap-southeast-7:",
+	"eu-isoe-west-1":  "ecr.aws/arn:aws-iso-e:ecr:eu-isoe-west-1:",
+	"mx-central-1":    "ecr.aws/arn:aws:ecr:mx-central-1:",
+	"us-iso-east-1":   "ecr.aws/arn:aws-iso:ecr:us-iso-east-1:",
+	"us-iso-west-1":   "ecr.aws/arn:aws-iso:ecr:us-iso-west-1:",
+	"us-isob-east-1":  "ecr.aws/arn:aws-iso-b:ecr:us-isob-east-1:",
+	"us-isof-south-1": "ecr.aws/arn:aws-iso-f:ecr:us-isof-south-1:",
+	"us-isof-east-1":  "ecr.aws/arn:aws-iso-f:ecr:us-isof-east-1:",
 }
 
 // A set of the currently supported FIPS regions for ECR: https://docs.aws.amazon.com/general/latest/gr/ecr.html
