@@ -69,6 +69,11 @@ lazy_static! {
         m.insert("us-east-2", "328549459982");
         m.insert("us-gov-east-1", "388230364387");
         m.insert("us-gov-west-1", "347163068887");
+        m.insert("us-iso-east-1", "999945528765");
+        m.insert("us-iso-west-1", "928668704122");
+        m.insert("us-isob-east-1", "782457047625");
+        m.insert("us-isof-east-1", "891631471851");
+        m.insert("us-isof-south-1", "482061074055");
         m.insert("us-west-1", "328549459982");
         m.insert("us-west-2", "328549459982");
         m
@@ -104,6 +109,11 @@ lazy_static! {
         m.insert("cn-north-1", "bottlerocket-updates-cn-north-1.s3.dualstack");
         m.insert("cn-northwest-1", "bottlerocket-updates-cn-northwest-1.s3.dualstack");
         m.insert("eu-isoe-west-1", "bottlerocket-updates-eu-isoe-west-1.s3");
+        m.insert("us-iso-east-1", "bottlerocket-updates-us-iso-east-1.s3");
+        m.insert("us-iso-west-1", "bottlerocket-updates-us-iso-west-1.s3");
+        m.insert("us-isob-east-1", "bottlerocket-updates-us-isob-east-1.s3");
+        m.insert("us-isof-east-1", "bottlerocket-updates-us-isof-east-1.s3");
+        m.insert("us-isof-south-1", "bottlerocket-updates-us-isof-south-1.s3");
         m
     };
 }
@@ -119,6 +129,11 @@ lazy_static! {
         m.insert("eu-isoe-west-1", "aws-iso-e");
         m.insert("us-gov-east-1", "aws-us-gov");
         m.insert("us-gov-west-1", "aws-us-gov");
+        m.insert("us-iso-west-1", "aws-iso");
+        m.insert("us-iso-east-1", "aws-iso");
+        m.insert("us-isob-east-1", "aws-iso-b");
+        m.insert("us-isof-east-1", "aws-iso-f");
+        m.insert("us-isof-south-1", "aws-iso-f");
         m
     };
 }
@@ -1526,7 +1541,10 @@ fn ecr_registry<S: AsRef<str>>(region: S) -> String {
     };
     match partition {
         "aws-cn" => format!("{}.dkr.ecr.{}.amazonaws.com.cn", registry_id, region),
+        "aws-iso" => format!("{}.dkr.ecr.{}.c2s.ic.gov", registry_id, region),
+        "aws-iso-b" => format!("{}.dkr.ecr.{}.sc2s.sgov.gov", registry_id, region),
         "aws-iso-e" => format!("{}.dkr.ecr.{}.cloud.adc-e.uk", registry_id, region),
+        "aws-iso-f" => format!("{}.dkr.ecr.{}.csp.hci.ic.gov", registry_id, region),
         _ => {
             // Only inject the FIPS service endpoint if the variant is in FIPS mode and the
             // region supports FIPS.
@@ -1554,7 +1572,10 @@ fn tuf_repository<S: AsRef<str>>(region: S) -> String {
     };
     match partition {
         "aws-cn" => format!("https://{}.{}.amazonaws.com.cn/latest", endpoint, region),
+        "aws-iso" => format!("https://{}.{}.c2s.ic.gov/latest", endpoint, region),
+        "aws-iso-b" => format!("https://{}.{}.sc2s.sgov.gov/latest", endpoint, region),
         "aws-iso-e" => format!("https://{}.{}.cloud.adc-e.uk/latest", endpoint, region),
+        "aws-iso-f" => format!("https://{}.{}.csp.hci.ic.gov/latest", endpoint, region),
         _ => format!("https://{}.{}.amazonaws.com/latest", endpoint, region),
     }
 }
@@ -1728,6 +1749,26 @@ mod test_ecr_registry {
             "eu-isoe-west-1",
             "589460436674.dkr.ecr.eu-isoe-west-1.cloud.adc-e.uk/bottlerocket-admin:v0.5.1",
         ),
+        (
+            "us-iso-east-1",
+            "999945528765.dkr.ecr.us-iso-east-1.c2s.ic.gov/bottlerocket-admin:v0.5.1",
+        ),
+        (
+            "us-iso-west-1",
+            "928668704122.dkr.ecr.us-iso-west-1.c2s.ic.gov/bottlerocket-admin:v0.5.1",
+        ),
+        (
+            "us-isob-east-1",
+            "782457047625.dkr.ecr.us-isob-east-1.sc2s.sgov.gov/bottlerocket-admin:v0.5.1",
+        ),
+        (
+            "us-isof-south-1",
+            "482061074055.dkr.ecr.us-isof-south-1.csp.hci.ic.gov/bottlerocket-admin:v0.5.1",
+        ),
+        (
+            "us-isof-east-1",
+            "891631471851.dkr.ecr.us-isof-east-1.csp.hci.ic.gov/bottlerocket-admin:v0.5.1",
+        ),
     ];
 
     const ADMIN_CONTAINER_TEMPLATE: &str =
@@ -1777,6 +1818,7 @@ mod test_tuf_repository {
         "https://bottlerocket-updates-cn-north-1.s3.dualstack.cn-north-1.amazonaws.com.cn/latest/metadata/2020-07-07/";
 
     const EXPECTED_URL_EU_ISOE_WEST_1: &str = "https://bottlerocket-updates-eu-isoe-west-1.s3.eu-isoe-west-1.cloud.adc-e.uk/latest/metadata/2020-07-07/";
+    const EXPECTED_URL_US_ISOF_EAST_1: &str = "https://bottlerocket-updates-us-isof-east-1.s3.us-isof-east-1.csp.hci.ic.gov/latest/metadata/2020-07-07/";
 
     #[test]
     fn url_af_south_1() {
@@ -1816,6 +1858,16 @@ mod test_tuf_repository {
         )
         .unwrap();
         assert_eq!(result, EXPECTED_URL_EU_ISOE_WEST_1);
+    }
+
+    #[test]
+    fn url_us_isof_east_1() {
+        let result = setup_and_render_template(
+            METADATA_TEMPLATE,
+            &json!({"settings": {"aws": {"region": "us-isof-east-1"}}}),
+        )
+        .unwrap();
+        assert_eq!(result, EXPECTED_URL_US_ISOF_EAST_1);
     }
 }
 
