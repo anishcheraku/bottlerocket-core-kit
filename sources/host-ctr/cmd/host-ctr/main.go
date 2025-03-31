@@ -47,8 +47,9 @@ var ecrRegex = regexp.MustCompile(`^(\d{12})\.dkr[\.\-]ecr(-fips)?\.([a-zA-Z0-9]
 // A set of currently supported ECR regions which are not yet present in the golang SDK
 var ecrRefPrefixMapping = map[string]string{
 	"ap-southeast-7":  "ecr.aws/arn:aws:ecr:ap-southeast-7:",
-	"eu-isoe-west-1":  "ecr.aws/arn:aws-iso-e:ecr:eu-isoe-west-1:",
 	"mx-central-1":    "ecr.aws/arn:aws:ecr:mx-central-1:",
+	"ap-east-2":       "ecr.aws/arn:aws:ecr:ap-east-2:",
+	"eu-isoe-west-1":  "ecr.aws/arn:aws-iso-e:ecr:eu-isoe-west-1:",
 	"us-iso-east-1":   "ecr.aws/arn:aws-iso:ecr:us-iso-east-1:",
 	"us-iso-west-1":   "ecr.aws/arn:aws-iso:ecr:us-iso-west-1:",
 	"us-isob-east-1":  "ecr.aws/arn:aws-iso-b:ecr:us-isob-east-1:",
