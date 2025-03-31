@@ -3,7 +3,7 @@
 %global goorg github.com/docker
 %global goimport %{goorg}/docker
 
-%global gover 25.0.6
+%global gover 25.0.8
 %global rpmver %{gover}
 %global gitrev b08a51fe16eed67de3861c03b363ba403643b12e
 
