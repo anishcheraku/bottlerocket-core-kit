@@ -36,6 +36,7 @@ lazy_static! {
         let mut m = HashMap::new();
         m.insert("af-south-1", "917644944286");
         m.insert("ap-east-1", "375569722642");
+        m.insert("ap-east-2", "905418444513");
         m.insert("ap-northeast-1", "328549459982");
         m.insert("ap-northeast-2", "328549459982");
         m.insert("ap-northeast-3", "328549459982");
