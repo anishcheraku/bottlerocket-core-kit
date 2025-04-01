@@ -1,3 +1,24 @@
+# v6.2.0 (2025-04-01)
+
+## OS Changes
+* Update readline from 8.2 to 8.2.13 ([#446])
+* Update glibc from 2.40 to 2.41 ([#437])
+* Fix usage of `/var/run` in mdadm tmpfiles snippet ([#442])
+* Refactor systemd to explicitly list packaged files ([#438])
+* Switch to igzip (x86_64) or pigz with zlib-ng (aarch64) to decompress container images ([#443])
+* Add support for more AWS regions in schnauzer and host-ctr ([#454])
+
+## Build Changes
+* Remove bottlerocket-variant crate ([#435])
+
+[#435]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/435
+[#437]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/437
+[#438]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/438
+[#442]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/442
+[#443]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/443
+[#446]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/446
+[#454]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/454
+
 # v6.1.1 (2025-03-24)
 
 ## OS Changes
