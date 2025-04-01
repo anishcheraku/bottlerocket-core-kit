@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://github.com/facebook/zstd/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/facebook/zstd/releases/download/v1.5.6/zstd-1.5.6.tar.gz"
-sha512 = "54a578f2484da0520a6e9a24f501b9540a3fe3806785d6bc9db79fc095b7c142a7c121387c7eecd460ca71446603584ef1ba4d29a33ca90873338c9ffbd04f14"
+url = "https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz"
+sha512 = "b4de208f179b68d4c6454139ca60d66ed3ef3893a560d6159a056640f83d3ee67cdf6ffb88971cdba35449dba4b597eaa8b4ae908127ef7fd58c89f40bf9a705"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/facebook/zstd/releases/download/v1.5.6/zstd-1.5.6.tar.gz.sig"
-sha512 = "aea8d07589a7bf26d0dd1047ca1c3448f41203d2da21fcb730d169529f87bcab1a3651775a1d39e8de17f5a0863fbd598c8becb0fed5d3c8c3154916ee7d51d1"
+url = "https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz.sig"
+sha512 = "9d88171296cffd9b02700999c86d3509dc0349a857fc8961bb1fe34b7dfec19bd0c8622c79e02a0165f067ba28a8430c48804a937e548aa7f52d8ff482ba586c"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
