@@ -203,6 +203,39 @@ func TestParseImageURIAsECR(t *testing.T) {
 			},
 		},
 		{
+			"Parse special region",
+			"777777777777.dkr.ecr.us-iso-east-1.c2s.ic.gov/my_image:latest",
+			false,
+			&parsedECR{
+				Account:  "777777777777",
+				Region:   "us-iso-east-1",
+				RepoPath: "my_image:latest",
+				Fips:     false,
+			},
+		},
+		{
+			"Parse special region",
+			"777777777777.dkr.ecr.us-isob-east-1.sc2s.sgov.gov/my_image:latest",
+			false,
+			&parsedECR{
+				Account:  "777777777777",
+				Region:   "us-isob-east-1",
+				RepoPath: "my_image:latest",
+				Fips:     false,
+			},
+		},
+		{
+			"Parse special region",
+			"777777777777.dkr.ecr.us-isof-east-1.csp.hci.ic.gov/my_image:latest",
+			false,
+			&parsedECR{
+				Account:  "777777777777",
+				Region:   "us-isof-east-1",
+				RepoPath: "my_image:latest",
+				Fips:     false,
+			},
+		},
+		{
 			"Parse FIPS region for normal use-cases",
 			"777777777777.dkr.ecr-fips.us-west-2.amazonaws.com/my_image:latest",
 			false,
@@ -254,9 +287,14 @@ func TestFetchECRRef(t *testing.T) {
 			"us-gov-west-1": true,
 		},
 		EcrRefPrefixMappings: map[string]string{
-			"ap-southeast-7": "ecr.aws/arn:aws:ecr:ap-southeast-7:",
-			"eu-isoe-west-1": "ecr.aws/arn:aws-iso-e:ecr:eu-isoe-west-1:",
-			"mx-central-1":   "ecr.aws/arn:aws:ecr:mx-central-1:",
+			"ap-southeast-7":  "ecr.aws/arn:aws:ecr:ap-southeast-7:",
+			"eu-isoe-west-1":  "ecr.aws/arn:aws-iso-e:ecr:eu-isoe-west-1:",
+			"mx-central-1":    "ecr.aws/arn:aws:ecr:mx-central-1:",
+			"us-iso-east-1":   "ecr.aws/arn:aws-iso:ecr:us-iso-east-1:",
+			"us-iso-west-1":   "ecr.aws/arn:aws-iso:ecr:us-iso-west-1:",
+			"us-isob-east-1":  "ecr.aws/arn:aws-iso-b:ecr:us-isob-east-1:",
+			"us-isof-south-1": "ecr.aws/arn:aws-iso-f:ecr:us-isof-south-1:",
+			"us-isof-east-1":  "ecr.aws/arn:aws-iso-f:ecr:us-isof-east-1:",
 		},
 	}
 	tests := []struct {
@@ -279,9 +317,39 @@ func TestFetchECRRef(t *testing.T) {
 		},
 		{
 			"Parse special region",
-			"111111111111.dkr.ecr.mx-central-1.amazonaws.com/bottlerocket-control:v0.7.17",
+			"111111111111.dkr.ecr.us-iso-east-1.c2s.ic.gov/bottlerocket/container:1.2.3",
 			false,
-			"ecr.aws/arn:aws:ecr:mx-central-1:111111111111:repository/bottlerocket-control:v0.7.17",
+			"ecr.aws/arn:aws-iso:ecr:us-iso-east-1:111111111111:repository/bottlerocket/container:1.2.3",
+		},
+		{
+			"Parse special region",
+			"111111111111.dkr.ecr.us-isob-east-1.sc2s.sgov.gov/bottlerocket-control:v0.7.17",
+			false,
+			"ecr.aws/arn:aws-iso-b:ecr:us-isob-east-1:111111111111:repository/bottlerocket-control:v0.7.17",
+		},
+		{
+			"Parse special region",
+			"111111111111.dkr.ecr.us-iso-west-1.c2s.ic.gov/bottlerocket/container:1.2.3",
+			false,
+			"ecr.aws/arn:aws-iso:ecr:us-iso-west-1:111111111111:repository/bottlerocket/container:1.2.3",
+		},
+		{
+			"Parse special region",
+			"111111111111.dkr.ecr.us-isof-south-1.csp.hci.ic.gov/bottlerocket-control:v0.7.17",
+			false,
+			"ecr.aws/arn:aws-iso-f:ecr:us-isof-south-1:111111111111:repository/bottlerocket-control:v0.7.17",
+		},
+		{
+			"Parse special region",
+			"111111111111.dkr.ecr.us-isof-east-1.csp.hci.ic.gov/bottlerocket-control:v0.7.17",
+			false,
+			"ecr.aws/arn:aws-iso-f:ecr:us-isof-east-1:111111111111:repository/bottlerocket-control:v0.7.17",
+		},
+		{
+			"Parse special region",
+			"111111111111.dkr.ecr.eu-isoe-west-1.amazonaws.com/bottlerocket/container:1.2.3",
+			false,
+			"ecr.aws/arn:aws-iso-e:ecr:eu-isoe-west-1:111111111111:repository/bottlerocket/container:1.2.3",
 		},
 		{
 			"Parse China regions",
