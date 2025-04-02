@@ -1,7 +1,9 @@
 //! Provides an end-to-end test of `migrator` via the `run` function. This module is conditionally
 //! compiled for cfg(test) only.
 use crate::args::Args;
-use crate::{copy_without_weak_settings_and_metadata, flip_to_new_version, perform_migrations};
+use crate::{
+    copy_without_transient_entries, flip_to_new_version, perform_migrations, MigrationVersionMeta,
+};
 use chrono::{DateTime, Utc};
 use datastore::memory::MemoryDataStore;
 use datastore::{serialize_scalar, Committed, DataStore, Key};
@@ -341,7 +343,8 @@ async fn list_dir_files(dir: impl AsRef<Path>) -> Vec<PathBuf> {
 async fn migrate_forward() {
     let from_version = Version::parse("0.99.0").unwrap();
     let to_version = Version::parse("0.99.1").unwrap();
-    let test_datastore = TestDatastore::new(from_version);
+    let version_meta = MigrationVersionMeta::new(from_version.clone(), to_version.clone()).unwrap();
+    let test_datastore = TestDatastore::new(from_version.clone());
     let test_repo = create_test_repo(TestType::Success).await;
     let args = Args {
         datastore_path: test_datastore.datastore.clone(),
@@ -351,7 +354,7 @@ async fn migrate_forward() {
         root_path: root(),
         metadata_directory: test_repo.metadata_path.clone(),
     };
-    let datastore = perform_migrations(&args).await.unwrap();
+    let datastore = perform_migrations(&version_meta, &args).await.unwrap();
     // the migrations should write to a file named result.txt.
     let output_file = test_datastore.tmp.path().join("result.txt");
     let contents = std::fs::read_to_string(&output_file).unwrap();
@@ -393,7 +396,8 @@ async fn migrate_forward() {
 async fn migrate_backward() {
     let from_version = Version::parse("0.99.1").unwrap();
     let to_version = Version::parse("0.99.0").unwrap();
-    let test_datastore = TestDatastore::new(from_version);
+    let version_meta = MigrationVersionMeta::new(from_version.clone(), to_version.clone()).unwrap();
+    let test_datastore = TestDatastore::new(from_version.clone());
     let test_repo = create_test_repo(TestType::Success).await;
     let args = Args {
         datastore_path: test_datastore.datastore.clone(),
@@ -403,7 +407,7 @@ async fn migrate_backward() {
         root_path: root(),
         metadata_directory: test_repo.metadata_path.clone(),
     };
-    let datastore = perform_migrations(&args).await.unwrap();
+    let datastore = perform_migrations(&version_meta, &args).await.unwrap();
     let output_file = test_datastore.tmp.path().join("result.txt");
     let contents = std::fs::read_to_string(&output_file).unwrap();
     let lines: Vec<&str> = contents.split('\n').collect();
@@ -442,6 +446,7 @@ async fn migrate_backward() {
 async fn migrate_forward_with_failed_migration() {
     let from_version = Version::parse("0.99.0").unwrap();
     let to_version = Version::parse("0.99.1").unwrap();
+    let version_meta = MigrationVersionMeta::new(from_version.clone(), to_version.clone()).unwrap();
     let test_datastore = TestDatastore::new(from_version.clone());
     let test_repo = create_test_repo(TestType::ForwardFailure).await;
     let args = Args {
@@ -452,7 +457,7 @@ async fn migrate_forward_with_failed_migration() {
         root_path: root(),
         metadata_directory: test_repo.metadata_path.clone(),
     };
-    let result = perform_migrations(&args).await;
+    let result = perform_migrations(&version_meta, &args).await;
     assert!(result.is_err());
 
     // the migrations should write to a file named result.txt.
@@ -495,6 +500,7 @@ async fn migrate_forward_with_failed_migration() {
 async fn migrate_backward_with_failed_migration() {
     let from_version = Version::parse("0.99.1").unwrap();
     let to_version = Version::parse("0.99.0").unwrap();
+    let version_meta = MigrationVersionMeta::new(from_version.clone(), to_version.clone()).unwrap();
     let test_datastore = TestDatastore::new(from_version.clone());
     let test_repo = create_test_repo(TestType::BackwardFailure).await;
     let args = Args {
@@ -505,7 +511,7 @@ async fn migrate_backward_with_failed_migration() {
         root_path: root(),
         metadata_directory: test_repo.metadata_path.clone(),
     };
-    let result = perform_migrations(&args).await;
+    let result = perform_migrations(&version_meta, &args).await;
     assert!(result.is_err());
 
     let output_file = test_datastore.tmp.path().join("result.txt");
@@ -566,7 +572,7 @@ async fn test_remove_all_metadata() {
 
     let mut target = MemoryDataStore::new();
 
-    let result = copy_without_weak_settings_and_metadata(source, &mut target);
+    let result = copy_without_transient_entries(source, &mut target);
     assert!(result.is_ok());
 
     // Ensure that metadata does not exists in the target datastore
@@ -627,7 +633,7 @@ async fn test_only_weak_settings_are_removed() {
 
     let mut target = MemoryDataStore::new();
 
-    let result = copy_without_weak_settings_and_metadata(source, &mut target);
+    let result = copy_without_transient_entries(source, &mut target);
     assert!(result.is_ok());
 
     // Ensure that metadata does not exists in the target datastore
@@ -638,4 +644,56 @@ async fn test_only_weak_settings_are_removed() {
     let strong_data = target.get_key(&strong_data_key, &Committed::Live).unwrap();
     assert!(strong_data.is_some());
     assert_eq!(strong_data.unwrap(), strong_data_value);
+}
+
+#[tokio::test]
+async fn test_configuration_files_data_removed() {
+    let mut source = MemoryDataStore::new();
+    source.set_keys(&maplit::hashmap! {
+        Key::new(datastore::KeyType::Data, "settings.a.b").unwrap() => "\"hello\"",
+        Key::new(datastore::KeyType::Data, "settings.a.c").unwrap() => "\"world\"",
+        Key::new(datastore::KeyType::Data, "something-else.d.e").unwrap() => "\"bottlerocket\"",
+        Key::new(datastore::KeyType::Data, "yet-another-thing.f.g").unwrap() => "\"rules\"",
+        Key::new(datastore::KeyType::Data, "configuration-files.aws-config.path").unwrap() => "\"/root/.aws/config\"",
+        Key::new(datastore::KeyType::Data, "configuration-files.aws-config.template-path").unwrap() => "\"/usr/share/templates/aws-config\"",
+    }, &Committed::Live).unwrap();
+
+    let mut target = MemoryDataStore::new();
+    copy_without_transient_entries(source, &mut target).unwrap();
+
+    assert_eq!(
+        target.get_prefix("", &Committed::Live).unwrap(),
+        maplit::hashmap! {
+            Key::new(datastore::KeyType::Data, "settings.a.b").unwrap() => "\"hello\"".to_string(),
+            Key::new(datastore::KeyType::Data, "settings.a.c").unwrap() => "\"world\"".to_string(),
+            Key::new(datastore::KeyType::Data, "something-else.d.e").unwrap() => "\"bottlerocket\"".to_string(),
+            Key::new(datastore::KeyType::Data, "yet-another-thing.f.g").unwrap() => "\"rules\"".to_string(),
+        }
+    );
+}
+
+#[tokio::test]
+async fn test_services_removed() {
+    let mut source = MemoryDataStore::new();
+    source.set_keys(&maplit::hashmap! {
+        Key::new(datastore::KeyType::Data, "settings.a.b").unwrap() => "\"hello\"",
+        Key::new(datastore::KeyType::Data, "settings.a.c").unwrap() => "\"world\"",
+        Key::new(datastore::KeyType::Data, "something-else.d.e").unwrap() => "\"bottlerocket\"",
+        Key::new(datastore::KeyType::Data, "yet-another-thing.f.g").unwrap() => "\"rules\"",
+        Key::new(datastore::KeyType::Data, "services.dns.configuration-files").unwrap() => "[\"netdog-toml\"]",
+        Key::new(datastore::KeyType::Data, "services.aws.restart-commands").unwrap() => "[]",
+    }, &Committed::Live).unwrap();
+
+    let mut target = MemoryDataStore::new();
+    copy_without_transient_entries(source, &mut target).unwrap();
+
+    assert_eq!(
+        target.get_prefix("", &Committed::Live).unwrap(),
+        maplit::hashmap! {
+            Key::new(datastore::KeyType::Data, "settings.a.b").unwrap() => "\"hello\"".to_string(),
+            Key::new(datastore::KeyType::Data, "settings.a.c").unwrap() => "\"world\"".to_string(),
+            Key::new(datastore::KeyType::Data, "something-else.d.e").unwrap() => "\"bottlerocket\"".to_string(),
+            Key::new(datastore::KeyType::Data, "yet-another-thing.f.g").unwrap() => "\"rules\"".to_string(),
+        }
+    );
 }
