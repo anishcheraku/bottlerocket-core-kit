@@ -26,6 +26,7 @@ cni-plugins = { path = "../../packages/cni-plugins" }
 conntrack-tools = { path = "../../packages/conntrack-tools" }
 containerd = { path = "../../packages/containerd" }
 coreutils = { path = "../../packages/coreutils" }
+cryptsetup = { path = "../../packages/cryptsetup" }
 dbus-broker = { path = "../../packages/dbus-broker" }
 docker-cli = { path = "../../packages/docker-cli" }
 docker-engine = { path = "../../packages/docker-engine" }
@@ -63,11 +64,14 @@ kubernetes-1_30 = { path = "../../packages/kubernetes-1.30" }
 kubernetes-1_31 = { path = "../../packages/kubernetes-1.31" }
 kubernetes-1_32 = { path = "../../packages/kubernetes-1.32" }
 libacl = { path = "../../packages/libacl" }
+libaio = { path = "../../packages/libaio" }
 libattr = { path = "../../packages/libattr" }
 libaudit = { path = "../../packages/libaudit" }
 libbpf = { path = "../../packages/libbpf" }
 libcap = { path = "../../packages/libcap" }
+libcrypto = { path = "../../packages/libcrypto" }
 libdbus = { path = "../../packages/libdbus" }
+libdevmapper = { path = "../../packages/libdevmapper" }
 libelf = { path = "../../packages/libelf" }
 libexpat = { path = "../../packages/libexpat" }
 libffi = { path = "../../packages/libffi" }
@@ -89,12 +93,14 @@ libnl = { path = "../../packages/libnl" }
 libnvidia-container = { path = "../../packages/libnvidia-container" }
 libnvme = { path = "../../packages/libnvme" }
 libpcre = { path = "../../packages/libpcre" }
+libpopt = { path = "../../packages/libpopt" }
 libseccomp = { path = "../../packages/libseccomp" }
 libselinux = { path = "../../packages/libselinux" }
 libsemanage = { path = "../../packages/libsemanage" }
 libsepol = { path = "../../packages/libsepol" }
 libstd-rust = { path = "../../packages/libstd-rust" }
 libtirpc = { path = "../../packages/libtirpc" }
+libtss2 = { path = "../../packages/libtss2" }
 liburcu = { path = "../../packages/liburcu" }
 libxcrypt = { path = "../../packages/libxcrypt" }
 libz = { path = "../../packages/libz" }
@@ -123,6 +129,7 @@ soci-snapshotter = { path = "../../packages/soci-snapshotter" }
 static-pods = { path = "../../packages/static-pods" }
 strace = { path = "../../packages/strace" }
 systemd = { path = "../../packages/systemd" }
+tpm2-tools = { path = "../../packages/tpm2-tools" }
 util-linux = { path = "../../packages/util-linux" }
 wicked = { path = "../../packages/wicked" }
 xfsprogs = { path = "../../packages/xfsprogs" }

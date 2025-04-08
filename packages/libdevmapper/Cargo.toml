@@ -1,0 +1,26 @@
+[package]
+name = "libdevmapper"
+version = "0.1.0"
+edition = "2021"
+publish = false
+build = "../build.rs"
+
+[lib]
+path = "../packages.rs"
+
+[package.metadata.build-package]
+releases-url = "https://sourceware.org/lvm2"
+
+[[package.metadata.build-package.external-files]]
+url = "https://sourceware.org/pub/lvm2/releases/LVM2.2.03.31.tgz"
+sha512 = "254131e28b22d55531d211886afbfdc219e77a4df802e3ec9b66d889ff22bf6d0a6c2df9c5ff017592d92e1dce0f658a6628fb321c1e90152ff7257492218242"
+
+[[package.metadata.build-package.external-files]]
+url = "https://sourceware.org/pub/lvm2/releases/LVM2.2.03.31.tgz.asc"
+sha512 = "5f69cc9e04028964fdbb61fbcb07ca86e62d8dfbf9d789ac3567c9f607c1045e03410ba92a5987227c3002e97101a855f091dc87d2c17c5d9bf45401c0ad1f29"
+
+[build-dependencies]
+glibc = { path = "../glibc" }
+libselinux = { path = "../libselinux" }
+libaio = { path = "../libaio" }
+util-linux = { path = "../util-linux" }

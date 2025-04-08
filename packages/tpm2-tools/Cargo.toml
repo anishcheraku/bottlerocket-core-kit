@@ -1,0 +1,24 @@
+[package]
+name = "tpm2-tools"
+version = "0.1.0"
+edition = "2021"
+publish = false
+build = "../build.rs"
+
+[lib]
+path = "../packages.rs"
+
+[package.metadata.build-package]
+releases-url = "https://github.com/tpm2-software/tpm2-tools/releases"
+
+[[package.metadata.build-package.external-files]]
+url = "https://github.com/tpm2-software/tpm2-tools/releases/download/5.7/tpm2-tools-5.7.tar.gz"
+sha512 = "629b0b1826815877f452935285f7b3fe0f32bd24fe9130eb169a2dc9b7b254a737797043af9eea68be706b87c32ab2b7189151360c9c00bc5c31dce62a799670"
+
+[[package.metadata.build-package.external-files]]
+url = "https://github.com/tpm2-software/tpm2-tools/releases/download/5.7/tpm2-tools-5.7.tar.gz.asc"
+sha512 = "863722d52ac225493dd5d3d3577e52a1810db38883a1346eadb10278c9d425178bf99480e240be30891e7699edebdc960a008542e5a495ac1e2e00547414fa37"
+
+[build-dependencies]
+glibc = { path = "../glibc" }
+libtss2 = { path = "../libtss2" }

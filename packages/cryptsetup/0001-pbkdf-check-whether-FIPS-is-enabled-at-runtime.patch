@@ -1,0 +1,55 @@
+From 246df3d2d990257de06ce8b2219a7f4f198e69cc Mon Sep 17 00:00:00 2001
+From: Ben Cressey <bcressey@amazon.com>
+Date: Fri, 28 Mar 2025 21:29:04 +0000
+Subject: [PATCH] pbkdf: check whether FIPS is enabled at runtime
+
+If AWS-LC is built with FIPS enabled, then crypt_fips_mode() always
+returns true. This prevents any use of non-FIPS PBKDFs, specifically
+argon2. Switch to a kernel-based runtime check to determine whether
+FIPS mode is present and enabled.
+
+In principle, the kernel might not be in FIPS mode while the crypto
+library backend is in FIPS mode. In the case of Bottlerocket, this is
+not a useful distinction, and the state of the kernel's FIPS module
+should always indicate whether FIPS should be enforced.
+
+Signed-off-by: Ben Cressey <bcressey@amazon.com>
+---
+ lib/utils_pbkdf.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/lib/utils_pbkdf.c b/lib/utils_pbkdf.c
+index b54509c8..37db5932 100644
+--- a/lib/utils_pbkdf.c
++++ b/lib/utils_pbkdf.c
+@@ -8,6 +8,7 @@
+ 
+ #include <stdlib.h>
+ #include <errno.h>
++#include <stdio.h>
+ 
+ #include "internal.h"
+ 
+@@ -185,8 +186,18 @@ int init_pbkdf_type(struct crypt_device *cd,
+ 	unsigned cpus;
+ 	uint32_t old_flags, memory_kb;
+ 	int r;
++	int fips_enabled = 0;
++	FILE *f;
++
++	f = fopen("/proc/sys/crypto/fips_enabled", "r");
++	if (f) {
++		r = fscanf(f, "%1d", &fips_enabled);
++		if (r != 1)
++			fips_enabled = 0;
++		fclose(f);
++	}
+ 
+-	if (crypt_fips_mode()) {
++	if (fips_enabled) {
+ 		if (pbkdf && strcmp(pbkdf->type, CRYPT_KDF_PBKDF2)) {
+ 			log_err(cd, _("Only PBKDF2 is supported in FIPS mode."));
+ 			return -EINVAL;
+-- 
+2.48.1
+

@@ -1,0 +1,54 @@
+From b2d56c088413def8ddc615b3beab59163ba8d58b Mon Sep 17 00:00:00 2001
+From: Ben Cressey <bcressey@amazon.com>
+Date: Sat, 22 Mar 2025 16:59:46 +0000
+Subject: [PATCH] tpm2-tools: disable tpm2_getekcertificate
+
+tpm2_getekcertificate is the only tool that needs curl. Disable it
+and remove curl from the required libraries.
+
+Signed-off-by: Ben Cressey <bcressey@amazon.com>
+---
+ Makefile.am | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 79dfd19..7b2a0e5 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -19,7 +19,7 @@ LIB_COMMON := lib/libcommon.a
+ AM_CFLAGS := \
+     $(INCLUDE_DIRS) $(EXTRA_CFLAGS) $(TSS2_ESYS_CFLAGS) $(TSS2_MU_CFLAGS) \
+     $(CRYPTO_CFLAGS) $(CODE_COVERAGE_CFLAGS) $(TSS2_TCTILDR_CFLAGS) \
+-    $(TSS2_RC_CFLAGS) $(TSS2_SYS_CFLAGS) $(CURL_CFLAGS)
++    $(TSS2_RC_CFLAGS) $(TSS2_SYS_CFLAGS)
+ 
+ AM_LDFLAGS   := $(EXTRA_LDFLAGS) $(CODE_COVERAGE_LIBS)
+ 
+@@ -94,7 +94,7 @@ tss2_tools = \
+ 
+ # Bundle all the tools into a single program similar to busybox
+ bin_PROGRAMS += tools/tpm2
+-tools_tpm2_LDADD = $(LDADD) $(CURL_LIBS)
++tools_tpm2_LDADD = $(LDADD)
+ tools_tpm2_CFLAGS = $(AM_CFLAGS) -DTPM2_TOOLS_MAX="$(words $(tpm2_tools))"
+ tools_tpm2_SOURCES = \
+ 	tools/tpm2_tool.c \
+@@ -130,7 +130,6 @@ tpm2_tools = \
+     tools/tpm2_encryptdecrypt.c \
+     tools/tpm2_evictcontrol.c \
+     tools/tpm2_flushcontext.c \
+-    tools/tpm2_getekcertificate.c \
+     tools/tpm2_getrandom.c \
+     tools/tpm2_gettime.c \
+     tools/tpm2_hash.c \
+@@ -399,7 +398,6 @@ if HAVE_MAN_PAGES
+     man/man1/tpm2_eventlog.1 \
+     man/man1/tpm2_evictcontrol.1 \
+     man/man1/tpm2_flushcontext.1 \
+-    man/man1/tpm2_getekcertificate.1 \
+     man/man1/tpm2_getrandom.1 \
+     man/man1/tpm2_gettestresult.1 \
+     man/man1/tpm2_gettime.1 \
+-- 
+2.48.1
+

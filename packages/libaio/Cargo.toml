@@ -1,0 +1,19 @@
+[package]
+name = "libaio"
+version = "0.1.0"
+edition = "2021"
+publish = false
+build = "../build.rs"
+
+[lib]
+path = "../packages.rs"
+
+[package.metadata.build-package]
+releases-url = "http://releases.pagure.org/libaio"
+
+[[package.metadata.build-package.external-files]]
+url = "http://releases.pagure.org/libaio/libaio-0.3.113.tar.gz"
+sha512 = "65c30a102433bf8386581b03fc706d84bd341be249fbdee11a032b237a7b239e8c27413504fef15e2797b1acd67f752526637005889590ecb380e2e120ab0b71"
+
+[build-dependencies]
+glibc = { path = "../glibc" }

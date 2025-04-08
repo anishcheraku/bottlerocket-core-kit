@@ -79,6 +79,7 @@ dependencies = [
  "conntrack-tools",
  "containerd",
  "coreutils",
+ "cryptsetup",
  "dbus-broker",
  "docker-cli",
  "docker-engine",
@@ -116,11 +117,14 @@ dependencies = [
  "kubernetes-1_31",
  "kubernetes-1_32",
  "libacl",
+ "libaio",
  "libattr",
  "libaudit",
  "libbpf",
  "libcap",
+ "libcrypto",
  "libdbus",
+ "libdevmapper",
  "libelf",
  "libexpat",
  "libffi",
@@ -142,12 +146,14 @@ dependencies = [
  "libnvidia-container",
  "libnvme",
  "libpcre",
+ "libpopt",
  "libseccomp",
  "libselinux",
  "libsemanage",
  "libsepol",
  "libstd-rust",
  "libtirpc",
+ "libtss2",
  "liburcu",
  "libxcrypt",
  "libz",
@@ -176,6 +182,7 @@ dependencies = [
  "static-pods",
  "strace",
  "systemd",
+ "tpm2-tools",
  "util-linux",
  "wicked",
  "xfsprogs",
@@ -236,6 +243,19 @@ dependencies = [
  "libcap",
  "libselinux",
  "libxcrypt",
+]
+
+[[package]]
+name = "cryptsetup"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+ "libcrypto",
+ "libdevmapper",
+ "libjson-c",
+ "libpopt",
+ "libselinux",
+ "util-linux",
 ]
 
 [[package]]
@@ -512,6 +532,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "libaio"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+]
+
+[[package]]
 name = "libattr"
 version = "0.1.0"
 dependencies = [
@@ -543,12 +570,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "libcrypto"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+]
+
+[[package]]
 name = "libdbus"
 version = "0.1.0"
 dependencies = [
  "glibc",
  "libcap",
  "libexpat",
+]
+
+[[package]]
+name = "libdevmapper"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+ "libaio",
+ "libselinux",
+ "util-linux",
 ]
 
 [[package]]
@@ -713,6 +757,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "libpopt"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+]
+
+[[package]]
 name = "libseccomp"
 version = "0.1.0"
 dependencies = [
@@ -754,6 +805,14 @@ name = "libtirpc"
 version = "0.1.0"
 dependencies = [
  "glibc",
+]
+
+[[package]]
+name = "libtss2"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+ "libcrypto",
 ]
 
 [[package]]
@@ -970,6 +1029,14 @@ dependencies = [
  "libselinux",
  "libxcrypt",
  "util-linux",
+]
+
+[[package]]
+name = "tpm2-tools"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+ "libtss2",
 ]
 
 [[package]]
