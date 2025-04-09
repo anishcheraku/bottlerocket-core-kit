@@ -2,9 +2,9 @@
 %global gorepo cli
 %global goimport %{goproject}/%{gorepo}
 
-%global gover 25.0.5
+%global gover 25.0.7
 %global rpmver %{gover}
-%global gitrev 5dc9bcc5b78ed23f12cdd68e4285ea1c216ce2a1 
+%global gitrev 5dc9bcc5b78ed23f12cdd68e4285ea1c216ce2a1
 
 %global source_date_epoch 1492525740
 

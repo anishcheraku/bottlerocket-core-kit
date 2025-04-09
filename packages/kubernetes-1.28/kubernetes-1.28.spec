@@ -10,7 +10,7 @@
 %global gorepo kubernetes
 %global goimport %{goproject}/%{gorepo}
 
-%global releasever 44
+%global releasever 46
 %global gover 1.28.15
 %global rpmver %{gover}
 

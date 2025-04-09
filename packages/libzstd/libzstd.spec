@@ -1,5 +1,5 @@
 Name: %{_cross_os}libzstd
-Version: 1.5.6
+Version: 1.5.7
 Release: 1%{?dist}
 Epoch: 1
 Summary: Library for Zstandard compression
