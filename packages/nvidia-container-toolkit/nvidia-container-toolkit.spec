@@ -14,6 +14,8 @@ License: Apache-2.0
 URL: https://%{goimport}
 
 Source0: https://%{goimport}/archive/v%{gover}/nvidia-container-toolkit-%{gover}.tar.gz
+# non-templated version of the config files for k8s are provided for downstream
+# builders that don't use the NVIDIA Container Runtime settings
 Source1: nvidia-container-toolkit-config-k8s.toml
 Source2: nvidia-container-toolkit-config-ecs.toml
 Source3: nvidia-oci-hooks-json
