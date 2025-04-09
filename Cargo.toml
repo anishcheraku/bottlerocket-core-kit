@@ -95,7 +95,6 @@ members = [
   "packages/nvidia-container-toolkit",
   "packages/nvidia-k8s-device-plugin",
   "packages/nvme-cli",
-  "packages/oci-add-hooks",
   "packages/open-vm-tools",
   "packages/os",
   "packages/pciutils",

@@ -106,7 +106,6 @@ netdog = {path = "../../packages/netdog" }
 nvidia-container-toolkit = { path = "../../packages/nvidia-container-toolkit" }
 nvidia-k8s-device-plugin = { path = "../../packages/nvidia-k8s-device-plugin" }
 nvme-cli = { path = "../../packages/nvme-cli" }
-oci-add-hooks = { path = "../../packages/oci-add-hooks" }
 open-vm-tools = { path = "../../packages/open-vm-tools" }
 os = { path = "../../packages/os" }
 pciutils = { path = "../../packages/pciutils" }

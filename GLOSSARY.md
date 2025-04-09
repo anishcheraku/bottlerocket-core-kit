@@ -44,4 +44,3 @@
 * **TUF**: [The Update Framework](https://theupdateframework.io/).
   A framework that helps developers maintain the security of software update systems.
 * [**wicked**](https://github.com/openSUSE/wicked): A network interface framework and management system.
-* [**oci-add-hooks**](https://github.com/awslabs/oci-add-hooks): An OCI runtime that injects the OCI `prestart`, `poststart`, and `poststop` hooks into a container `config.json` before passing along to an OCI compatible runtime.
