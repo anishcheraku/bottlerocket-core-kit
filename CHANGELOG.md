@@ -1,3 +1,25 @@
+# v6.3.0 (2025-04-11)
+
+## OS Changes
+* Add cryptsetup package and its dependencies ([#444]) - Thanks @mikn !
+* Third party package updates ([#457])
+* Update runc from 1.1.15 to 1.2.6 ([#463])
+* Allow lookups of `.local` domains using unicast DNS ([#464]) - Thanks @tzneal !
+
+## Orchestrator Changes
+### Kubernetes
+* Update EKS 1.28-1.32 versions to latest ([#457])
+
+## Build Changes
+* Update rust build dependencies ([#457], [#460], [#462])
+
+[#444]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/444
+[#457]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/457
+[#460]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/460
+[#462]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/462
+[#463]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/463
+[#464]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/464
+
 # v6.2.0 (2025-04-01)
 
 ## OS Changes
