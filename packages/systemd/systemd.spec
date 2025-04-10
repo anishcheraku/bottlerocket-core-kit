@@ -75,6 +75,9 @@ Patch9013: 9013-sd-dhcp-lease-parse-multiple-domains-in-option-15.patch
 # it since prairiedog mounts /boot depending on the partition bank in use.
 Patch9014: 9014-meson-make-gpt-auto-generator-selectable-at-build-ti.patch
 
+# Local patch to allow resolving .local domains
+Patch9015: 9015-allow-lookups-of-local-domains-using-unicast-DNS.patch
+
 BuildRequires: gperf
 BuildRequires: intltool
 BuildRequires: meson
