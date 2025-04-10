@@ -193,7 +193,7 @@ skip-files = [
 [clarify.tokio-macros]
 expression = "MIT"
 license-files = [
-    { path = "LICENSE", hash = 0x402b08de },
+    { path = "LICENSE", hash = 0x5b6af9aa },
 ]
 
 [clarify.vmw_backdoor]
