@@ -8,6 +8,9 @@ License: GPL-2.0-or-later AND LGPL-2.0-or-later AND GPL-3.0-or-later
 Source0: https://ftp.gnu.org/gnu/binutils/binutils-%{version}.tar.xz
 Source1: https://ftp.gnu.org/gnu/binutils/binutils-%{version}.tar.xz.sig
 Source2: gpgkey-3A24BC1E8FB409FA9F14371813FCEF89DD9E3C4F.asc
+
+Patch0001: 0001-PR32560-stack-buffer-overflow-at-objdump-disassemble.patch
+
 Requires: %{_cross_os}libz
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libz-devel
