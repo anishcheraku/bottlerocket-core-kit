@@ -1,0 +1,34 @@
+From e72ca322112e62186ee4bc0b913ebeb81c97dd8a Mon Sep 17 00:00:00 2001
+From: Todd Neal <tnealt@amazon.com>
+Date: Thu, 10 Apr 2025 15:06:06 +0000
+Subject: [PATCH] allow lookups of .local domains using unicast DNS
+
+The .local suffix is reserved for Multicast DNS, but its sometimes used
+as a convenient suffix for internal domains. Those then fail to lookup
+correctly. Since Multicast DNS usage is tiny and not supported with
+Bottlerocket, disable this check to allow those names to resolve with
+unicast DNS.
+---
+ src/resolve/resolved-dns-scope.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/src/resolve/resolved-dns-scope.c b/src/resolve/resolved-dns-scope.c
+index 4085b01..862f5c3 100644
+--- a/src/resolve/resolved-dns-scope.c
++++ b/src/resolve/resolved-dns-scope.c
+@@ -705,11 +705,7 @@ DnsScopeMatch dns_scope_good_domain(
+                 }
+ 
+                 /* Exclude link-local IP ranges */
+-                if (match_link_local_reverse_lookups(domain) >= DNS_SCOPE_YES_BASE ||
+-                    /* If networks use .local in their private setups, they are supposed to also add .local
+-                     * to their search domains, which we already checked above. Otherwise, we consider .local
+-                     * specific to mDNS and won't send such queries ordinary DNS servers. */
+-                    dns_name_endswith(domain, "local") > 0)
++                if (match_link_local_reverse_lookups(domain) >= DNS_SCOPE_YES_BASE)
+                         return DNS_SCOPE_NO;
+ 
+                 /* If the IP address to look up matches the local subnet, then implicitly synthesizes
+-- 
+2.47.1
+
