@@ -45,7 +45,6 @@ Conflicts: (%{_cross_os}image-feature(no-fips) or %{name}-bin)
 %autosetup -n %{gorepo}-%{version} -p1
 
 %build
-export GO_MAJOR="1.22"
 
 %set_cross_go_flags
 
