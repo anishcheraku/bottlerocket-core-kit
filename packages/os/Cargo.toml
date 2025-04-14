@@ -21,7 +21,6 @@ source-groups = [
     "models",
     "imdsclient",
     "retry-read",
-    "shimpei",
     "driverdog",
     "cfsignal",
     "bloodhound",

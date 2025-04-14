@@ -28,7 +28,6 @@
 * [**thar-be-settings**](sources/api/thar-be-settings): A program that writes out system configuration files, replacing template variables with settings from the API.
 * [**updog**](sources/updater/updog): An update client that interfaces with a specified TUF updates repository to upgrade or downgrade Bottlerocket hosts to different image versions.
 * [**prairiedog**](sources/api/prairiedog): A program that handles various boot related operations.
-* [**shimpei**](sources/shimpei): An OCI compatible shim wrapper around `oci-add-hooks`. Its sole purpose is to call `oci-add-hooks` with the additional `--hook-config-path` and `--runtime-path` parameters that can't be provided by containerd.
 
 ## Non-Bottlerocket terms
 

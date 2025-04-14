@@ -16,15 +16,13 @@ URL: https://%{goimport}
 Source0: https://%{goimport}/archive/v%{gover}/nvidia-container-toolkit-%{gover}.tar.gz
 Source1: nvidia-container-toolkit-config-k8s.toml
 Source2: nvidia-container-toolkit-config-ecs.toml
-Source3: nvidia-oci-hooks-json
-Source4: nvidia-gpu-devices.rules
-Source5: nvidia-container-toolkit-tmpfiles-ecs.conf
-Source6: nvidia-container-toolkit-tmpfiles-k8s.conf
-Source7: nvidia-container-toolkit-config-k8s
+Source3: nvidia-gpu-devices.rules
+Source4: nvidia-container-toolkit-tmpfiles-ecs.conf
+Source5: nvidia-container-toolkit-tmpfiles-k8s.conf
+Source6: nvidia-container-toolkit-config-k8s
 
 BuildRequires: %{_cross_os}glibc-devel
 Requires: %{_cross_os}libnvidia-container
-Requires: %{_cross_os}shimpei
 
 %description
 %{summary}.
@@ -76,12 +74,10 @@ install -p -m 0755 nvidia-cdi-hook %{buildroot}%{_cross_bindir}/
 install -p -m 0755 nvidia-container-runtime %{buildroot}%{_cross_bindir}/
 install -m 0644 %{S:1} %{buildroot}%{_cross_factorydir}/nvidia-container-runtime/
 install -m 0644 %{S:2} %{buildroot}%{_cross_factorydir}/nvidia-container-runtime/
-install -m 0644 %{S:3} %{buildroot}%{_cross_templatedir}/nvidia-oci-hooks-json
-install -p -m 0644 %{S:4} %{buildroot}%{_cross_udevrulesdir}/90-nvidia-gpu-devices.rules
-install -m 0644 %{S:5} %{buildroot}%{_cross_tmpfilesdir}/nvidia-container-toolkit-ecs.conf
-install -m 0644 %{S:6} %{buildroot}%{_cross_tmpfilesdir}/nvidia-container-toolkit-k8s.conf
-install -m 0644 %{S:7} %{buildroot}%{_cross_templatedir}/nvidia-container-runtime/
-ln -s shimpei %{buildroot}%{_cross_bindir}/nvidia-oci
+install -p -m 0644 %{S:3} %{buildroot}%{_cross_udevrulesdir}/90-nvidia-gpu-devices.rules
+install -m 0644 %{S:4} %{buildroot}%{_cross_tmpfilesdir}/nvidia-container-toolkit-ecs.conf
+install -m 0644 %{S:5} %{buildroot}%{_cross_tmpfilesdir}/nvidia-container-toolkit-k8s.conf
+install -m 0644 %{S:6} %{buildroot}%{_cross_templatedir}/nvidia-container-runtime/
 
 %files
 %license LICENSE
@@ -89,8 +85,6 @@ ln -s shimpei %{buildroot}%{_cross_bindir}/nvidia-oci
 %{_cross_bindir}/nvidia-container-runtime-hook
 %{_cross_bindir}/nvidia-ctk
 %{_cross_bindir}/nvidia-cdi-hook
-%{_cross_bindir}/nvidia-oci
-%{_cross_templatedir}/nvidia-oci-hooks-json
 %{_cross_bindir}/nvidia-container-runtime
 %{_cross_udevrulesdir}/90-nvidia-gpu-devices.rules
 

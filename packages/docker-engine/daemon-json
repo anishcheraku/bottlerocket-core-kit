@@ -9,8 +9,6 @@ std = { version = "v1", helpers = ["join_array"] }
   "max-concurrent-downloads": 10,
   "storage-driver": "overlay2",
   "data-root": "/var/lib/docker",
-  "default-runtime": "shimpei",
-  "runtimes": { "shimpei": { "path": "shimpei" } },
   {{#if settings.oci-defaults.capabilities}}
   "default-capabilities": {{oci_defaults "docker" settings.oci-defaults.capabilities}},
   {{/if}}

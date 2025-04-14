@@ -21,7 +21,6 @@ Source3: eni-max-pods
 Source5: updog-toml
 Source6: metricdog-toml
 Source7: host-ctr-toml
-Source8: oci-default-hooks-json
 Source9: cfsignal-toml
 Source10: warm-pool-wait-toml
 Source11: bottlerocket-cis-checks-metadata-json
@@ -85,7 +84,6 @@ Requires: %{_cross_os}metricdog
 Requires: %{_cross_os}prairiedog
 Requires: %{_cross_os}schnauzer
 Requires: %{_cross_os}settings-committer
-Requires: %{_cross_os}shimpei
 Requires: %{_cross_os}signpost
 Requires: %{_cross_os}storewolf
 Requires: %{_cross_os}sundog
@@ -377,12 +375,6 @@ Conflicts: (%{_cross_os}image-feature(no-fips) or %{_cross_os}cfsignal-bin)
 %description -n %{_cross_os}cfsignal-fips-bin
 %{summary}.
 
-%package -n %{_cross_os}shimpei
-Summary: OCI-compatible shim around oci-add-hooks
-Requires: %{_cross_os}oci-add-hooks
-%description -n %{_cross_os}shimpei
-%{summary}.
-
 %package -n %{_cross_os}driverdog
 Summary: Tool to load additional drivers
 Requires: %{_cross_os}binutils
@@ -540,7 +532,6 @@ echo "** Output from non-static builds:"
     -p bootstrap-containers \
     -p prairiedog \
     -p certdog \
-    -p shimpei \
     -p bloodhound \
     -p xfscli \
     -p shibaken \
@@ -602,7 +593,7 @@ for p in \
   migrator prairiedog certdog \
   signpost updog metricdog logdog \
   ghostdog bootstrap-commands bootstrap-containers \
-  shimpei bloodhound \
+  bloodhound \
   bottlerocket-cis-checks \
   bottlerocket-fips-checks \
   kubernetes-cis-checks \
@@ -698,7 +689,7 @@ if [ -s "%{_cross_repo_root_json}" ] ; then
 fi
 
 install -d %{buildroot}%{_cross_templatedir}
-install -p -m 0644 %{S:5} %{S:6} %{S:7} %{S:8} %{S:14} %{S:15} %{S:16} %{S:17} %{S:18} %{S:19} %{S:21} \
+install -p -m 0644 %{S:5} %{S:6} %{S:7} %{S:14} %{S:15} %{S:16} %{S:17} %{S:18} %{S:19} %{S:21} \
   %{buildroot}%{_cross_templatedir}
 
 install -d %{buildroot}%{_cross_unitdir}
@@ -883,10 +874,6 @@ install -p -m 0644 %{S:400} %{S:401} %{S:402} %{buildroot}%{_cross_licensedir}
 
 %files -n %{_cross_os}pluto-fips-bin
 %{_cross_fips_bindir}/pluto
-
-%files -n %{_cross_os}shimpei
-%{_cross_bindir}/shimpei
-%{_cross_templatedir}/oci-default-hooks-json
 
 %files -n %{_cross_os}prairiedog
 %{_cross_bindir}/prairiedog
