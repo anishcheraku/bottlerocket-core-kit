@@ -25,6 +25,8 @@ Source6: nvidia-container-toolkit-config-k8s
 
 BuildRequires: %{_cross_os}glibc-devel
 Requires: %{_cross_os}libnvidia-container
+Requires: (%{name}-ecs if %{_cross_os}variant-family(aws-ecs))
+Requires: (%{name}-k8s if %{_cross_os}variant-family(aws-k8s))
 
 %description
 %{summary}.
