@@ -125,5 +125,9 @@ sha512 = "0e542d4c060086366b8cfeccc502e89e5cca3f8ae3c65aad443b90ab99aadd7d81cab8
 url = "https://raw.githubusercontent.com/aws/eks-distro/93c82ae30d0c044196bd0b0bcb1f1d98be9b0102/projects/kubernetes/kubernetes/1-25/patches/0028-EKS-PATCH-Lower-verbosity-for-topologycache-messages.patch"
 sha512 = "dac541c6334b699a17a2254c9a763f65e8beb472bb61db353e6f9698fd6e84714326d7db63e822959afa301438ec669a8068f1602e4b27e38baf782b2ff62058"
 
+[[package.metadata.build-package.external-files]]
+url = "https://raw.githubusercontent.com/aws/eks-distro/f5830c618932af576c61e71a2dfa3dda26a996a6/projects/kubernetes/kubernetes/1-25/patches/0029-EKS-PATCH-Update-the-goversion-to-1.23.patch"
+sha512 = "415559ab52745c4b57c84fbc81dd6a2d58bc09cfcce48b3ac2bdc7e388cd21d6f47c2b16a6c8678b5777dbc531d768eaf3a6abdd58e6c673c3e19ef5b63cc9c4"
+
 [build-dependencies]
 glibc = { path = "../glibc" }

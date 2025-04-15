@@ -94,6 +94,7 @@ Patch0025: 0025-EKS-PATCH-Add-sourceARN-to-sts-headers.patch
 Patch0026: 0026-EKS-PATCH-skip-TestCreateBlobDisk-test.patch
 Patch0027: 0027-EKS-PATCH-Updated-added-visibility-to-apiserver-x509.patch
 Patch0028: 0028-EKS-PATCH-Lower-verbosity-for-topologycache-messages.patch
+Patch0029: 0029-EKS-PATCH-Update-the-goversion-to-1.23.patch
 
 BuildRequires: git
 BuildRequires: rsync
