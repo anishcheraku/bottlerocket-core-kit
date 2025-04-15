@@ -84,6 +84,7 @@ Patch0016: 0016-EKS-PATCH-Add-sourceARN-to-sts-headers.patch
 Patch0017: 0017-EKS-PATCH-fix-CVE-2023-47108.patch
 Patch0018: 0018-EKS-PATCH-Updated-added-visibility-to-apiserver-x509.patch
 Patch0019: 0019-EKS-PATCH-Lower-verbosity-for-topologycache-messages.patch
+Patch0020: 0020-EKS-PATCH-Update-the-goversion-to-1.23.patch
 
 BuildRequires: git
 BuildRequires: rsync
