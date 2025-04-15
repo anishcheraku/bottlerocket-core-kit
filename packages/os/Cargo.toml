@@ -26,6 +26,7 @@ source-groups = [
     "cfsignal",
     "bloodhound",
     "xfscli",
+    "brush",
 ]
 
 [lib]

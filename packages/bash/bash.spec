@@ -17,6 +17,11 @@ BuildRequires: %{_cross_os}readline-devel
 Requires: %{_cross_os}libncurses
 Requires: %{_cross_os}readline
 
+# Provide `/bin/sh` at a lower priority than `brush`, since this package
+# should only be installed if specifically requested.
+Provides: %{_cross_os}package-file(/bin/sh) = 0:
+Conflicts: %{_cross_os}brush
+
 %description
 %{summary}.
 

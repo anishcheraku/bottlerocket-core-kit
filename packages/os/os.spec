@@ -425,6 +425,13 @@ Summary: XFS progs cli
 %description -n %{_cross_os}xfscli
 %{summary}.
 
+%package -n %{_cross_os}brush
+Summary: Sanitizing pseudo-shell
+Provides: %{_cross_os}package-file(/bin/sh) = 1:
+Conflicts: %{_cross_os}bash
+%description -n %{_cross_os}brush
+%{summary}.
+
 %prep
 %setup -T -c
 %cargo_prep
@@ -545,6 +552,7 @@ echo "** Output from non-static builds:"
     -p xfscli \
     -p shibaken \
     -p driverdog \
+    -p brush \
     %{nil}
 
 # Wait for fips builds from the background, if they're not already done.
@@ -606,11 +614,13 @@ for p in \
   bottlerocket-cis-checks \
   bottlerocket-fips-checks \
   kubernetes-cis-checks \
-  shibaken \
-  driverdog \
+  shibaken driverdog brush \
 ; do
   install -p -m 0755 %{__cargo_outdir}/${p} %{buildroot}%{_cross_bindir}
 done
+
+ln -s brush %{buildroot}%{_cross_bindir}/sh
+install -d %{buildroot}%{_cross_libexecdir}/brush/allowed-programs
 
 for p in \
   logdog migrator metricdog \
@@ -926,5 +936,10 @@ install -p -m 0644 %{S:400} %{S:401} %{S:402} %{buildroot}%{_cross_licensedir}
 %{_cross_sbindir}/xfs_admin
 %{_cross_sbindir}/xfs_info
 %{_cross_sbindir}/fsck.xfs
+
+%files -n %{_cross_os}brush
+%{_cross_bindir}/brush
+%{_cross_bindir}/sh
+%dir %{_cross_libexecdir}/brush/allowed-programs
 
 %changelog
