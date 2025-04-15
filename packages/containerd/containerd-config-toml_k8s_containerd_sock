@@ -36,16 +36,12 @@ enable_unprivileged_ports = {{settings.container-runtime.enable-unprivileged-por
 enable_unprivileged_icmp = {{settings.container-runtime.enable-unprivileged-icmp}}
 {{/if}}
 
-[plugins."io.containerd.grpc.v1.cri".containerd]
-default_runtime_name = "shimpei"
-
-[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.shimpei]
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
 runtime_type = "io.containerd.runc.v2"
 base_runtime_spec = "/etc/containerd/cri-base.json"
 
-[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.shimpei.options]
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
 SystemdCgroup = true
-BinaryName = "shimpei"
 
 [plugins."io.containerd.grpc.v1.cri".cni]
 bin_dir = "/opt/cni/bin"

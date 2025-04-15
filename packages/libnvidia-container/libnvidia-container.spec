@@ -17,8 +17,7 @@ Source2: libnvidia-container-sysctl.conf
 Patch0001: 0001-use-shared-libtirpc.patch
 Patch0002: 0002-use-prefix-from-environment.patch
 Patch0003: 0003-keep-debug-symbols.patch
-Patch0004: 0004-Use-NVIDIA_PATH-to-look-up-binaries.patch
-Patch0005: 0005-makefile-avoid-ldconfig-when-cross-compiling.patch
+Patch0004: 0004-makefile-avoid-ldconfig-when-cross-compiling.patch
 
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libelf-devel

@@ -45,7 +45,7 @@ base_runtime_spec = "/etc/containerd/cri-base.json"
 
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia.options]
 SystemdCgroup = true
-BinaryName = "nvidia-oci"
+BinaryName = "nvidia-container-runtime"
 
 [plugins."io.containerd.grpc.v1.cri".cni]
 bin_dir = "/opt/cni/bin"

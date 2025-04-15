@@ -165,7 +165,6 @@ dependencies = [
  "nvidia-container-toolkit",
  "nvidia-k8s-device-plugin",
  "nvme-cli",
- "oci-add-hooks",
  "open-vm-tools",
  "os",
  "pciutils",
@@ -896,13 +895,6 @@ dependencies = [
  "glibc",
  "libjson-c",
  "libnvme",
-]
-
-[[package]]
-name = "oci-add-hooks"
-version = "0.1.0"
-dependencies = [
- "glibc",
 ]
 
 [[package]]
