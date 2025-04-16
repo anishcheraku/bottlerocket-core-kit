@@ -54,6 +54,7 @@ members = [
   "packages/kubernetes-1.30",
   "packages/kubernetes-1.31",
   "packages/kubernetes-1.32",
+  "packages/kubernetes-1.33",
   "packages/libacl",
   "packages/libaio",
   "packages/libattr",
