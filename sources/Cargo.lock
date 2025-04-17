@@ -3365,6 +3365,7 @@ dependencies = [
  "generate-readme",
  "log",
  "lz4",
+ "maplit",
  "models",
  "nix",
  "pentacle",

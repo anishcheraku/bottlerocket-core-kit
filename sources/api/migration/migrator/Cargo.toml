@@ -42,6 +42,7 @@ generate-readme.workspace = true
 
 [dev-dependencies]
 chrono = { workspace = true, features = ["clock", "std"] }
+maplit.workspace = true
 storewolf.workspace = true
 tempfile.workspace = true
 

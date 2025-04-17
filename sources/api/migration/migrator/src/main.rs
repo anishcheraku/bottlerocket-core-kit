@@ -75,11 +75,16 @@ async fn main() {
     }
 }
 
-async fn get_current_version<P>(datastore_dir: P) -> Result<Version>
+async fn get_current_version<P>(datastore_path: P) -> Result<Version>
 where
     P: AsRef<Path>,
 {
-    let datastore_dir = datastore_dir.as_ref();
+    let datastore_path = datastore_path.as_ref();
+    let datastore_dir = datastore_path
+        .parent()
+        .context(error::DataStoreLinkToRootSnafu {
+            path: datastore_path,
+        })?;
 
     // Find the current patch version link, which contains our full version number
     let current = datastore_dir.join("current");
@@ -116,27 +121,9 @@ where
 }
 
 pub(crate) async fn run(args: &Args) -> Result<()> {
-    let migrated_datastore = perform_migrations(args).await?;
+    let current_version = get_current_version(&args.datastore_path).await?;
 
-    // Remove all the weak setting and all metadata
-    let datastore =
-        remove_weak_settings_and_metadata(migrated_datastore, &args.migrate_to_version).await?;
-    flip_to_new_version(&args.migrate_to_version, datastore).await?;
-
-    Ok(())
-}
-
-pub(crate) async fn perform_migrations(args: &Args) -> Result<PathBuf> {
-    // Get the directory we're working in.
-    let datastore_dir = args
-        .datastore_path
-        .parent()
-        .context(error::DataStoreLinkToRootSnafu {
-            path: &args.datastore_path,
-        })?;
-
-    let current_version = get_current_version(datastore_dir).await?;
-    let direction = Direction::from_versions(&current_version, &args.migrate_to_version)
+    let migration_version_meta = MigrationVersionMeta::new(current_version, args.migrate_to_version.clone())
         .unwrap_or_else(|| {
             info!(
                 "Requested version {} matches version of given datastore at '{}'; nothing to do. Exiting from migrator.",
@@ -146,6 +133,40 @@ pub(crate) async fn perform_migrations(args: &Args) -> Result<PathBuf> {
             process::exit(0);
         });
 
+    let migrated_datastore = perform_migrations(&migration_version_meta, args).await?;
+
+    let datastore =
+        remove_transient_datastore_entries(migrated_datastore, &args.migrate_to_version).await?;
+
+    flip_to_new_version(&args.migrate_to_version, datastore).await?;
+
+    Ok(())
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub(crate) struct MigrationVersionMeta {
+    pub(crate) current_version: Version,
+    pub(crate) target_version: Version,
+    pub(crate) direction: Direction,
+}
+
+impl MigrationVersionMeta {
+    /// Creates a new `MigrationVersionMeta`
+    ///
+    /// Returns `None` if `current_version` == `target_version`.
+    pub(crate) fn new(current_version: Version, target_version: Version) -> Option<Self> {
+        Direction::from_versions(&current_version, &target_version).map(|direction| Self {
+            current_version,
+            target_version,
+            direction,
+        })
+    }
+}
+
+pub(crate) async fn perform_migrations(
+    version_meta: &MigrationVersionMeta,
+    args: &Args,
+) -> Result<PathBuf> {
     // create URLs from the metadata and targets directory paths
     let metadata_base_url = Url::from_directory_path(&args.metadata_directory).map_err(|_| {
         error::Error::DirectoryUrl {
@@ -192,9 +213,12 @@ pub(crate) async fn perform_migrations(args: &Args) -> Result<PathBuf> {
         .await
         .context(error::RepoLoadSnafu)?;
     let manifest = load_manifest(repo.clone()).await?;
-    let migrations =
-        update_metadata::find_migrations(&current_version, &args.migrate_to_version, &manifest)
-            .context(error::FindMigrationsSnafu)?;
+    let migrations = update_metadata::find_migrations(
+        &version_meta.current_version,
+        &version_meta.target_version,
+        &manifest,
+    )
+    .context(error::FindMigrationsSnafu)?;
 
     if migrations.is_empty() {
         // Not all new OS versions need to change the data store format.  If there's been no
@@ -203,14 +227,8 @@ pub(crate) async fn perform_migrations(args: &Args) -> Result<PathBuf> {
         // have a chain of symlinks that could go past the maximum depth.)
         Ok(args.datastore_path.clone())
     } else {
-        let copy_path = run_migrations(
-            &repo,
-            direction,
-            &migrations,
-            &args.datastore_path,
-            &args.migrate_to_version,
-        )
-        .await?;
+        let copy_path =
+            run_migrations(&repo, version_meta, &migrations, &args.datastore_path).await?;
         Ok(copy_path)
     }
 }
@@ -251,8 +269,16 @@ where
     Ok(to)
 }
 
-/// Removes weak settings and delete all metadata.
-async fn remove_weak_settings_and_metadata<P>(
+/// Removes transient data from the datastore.
+///
+/// This data is typically repopulated to new defaults later in the boot process by storewolf
+/// (for static defaults) and sundog (for dynamic ones.)
+///
+/// Transient data includes:
+/// * Settings where the `strength` metadata is set to `weak`
+/// * All settings metadata
+/// * Bottlerocket services and configuration files
+async fn remove_transient_datastore_entries<P>(
     datastore_path: P,
     new_version: &Version,
 ) -> Result<PathBuf>
@@ -270,11 +296,11 @@ where
     let source = DataStoreImplementation::new(source_datastore);
     let mut target = DataStoreImplementation::new(&target_datastore);
 
-    copy_without_weak_settings_and_metadata(source, &mut target)?;
+    copy_without_transient_entries(source, &mut target)?;
     Ok(target_datastore)
 }
 
-fn copy_without_weak_settings_and_metadata(
+fn copy_without_transient_entries(
     source: impl DataStore,
     target: &mut impl DataStore,
 ) -> Result<()> {
@@ -290,6 +316,8 @@ fn copy_without_weak_settings_and_metadata(
 
         remove_weak_setting_from_datastore(&mut input)?;
         remove_metadata_from_datastore(&mut input)?;
+        remove_keys_with_prefix(&mut input, "configuration-files.")?;
+        remove_keys_with_prefix(&mut input, "services.")?;
 
         set_output_data(target, &input, &committed)?;
     }
@@ -323,6 +351,12 @@ fn remove_metadata_from_datastore(datastore: &mut DataStoreData) -> Result<()> {
     Ok(())
 }
 
+// Removes all data from the datastore where the key begins with the given prefix
+fn remove_keys_with_prefix(datastore: &mut DataStoreData, prefix: &str) -> Result<()> {
+    datastore.data.retain(|key, _| !key.starts_with(prefix));
+    Ok(())
+}
+
 /// Runs the given migrations in their given order.  The given direction is passed to each
 /// migration so it knows which direction we're migrating.
 ///
@@ -330,10 +364,9 @@ fn remove_metadata_from_datastore(datastore: &mut DataStoreData) -> Result<()> {
 /// previous migration, and the final output becomes the new data store.
 async fn run_migrations<P, S>(
     repository: &tough::Repository,
-    direction: Direction,
+    version_meta: &MigrationVersionMeta,
     migrations: &[S],
     source_datastore: P,
-    new_version: &Version,
 ) -> Result<PathBuf>
 where
     P: AsRef<Path>,
@@ -381,13 +414,13 @@ where
         })?;
 
         let mut command_args = vec![
-            direction.to_string(),
+            version_meta.direction.to_string(),
             "--source-datastore".to_string(),
             source_datastore.display().to_string(),
         ];
 
         // Create a new output location for this migration.
-        target_datastore = new_datastore_location(source_datastore, new_version)?;
+        target_datastore = new_datastore_location(source_datastore, &version_meta.target_version)?;
 
         command_args.push("--target-datastore".to_string());
         command_args.push(target_datastore.display().to_string());
