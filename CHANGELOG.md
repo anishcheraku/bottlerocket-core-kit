@@ -1,3 +1,36 @@
+# v7.0.0 (2025-04-18)
+
+## OS Changes
+* Fix aws-signing-helper and IAM Roles Anywhere ([#451])
+* Clear configuration-files and services in migrator ([#456])
+* Drop shimpei and oci-add-hooks packages ([#458])
+* Restrict kernel dump collection to x86_64 ([#465])
+* Third party package updates ([#469], [#472])
+
+## Orchestrator Changes
+### Kubernetes
+* Apply upstream patches for EKS 1.25-1.27 ([#472])
+* Let kubelet start when swap is on ([#473])
+* Add kubernetes-1.33 and ecr-credential-provider-1.33 packages with pre-release sources ([#476])
+
+### ECS
+* Migrate ECS to use CDI ([#471])
+
+## Build Changes
+* Update bottlerocket-sdk from 0.60.0 to 0.61.0 ([#449], [#474])
+
+[#449]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/449
+[#451]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/451
+[#456]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/456
+[#458]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/458
+[#465]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/465
+[#469]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/469
+[#471]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/471
+[#472]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/472
+[#473]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/473
+[#474]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/474
+[#476]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/476
+
 # v6.3.0 (2025-04-11)
 
 ## OS Changes
