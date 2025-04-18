@@ -81,6 +81,8 @@ Patch0015: 0015-EKS-PATCH-Add-apf-queue-wait-audit-log-latency-annot.patch
 Patch0016: 0016-EKS-PATCH-fix-CVE-2023-47108.patch
 Patch0017: 0017-EKS-PATCH-kubelet-use-env-vars-in-node-log-query-PS-.patch
 Patch0018: 0018-EKS-PATCH-Lower-verbosity-for-topologycache-messages.patch
+Patch0019: 0019-EKS-PATCH-hack-tools-update-to-golangci-lint-v1.56.2.patch
+Patch0020: 0020-EKS-PATCH-Update-the-goversion-to-1.23.patch
 
 BuildRequires: git
 BuildRequires: rsync

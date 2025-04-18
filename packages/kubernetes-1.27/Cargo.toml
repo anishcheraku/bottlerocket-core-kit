@@ -81,5 +81,13 @@ sha512 = "24a955f2a672338ab5d69993f6d40708617ac85ac5c9437cc03b85e0521ea5dd1c30bf
 url = "https://raw.githubusercontent.com/aws/eks-distro/7771e87603c3ae1fd29d04044689ff4cf5e349d4/projects/kubernetes/kubernetes/1-27/patches/0018-EKS-PATCH-Lower-verbosity-for-topologycache-messages.patch"
 sha512 = "d26e1886dc8661666fd7469b469a1cbd24d4f4d7d240c56d6d6d2148abe5e4bc278cb00f288bec9c7a0f6458a3eb857e4a1a2571c635ab4d83b347eac81d5eab"
 
+[[package.metadata.build-package.external-files]]
+url = "https://raw.githubusercontent.com/aws/eks-distro/259009b1eefaed4a7be4df2ec1d12a280b4c28e2/projects/kubernetes/kubernetes/1-27/patches/0019-EKS-PATCH-hack-tools-update-to-golangci-lint-v1.56.2.patch"
+sha512 = "c76f14277635fd05a6e595de6e10ed31f047c7ca6281e12acb1d024c6e32293f6c6aae18c9ec46c8e7246bb7e890c5d2fc3a78e7e1bfb6686332af7e01907f7b"
+
+[[package.metadata.build-package.external-files]]
+url = "https://raw.githubusercontent.com/aws/eks-distro/259009b1eefaed4a7be4df2ec1d12a280b4c/projects/kubernetes/kubernetes/1-27/patches/0020-EKS-PATCH-Update-the-goversion-to-1.23.patch"
+sha512 = "59d66b1791cf7fa60158db76460f2e8da3b1d680232fa2d1e0e91419a31829b08e9c3a2b8f2fbb56b6519314769f6eaf82032bee358562ae940adacb09ab3681"
+
 [build-dependencies]
 glibc = { path = "../glibc" }
