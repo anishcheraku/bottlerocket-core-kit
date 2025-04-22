@@ -25,9 +25,5 @@ std = { version = "v1", helpers = ["join_array"] }
   {{/if}}
   {{/each}}
   {{/if}}
-  "selinux-enabled": true,
-  "features": {
-    "cdi": true
-  },
-  "cdi-spec-dirs": ["/etc/cdi/"]
+  "selinux-enabled": true
 }
