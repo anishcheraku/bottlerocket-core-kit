@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-nwcjchmf4glm"
+title = "bintuils CVE-2025-0840"
+cve = "CVE-2025-0840"
+severity = "moderate"
+description = "A vulnerability was found in GNU Binutils that affects the function disassemble_bytes of the file binutils/objdump.c in which the manipulation of the argument buf can lead to a buffer overflow."
+
+[[advisory.products]]
+package-name = "binutils"
+patched-version = "2.43.1"
+patched-epoch = "1"
+
+[updateinfo]
+author = "jepiyush"
+issue-date = 2025-04-18T21:18:32Z
+arches = ["x86_64", "aarch64"]
+version = "7.0.0"
