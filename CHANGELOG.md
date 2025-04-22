@@ -1,3 +1,11 @@
+# v7.0.1 (2025-04-22)
+
+## Orchestrator Changes
+### ECS
+* Revert CDI migration for ECS ([#480])
+
+[#480]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/480
+
 # v7.0.0 (2025-04-18)
 
 ## OS Changes
