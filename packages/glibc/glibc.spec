@@ -127,6 +127,7 @@ git diff --quiet
 # for the C.UTF-8 locale, which we need `localedef` to generate.
 mkdir build
 pushd build
+CC="%{_cross_target}-gcc %{?_cross_arch_cflags}" CXX="%{_cross_target}-g++ %{?_cross_arch_cflags}" \
 %glibc_configure \
   --target="%{_cross_target}" \
   --host="%{_cross_target}" \
