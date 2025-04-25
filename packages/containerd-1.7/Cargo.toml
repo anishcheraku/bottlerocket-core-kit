@@ -1,5 +1,5 @@
 [package]
-name = "containerd"
+name = "containerd-1_7"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -9,6 +9,7 @@ build = "../build.rs"
 path = "../packages.rs"
 
 [package.metadata.build-package]
+package-name = "containerd-1.7"
 releases-url = "https://github.com/containerd/containerd/releases"
 
 [[package.metadata.build-package.external-files]]

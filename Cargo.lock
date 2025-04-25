@@ -77,7 +77,7 @@ dependencies = [
  "cni",
  "cni-plugins",
  "conntrack-tools",
- "containerd",
+ "containerd-1_7",
  "coreutils",
  "cryptsetup",
  "dbus-broker",
@@ -226,7 +226,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "containerd"
+name = "containerd-1_7"
 version = "0.1.0"
 dependencies = [
  "glibc",

@@ -14,7 +14,7 @@ members = [
   "packages/cni",
   "packages/cni-plugins",
   "packages/conntrack-tools",
-  "packages/containerd",
+  "packages/containerd-1.7",
   "packages/coreutils",
   "packages/cryptsetup",
   "packages/dbus-broker",
