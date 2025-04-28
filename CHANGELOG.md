@@ -1,3 +1,21 @@
+# v8.0.0 (2025-04-28)
+
+## OS Changes
+* Update `host-ctr` dependencies ([#475])
+* Add support for GRID drivers ([#483])
+
+## Build Changes
+* Update `twoliter` from 0.8.1 to 0.9.0 ([#478])
+
+## Orchestrator Changes
+### Kubernetes
+* Drop `kubernetes-1.25` and `ecr-credential-provider-1.25` ([#484])
+
+[#475]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/475
+[#478]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/478
+[#483]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/483
+[#484]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/484
+
 # v7.0.1 (2025-04-22)
 
 ## Orchestrator Changes
