@@ -21,7 +21,22 @@ use std::process::Command;
 const NVME_CLI_PATH: &str = "/sbin/nvme";
 const NVME_IDENTIFY_DATA_SIZE: usize = 4096;
 const NVIDIA_VENDOR_ID: &str = "10de";
+const NVIDIA_GRID_DEVICE_ID: &str = "27b8";
 const OPEN_GPU_SUPPORTED_DEVICES_PATH: &str = "/usr/share/nvidia/open-gpu-supported-devices.json";
+
+// Generate a list of Subdevice IDs that match the format of the file at OPEN_GPU_SUPPORTED_DEVICES_PATH
+// but are instead sourced here. The format in the JSON file has each ID starting with `0x` and are all upper
+// case where `pciclient` will provide just the 4 character ID with no prefix. `pciclient` output has to be
+// prepended and moved to uppercase to match these just as if they were sourced from the JSON file.
+lazy_static! {
+    static ref NVIDIA_GRID_SUBDEVICES: HashSet<&'static str> = {
+        let mut m = HashSet::new();
+        m.insert("0x1733");
+        m.insert("0x1735");
+        m.insert("0x1737");
+        m
+    };
+}
 
 #[derive(FromArgs, PartialEq, Debug)]
 /// Manage ephemeral disks.
@@ -217,7 +232,7 @@ fn read_supported_devices_file(path: PathBuf) -> Result<SupportedDevicesConfigur
     Ok(device_configuration)
 }
 
-/// Search the Open GPU Supported Devices File to determine if the Open GPU Driver should be used based upon PCI devices present
+/// Search the Open GPU Supported Devices File to determine which driver should be used based upon PCI devices present
 fn find_preferred_driver() -> Result<String> {
     let open_gpu_devices = read_supported_devices_file(OPEN_GPU_SUPPORTED_DEVICES_PATH.into())?;
     let list_input = pciclient::ListDevicesParam::builder()
@@ -239,6 +254,27 @@ fn find_preferred_driver() -> Result<String> {
             .map(|x| &x.device_id)
             .collect::<HashSet<_>>(),
     };
+
+    // If the PCI device ID is one that could potentially use GRID, collect the Subdevice IDs
+    let mut subdevice_ids = present_devices
+        .iter()
+        .filter(|x| x.device().starts_with(NVIDIA_GRID_DEVICE_ID))
+        .map(|x| {
+            format!(
+                "0x{}",
+                x.subsystem_device()
+                    .as_ref()
+                    .unwrap_or(&"".to_string())
+                    .to_uppercase()
+            )
+            .clone()
+        })
+        .collect::<HashSet<_>>()
+        .into_iter();
+    // Return early with grid if a match is made for these subdevices
+    if subdevice_ids.any(|subdevice| NVIDIA_GRID_SUBDEVICES.contains(subdevice.as_str())) {
+        return Ok("grid".to_string());
+    }
 
     if unique_ids.any(|input_device| open_gpu_device_set.contains(&input_device)) {
         Ok("open-gpu".to_string())
