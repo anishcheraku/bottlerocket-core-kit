@@ -161,6 +161,12 @@ containerLogMaxSize: {{settings.kubernetes.container-log-max-size}}
 {{#if settings.kubernetes.container-log-max-files includeZero=true}}
 containerLogMaxFiles: {{settings.kubernetes.container-log-max-files}}
 {{/if}}
+{{#if settings.kubernetes.container-log-max-workers includeZero=true}}
+containerLogMaxWorkers: {{settings.kubernetes.container-log-max-workers}}
+{{/if}}
+{{#if settings.kubernetes.container-log-monitor-interval}}
+containerLogMonitorInterval: {{settings.kubernetes.container-log-monitor-interval}}
+{{/if}}
 {{#if settings.kubernetes.shutdown-grace-period}}
 shutdownGracePeriod: {{settings.kubernetes.shutdown-grace-period}}
 {{/if}}
