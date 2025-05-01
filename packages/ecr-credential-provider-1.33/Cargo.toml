@@ -15,9 +15,9 @@ package-name = "ecr-credential-provider-1.33"
 releases-url = "https://github.com/kubernetes/cloud-provider-aws/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/kubernetes/cloud-provider-aws/archive/v1.33.0-rc.0.tar.gz"
+url = "https://github.com/kubernetes/cloud-provider-aws/archive/v1.33.0.tar.gz"
 path = "cloud-provider-aws-1.33.0.tar.gz"
-sha512 = "a923071b95174ad96bf78e3c255e0b7682fe1f896d7399abdcacdde82df808aec026c350e443f8612f98048ca6b51d77208d55f34fae9167a2ccf01b83e20071"
+sha512 = "8ad66c67b68b2f51e814094b53574f1a2ab9c91f2e08e99e7175acb5a82049f6a4922edf52ba1474d62035a4f25aaebc0c26c4a32c839cc2e7fbf6f5951cca9b"
 bundle-modules = [ "go" ]
 
 [build-dependencies]
