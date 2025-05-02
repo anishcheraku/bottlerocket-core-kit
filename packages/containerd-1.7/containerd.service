@@ -19,6 +19,7 @@ LimitNPROC=infinity
 LimitCORE=infinity
 LimitNOFILE=infinity
 TasksMax=infinity
+OOMScoreAdjust=-999
 
 [Install]
 WantedBy=multi-user.target
