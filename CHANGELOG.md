@@ -1,3 +1,21 @@
+# v8.1.0 (2025-05-05)
+
+## OS Changes
+* Add containerd 2.0 package ([#485])
+
+## Orchestrator Changes
+### Kubernetes
+* Add support for more Kubernetes Settings ([#487], [#489])
+  * containerLogMaxWorkers
+  * containerLogMonitorInterval
+  * singleProcessOOMKill
+* Update `kubernetes-1.33` and `ecr-credential-provider-1.33` packages with official sources ([#488])
+
+[#485]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/485
+[#487]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/487
+[#488]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/488
+[#489]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/489
+
 # v8.0.0 (2025-04-28)
 
 ## OS Changes
