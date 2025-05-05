@@ -24,7 +24,8 @@ chrony = { path = "../../packages/chrony" }
 cni = { path = "../../packages/cni" }
 cni-plugins = { path = "../../packages/cni-plugins" }
 conntrack-tools = { path = "../../packages/conntrack-tools" }
-containerd = { path = "../../packages/containerd" }
+containerd-1_7 = { path = "../../packages/containerd-1.7" }
+containerd-2_0 = { path = "../../packages/containerd-2.0" }
 coreutils = { path = "../../packages/coreutils" }
 cryptsetup = { path = "../../packages/cryptsetup" }
 dbus-broker = { path = "../../packages/dbus-broker" }

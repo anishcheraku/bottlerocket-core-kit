@@ -4,11 +4,12 @@
 
 %global gover 1.7.27
 %global rpmver %{gover}
-%global gitrev 753481ec61c7c8955a23d6ff7bc8e4daed455734
+%global gitrev 05044ec0a9a75232cad458027ca83437aae3f4da
 
+%global package_priority_epoch 1
 %global _dwz_low_mem_die_limit 0
 
-Name: %{_cross_os}%{gorepo}
+Name: %{_cross_os}%{gorepo}-1.7
 Version: %{rpmver}
 Release: 1%{?dist}
 Epoch: 1
@@ -42,8 +43,11 @@ Patch1002: 1002-Skip-exec.LookPath-if-a-specific-gzip-implementation.patch
 BuildRequires: git
 BuildRequires: %{_cross_os}glibc-devel
 Requires: %{_cross_os}runc
-Requires: %{_cross_os}containerd(optimized-gunzip)
+Requires: %{name}(optimized-gunzip)
 Requires: %{name}(binaries)
+
+Provides: %{_cross_os}%{gorepo} = %{package_priority_epoch}:
+Conflicts: %{_cross_os}%{gorepo}
 
 %description
 %{summary}.
@@ -70,8 +74,9 @@ Conflicts: (%{_cross_os}image-feature(no-fips) or %{name}-bin)
 Summary: Prefer pigz for gzip decompression
 Requires: %{_cross_os}pigz
 Requires: %{name}
+Provides: %{_cross_os}%{gorepo}-pigz = %{package_priority_epoch}:
 Conflicts: %{name}-igzip
-Provides: %{_cross_os}containerd(optimized-gunzip) = 1:
+Provides: %{name}(optimized-gunzip) = 1:
 
 %description pigz
 %{summary}.
@@ -80,11 +85,12 @@ Provides: %{_cross_os}containerd(optimized-gunzip) = 1:
 Summary: Prefer igzip for gzip decompression
 Requires: %{_cross_os}igzip
 Requires: %{name}
+Provides: %{_cross_os}%{gorepo}-igzip = %{package_priority_epoch}:
 Conflicts: %{name}-pigz
 %if "%{_cross_arch}" == "x86_64"
-Provides: %{_cross_os}containerd(optimized-gunzip) = 2:
+Provides: %{name}(optimized-gunzip) = 2:
 %else
-Provides: %{_cross_os}containerd(optimized-gunzip) = 0:
+Provides: %{name}(optimized-gunzip) = 0:
 %endif
 
 %description igzip

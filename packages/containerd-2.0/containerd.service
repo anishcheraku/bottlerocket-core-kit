@@ -6,8 +6,8 @@ Wants=network-online.target configured.target
 
 [Service]
 Slice=runtime.slice
+Environment=CONTAINERD_ENABLE_DEPRECATED_PULL_SCHEMA_1_IMAGE=1
 EnvironmentFile=/etc/network/proxy.env
-EnvironmentFile=-/etc/containerd/nvidia.env
 ExecStart=/usr/bin/containerd
 Type=notify
 Delegate=yes
@@ -19,6 +19,7 @@ LimitNPROC=infinity
 LimitCORE=infinity
 LimitNOFILE=infinity
 TasksMax=infinity
+OOMScoreAdjust=-999
 
 [Install]
 WantedBy=multi-user.target

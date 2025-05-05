@@ -2,7 +2,7 @@
 oci-defaults = { version = "v1", helpers = ["oci_defaults"] }
 +++
 {
-    "ociVersion": "1.0.2-dev",
+    "ociVersion": "1.1.0",
     "process": {
         "user": {
             "uid": 0,
@@ -150,6 +150,7 @@ oci-defaults = { version = "v1", helpers = ["oci_defaults"] }
             "/proc/timer_stats",
             "/proc/sched_debug",
             "/sys/firmware",
+            "/sys/devices/virtual/powercap",
             "/proc/scsi"
         ],
         "readonlyPaths": [
