@@ -9,7 +9,7 @@
 
 Name: %{_cross_os}ecr-credential-provider-1.33
 Version: %{rpmver}
-Release: 0.rc0%{?dist}
+Release: 1%{?dist}
 Summary: Amazon ECR credential provider
 License: Apache-2.0
 URL: https://github.com/kubernetes/cloud-provider-aws
@@ -47,8 +47,8 @@ Conflicts: (%{_cross_os}image-feature(no-fips) or %{name}-bin)
 %{summary}.
 
 %prep
-%setup -n %{gorepo}-%{gover}-rc.0 -q
-%setup -T -D -n %{gorepo}-%{gover}-rc.0 -b 1 -q
+%setup -n %{gorepo}-%{gover} -q
+%setup -T -D -n %{gorepo}-%{gover} -b 1 -q
 
 %build
 %set_cross_go_flags
