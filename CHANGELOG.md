@@ -1,7 +1,9 @@
 # v8.1.0 (2025-05-05)
 
 ## OS Changes
-* Add containerd 2.0 package ([#485])
+* Add `containerd-2.0` package ([#485])
+* Update `containerd-1.7` CRI spec to match upstream ([#485])
+* Update `containerd-1.7` service with `OOMScoreAdjust` to match upstream ([#485])
 
 ## Orchestrator Changes
 ### Kubernetes
