@@ -23,4 +23,4 @@ sha512 = "711e3db030cd8d3953e966c11d2afa4c543548f882d3364fc0b79b7cfb3b8d5ecb65b1
 glibc = { path = "../glibc" }
 libexpat = { path = "../libexpat" }
 libselinux = { path = "../libselinux" }
-systemd = { path = "../systemd" }
+systemd-252 = { path = "../systemd-252" }

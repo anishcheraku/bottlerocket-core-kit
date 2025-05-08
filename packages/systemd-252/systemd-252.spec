@@ -1,7 +1,9 @@
 # Skip check-rpaths since we expect them for systemd.
 %global __brp_check_rpaths %{nil}
 
-Name: %{_cross_os}systemd
+%global package_priority_epoch 1
+
+Name: %{_cross_os}systemd-252
 Version: 252.22
 Release: 1%{?dist}
 Summary: System and Service Manager
@@ -126,11 +128,16 @@ Requires: %{_cross_os}libtss2
 Requires: %{_cross_os}libuuid
 Requires: %{_cross_os}libxcrypt
 
+Provides: %{_cross_os}systemd = %{package_priority_epoch}:
+Conflicts: %{_cross_os}systemd
+
 %description
 %{summary}.
 
 %package console
 Summary: Files for console login using the System and Service Manager
+Requires: %{name}
+Provides: %{_cross_os}systemd-console = %{package_priority_epoch}:
 
 %description console
 %{summary}.
@@ -139,6 +146,7 @@ Summary: Files for console login using the System and Service Manager
 Summary: Files for cryptsetup support in systemd
 Requires: %{name}
 Requires: %{_cross_os}cryptsetup
+Provides: %{_cross_os}systemd-cryptsetup = %{package_priority_epoch}:
 
 %description cryptsetup
 %{summary}.
@@ -146,18 +154,23 @@ Requires: %{_cross_os}cryptsetup
 %package devel
 Summary: Files for development using the System and Service Manager
 Requires: %{name}
+Provides: %{_cross_os}systemd-devel = %{package_priority_epoch}:
 
 %description devel
 %{summary}.
 
 %package networkd
 Summary: Files for networkd
+Requires: %{name}
+Provides: %{_cross_os}systemd-networkd = %{package_priority_epoch}:
 
 %description networkd
 %{summary}.
 
 %package resolved
 Summary: Files for resolved
+Requires: %{name}
+Provides: %{_cross_os}systemd-resolved = %{package_priority_epoch}:
 
 %description resolved
 %{summary}.

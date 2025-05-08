@@ -179,7 +179,7 @@ dependencies = [
  "soci-snapshotter",
  "static-pods",
  "strace",
- "systemd",
+ "systemd-252",
  "tpm2-tools",
  "util-linux",
  "wicked",
@@ -257,7 +257,7 @@ dependencies = [
  "glibc",
  "libexpat",
  "libselinux",
- "systemd",
+ "systemd-252",
 ]
 
 [[package]]
@@ -273,7 +273,7 @@ version = "0.1.0"
 dependencies = [
  "glibc",
  "libseccomp",
- "systemd",
+ "systemd-252",
 ]
 
 [[package]]
@@ -855,7 +855,7 @@ name = "mdadm"
 version = "0.1.0"
 dependencies = [
  "glibc",
- "systemd",
+ "systemd-252",
 ]
 
 [[package]]
@@ -1001,7 +1001,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "systemd"
+name = "systemd-252"
 version = "0.1.0"
 dependencies = [
  "glibc",
@@ -1045,7 +1045,7 @@ dependencies = [
  "libdbus",
  "libiw",
  "libnl",
- "systemd",
+ "systemd-252",
 ]
 
 [[package]]

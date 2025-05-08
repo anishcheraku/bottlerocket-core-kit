@@ -20,4 +20,4 @@ glibc = { path = "../glibc" }
 libdbus = { path = "../libdbus" }
 libiw = { path = "../libiw" }
 libnl = { path = "../libnl" }
-systemd = { path = "../systemd" }
+systemd-252 = { path = "../systemd-252" }
