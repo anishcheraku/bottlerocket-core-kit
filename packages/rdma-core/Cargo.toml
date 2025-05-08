@@ -12,8 +12,8 @@ path = "../packages.rs"
 releases-url = "https://github.com/linux-rdma/rdma-core/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/linux-rdma/rdma-core/releases/download/v56.0/rdma-core-56.0.tar.gz"
-sha512 = "2f59f70e80d3a93d0159aecf8b1b3c5cfc489661121be06bd1cefe3cda510e63b106b6d19730534150d403c552926c760520b9a848d7ba82f94501ef14d92a63"
+url = "https://github.com/linux-rdma/rdma-core/releases/download/v57.0/rdma-core-57.0.tar.gz"
+sha512 = "4a904d34af6863655545fe720cc25a8800684f63c51cebb67be2058363949217903957dc925c69d41294362ccff75fb0d37f3bc31cd6f6f252a804d6713f62cf"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
