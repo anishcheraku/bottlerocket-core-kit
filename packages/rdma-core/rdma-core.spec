@@ -38,6 +38,7 @@ Requires: %{name}
   -DCMAKE_INSTALL_BINDIR:PATH=%{_cross_bindir} \
   -DCMAKE_INSTALL_SBINDIR:PATH=%{_cross_sbindir} \
   -DCMAKE_INSTALL_SYSCONFDIR:PATH=%{_cross_sysconfdir} \
+  -DCMAKE_INSTALL_UDEV_RULESDIR:PATH=%{_cross_udevrulesdir} \
 
 %make_build
 
@@ -78,10 +79,21 @@ install -p -m 0644 %{S:200} %{buildroot}%{_cross_datadir}/logdog.d
 %{_cross_bindir}/ibv_devinfo
 %{_cross_sbindir}/ibstat
 
+# udev rule for renaming to persistent names
+%{_cross_libdir}/udev/rdma_rename
+%{_cross_udevrulesdir}/60-rdma-persistent-naming.rules
+%{_cross_udevrulesdir}/90-rdma-umad.rules
+
+# Exclude the other udev rules we don't want
+%exclude %{_cross_udevrulesdir}/60-srp_daemon.rules
+%exclude %{_cross_udevrulesdir}/75-rdma-description.rules
+%exclude %{_cross_udevrulesdir}/90-iwpmd.rules
+%exclude %{_cross_udevrulesdir}/90-rdma-hw-modules.rules
+%exclude %{_cross_udevrulesdir}/90-rdma-ulp-modules.rules
+
 # Exclude the bits that are not needed
 %exclude %{_cross_datadir}/perl5
 %exclude %{_cross_docdir}
-%exclude %{_cross_libdir}/udev
 %exclude %{_cross_libexecdir}
 %exclude %{_cross_pkgconfigdir}
 %exclude %{_cross_sysconfdir}
@@ -111,9 +123,6 @@ install -p -m 0644 %{S:200} %{buildroot}%{_cross_datadir}/logdog.d
 %exclude %{_cross_libdir}/libibverbs/librxe-rdmav%{abiver}.so
 %exclude %{_cross_libdir}/libibverbs/libsiw-rdmav%{abiver}.so
 %exclude %{_cross_libdir}/libibverbs/libvmw_pvrdma-rdmav%{abiver}.so
-
-# Exclude udev rules
-%exclude %{_cross_udevrulesdir}
 
 # Exclude all the unused binaries
 %exclude %{_cross_bindir}/cmtime
