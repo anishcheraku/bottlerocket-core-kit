@@ -22,6 +22,8 @@ Source3: nvidia-gpu-devices.rules
 Source4: nvidia-container-toolkit-tmpfiles-ecs.conf
 Source5: nvidia-container-toolkit-tmpfiles-k8s.conf
 Source6: nvidia-container-toolkit-config-k8s
+Source7: generate-cdi-specs.service
+Patch0001: 0001-ldcache-fix-parsing-for-aarch64.patch
 
 BuildRequires: %{_cross_os}glibc-devel
 Requires: %{_cross_os}libnvidia-container
@@ -34,6 +36,7 @@ Requires: (%{name}-k8s if %{_cross_os}variant-family(aws-k8s))
 %package ecs
 Summary: Files specific for the ECS variants
 Requires: %{name}
+Requires: %{name}-cdi-specs
 Conflicts: %{name}-k8s
 
 %description ecs
@@ -45,6 +48,13 @@ Requires: %{name}
 Conflicts: %{name}-ecs
 
 %description k8s
+%{summary}.
+
+%package cdi-specs
+Summary: Tools to generate CDI specifications
+Requires: %{name}
+
+%description cdi-specs
 %{summary}.
 
 %prep
@@ -69,6 +79,7 @@ install -d %{buildroot}%{_cross_bindir}
 install -d %{buildroot}%{_cross_tmpfilesdir}
 install -d %{buildroot}%{_cross_templatedir}
 install -d %{buildroot}%{_cross_udevrulesdir}
+install -d %{buildroot}%{_cross_unitdir}
 install -d %{buildroot}%{_cross_datadir}/nvidia-container-toolkit
 install -d %{buildroot}%{_cross_factorydir}/nvidia-container-runtime
 install -d %{buildroot}%{_cross_templatedir}/nvidia-container-runtime
@@ -82,6 +93,7 @@ install -p -m 0644 %{S:3} %{buildroot}%{_cross_udevrulesdir}/90-nvidia-gpu-devic
 install -m 0644 %{S:4} %{buildroot}%{_cross_tmpfilesdir}/nvidia-container-toolkit-ecs.conf
 install -m 0644 %{S:5} %{buildroot}%{_cross_tmpfilesdir}/nvidia-container-toolkit-k8s.conf
 install -m 0644 %{S:6} %{buildroot}%{_cross_templatedir}/nvidia-container-runtime/
+install -m 0644 %{S:7} %{buildroot}%{_cross_unitdir}/
 
 %files
 %license LICENSE
@@ -100,3 +112,6 @@ install -m 0644 %{S:6} %{buildroot}%{_cross_templatedir}/nvidia-container-runtim
 %{_cross_factorydir}/nvidia-container-runtime/nvidia-container-toolkit-config-k8s.toml
 %{_cross_templatedir}/nvidia-container-runtime/nvidia-container-toolkit-config-k8s
 %{_cross_tmpfilesdir}/nvidia-container-toolkit-k8s.conf
+
+%files cdi-specs
+%{_cross_unitdir}/generate-cdi-specs.service

@@ -1,0 +1,46 @@
+From 018a8150cab0969c63b82a1e93047599e56de167 Mon Sep 17 00:00:00 2001
+From: Arnaldo Garcia Rincon <agarrcia@amazon.com>
+Date: Wed, 23 Apr 2025 01:09:31 +0000
+Subject: [PATCH] ldcache: fix parsing for aarch64
+
+The architecture flag for aarch64 is currently missing from the
+supported architecture flags list. This omission causes the getEntries
+function to exclude all libraries found on aarch64 hosts. As a result
+helper programs like nvidia-ctk are unable to generate CDI
+specifications for the aarch64 architecture.
+
+This fix adds the missing aarch64 architecture flag, using the same
+value as defined in libnvidia-container[1], which maintains a more
+comprehensive list of supported architectures.
+
+[1]: https://github.com/NVIDIA/libnvidia-container/blob/a198166e1c1166f4847598438115ea97dacc7a92/src/ldcache.h#L21
+
+Signed-off-by: Arnaldo Garcia Rincon <agarrcia@amazon.com>
+---
+ internal/ldcache/ldcache.go | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/internal/ldcache/ldcache.go b/internal/ldcache/ldcache.go
+index 4daf95b..455048c 100644
+--- a/internal/ldcache/ldcache.go
++++ b/internal/ldcache/ldcache.go
+@@ -47,6 +47,7 @@ const (
+ 	flagArchX8664   = 0x0300
+ 	flagArchX32     = 0x0800
+ 	flagArchPpc64le = 0x0500
++	flagArchAarch64 = 0x0a00
+ )
+ 
+ var errInvalidCache = errors.New("invalid ld.so.cache file")
+@@ -195,6 +196,8 @@ func (c *ldcache) getEntries() []entry {
+ 		switch e.Flags & flagArchMask {
+ 		case flagArchX8664:
+ 			fallthrough
++		case flagArchAarch64:
++			fallthrough
+ 		case flagArchPpc64le:
+ 			bits = 64
+ 		case flagArchX32:
+-- 
+2.49.0
+

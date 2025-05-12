@@ -3,3 +3,6 @@ root = "/"
 path = "/usr/bin/nvidia-container-cli"
 environment = []
 ldconfig = "@/sbin/ldconfig"
+
+[nvidia-container-runtime]
+mode = "cdi"
