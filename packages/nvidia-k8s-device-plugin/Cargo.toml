@@ -12,9 +12,9 @@ path = "../packages.rs"
 releases-url = "https://github.com/NVIDIA/k8s-device-plugin/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/NVIDIA/k8s-device-plugin/archive/v0.17.0/v0.17.0.tar.gz"
-path = "k8s-device-plugin-0.17.0.tar.gz"
-sha512 = "912d324d22bc18994319d4188a3d859e5af58ec6bd7da01f632a210dbb313b6ac8d5105e4558f03b49ed56005383eca6c25f215c24ca7b981b60cd0c510516ed"
+url = "https://github.com/NVIDIA/k8s-device-plugin/archive/v0.17.1/v0.17.1.tar.gz"
+path = "k8s-device-plugin-0.17.1.tar.gz"
+sha512 = "8dc7501131b45de10f55d1034db402886e0bae06b0e06445acfbe6ab25db2afccf7a9b8e24428c0206ee6a1b7080fa682e3f024bcef2c8c12a880303a607af65"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
