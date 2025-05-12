@@ -6,9 +6,11 @@ It can also check if devices on the PCI bus match a particular NVIDIA driver.
 */
 
 mod error;
+mod infiniband;
 
+use crate::error::Result;
+use crate::infiniband::find_infiniband_devices;
 use argh::FromArgs;
-use error::Result;
 use gptman::GPT;
 use hex_literal::hex;
 use lazy_static::lazy_static;
@@ -16,10 +18,11 @@ use serde::Deserialize;
 use signpost::uuid_to_guid;
 use snafu::{ensure, ResultExt};
 use std::collections::HashSet;
-use std::fs;
-use std::io::{Read, Seek};
-use std::path::PathBuf;
+use std::io::{Read, Seek, Write};
+use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::{fs, str};
+use tempfile::NamedTempFile;
 
 const NVME_CLI_PATH: &str = "/sbin/nvme";
 const NVME_IDENTIFY_DATA_SIZE: usize = 4096;
@@ -56,6 +59,7 @@ enum SubCommand {
     EfaPresent(EfaPresentArgs),
     NeuronPresent(NeuronPresentArgs),
     MatchNvidiaDriver(MatchNvidiaDriverArgs),
+    WriteInfinibandGuid(WriteInfinibandGuidArgs),
 }
 
 #[derive(FromArgs, PartialEq, Debug)]
@@ -92,6 +96,14 @@ struct MatchNvidiaDriverArgs {
     driver_name: String,
 }
 
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "write-infiniband-primary-guid")]
+/// Detect if Infiniband devices are attached and write the primary port guid to an env file if detected
+struct WriteInfinibandGuidArgs {
+    #[argh(positional)]
+    env_file: PathBuf,
+}
+
 #[derive(Deserialize)]
 /// Open GPU struct for comparing PCI ID's to a known list of supported devices.
 enum SupportedDevicesConfiguration {
@@ -119,7 +131,8 @@ struct GpuDeviceData {
 }
 
 // Main entry point.
-fn run() -> Result<()> {
+#[snafu::report]
+fn main() -> Result<()> {
     let args: Args = argh::from_env();
     match args.subcommand {
         SubCommand::Scan(scan_args) => {
@@ -143,6 +156,9 @@ fn run() -> Result<()> {
             let driver_name = driver.driver_name;
             nvidia_driver_supported(&driver_name)?;
         }
+        SubCommand::WriteInfinibandGuid(envfile) => {
+            find_and_write_infiniband_guid(envfile.env_file)?;
+        }
     }
     Ok(())
 }
@@ -161,6 +177,40 @@ fn is_neuron_attached() -> Result<()> {
     } else {
         Err(error::Error::NoNeuronPresent)
     }
+}
+
+/// Detects if infiniband is present. If not, return early. If it does find Infiniband devices,
+/// find if they match specific capabilities to be used for communication between NVIDIA Fabric
+/// Manger and NVLSM, then write the guid to an env file for use by those services.
+fn find_and_write_infiniband_guid(env_file: PathBuf) -> Result<()> {
+    let devices = find_infiniband_devices()?;
+
+    // Return early if no devices are found
+    if devices.is_empty() {
+        return Ok(());
+    }
+
+    // For each device, confirm if SW_MNG is present, then find the first port of the device. If that
+    // device has the correct capability mask, then get the GUID. The first device to be found in this
+    // search is the correct GUID for the configuration file.
+    for device in devices {
+        if device.is_device_sw_mng()? {
+            let ports = device.find_ports_for_device()?;
+            for port in ports {
+                if port.is_sm_enabled() {
+                    // NVIDIA Fabric Manager or NVLSM use -g to configure a Port GUID, use this as input
+                    // to those services
+                    write_config_string(
+                        env_file.clone(),
+                        format!("GUID_ARG=\"-g {}\"", *port.port_guid).as_str(),
+                    )?;
+                    return Ok(());
+                }
+            }
+        }
+    }
+    // If no suitable GUIDs were found, return without writing to the file
+    Ok(())
 }
 
 /// Find the device type by examining the partition table, if present.
@@ -322,14 +372,35 @@ lazy_static! {
     ].iter().copied().collect();
 }
 
-// Returning a Result from main makes it print a Debug representation of the error, but with Snafu
-// we have nice Display representations of the error, so we wrap "main" (run) and print any error.
-// https://github.com/shepmaster/snafu/issues/110
-fn main() {
-    if let Err(e) = run() {
-        eprintln!("{}", e);
-        std::process::exit(1);
+/// write_config_string will write the provided string to the provided path
+fn write_config_string(config_path: PathBuf, content_string: &str) -> Result<()> {
+    // Create a temporary file in the desired config directory
+    // Check that a path was specified and isn't /
+    let env_directory = config_path
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty() && *p != Path::new("/"))
+        .ok_or_else(|| error::Error::NoParentDirectory {
+            path: config_path.clone(),
+        })?;
+
+    let mut tempfile =
+        NamedTempFile::new_in(env_directory).context(error::CreateTempFileSnafu {
+            path: PathBuf::from(env_directory),
+        })?;
+
+    // Write the config to the temporary file
+    if !content_string.is_empty() {
+        writeln!(tempfile, "{}", content_string).context(error::WriteTempFileSnafu)?;
     }
+
+    // Construct the final path and atomically move the temporary file to it
+    tempfile
+        .persist(&config_path)
+        .context(error::PersistTempFileSnafu {
+            path: config_path.clone(),
+        })?;
+
+    Ok(())
 }
 
 #[cfg(test)]
@@ -338,7 +409,8 @@ mod test {
 
     use gptman::{GPTPartitionEntry, GPT};
     use signpost::uuid_to_guid;
-    use std::io::Cursor;
+    use std::{env, io::Cursor};
+    use tempfile::TempDir;
 
     fn test_data() -> PathBuf {
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/tests")
@@ -428,5 +500,78 @@ mod test {
                 assert!(data.len() == 6);
             }
         }
+    }
+
+    #[test]
+    fn test_write_config_string_success() -> Result<()> {
+        // Create a temporary directory for testing
+        let temp_dir = TempDir::new().unwrap();
+        let config_path = temp_dir.path().join("config.txt");
+        let test_content = "test content";
+
+        // Write content to file
+        write_config_string(config_path.clone(), test_content)?;
+
+        // Verify the content was written correctly
+        let read_content = fs::read_to_string(&config_path).unwrap();
+        assert_eq!(read_content, format!("{}\n", test_content));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_write_config_string_no_parent_directory() {
+        // Try to write to a path without a parent directory
+        let result = write_config_string(PathBuf::from("file.txt"), "content");
+        println!("{:?}", result);
+        assert!(matches!(
+            result.unwrap_err(),
+            error::Error::NoParentDirectory { path: _ }
+        ));
+        // Try to write to /
+        let result = write_config_string(PathBuf::from("/file.txt"), "content");
+
+        assert!(matches!(
+            result.unwrap_err(),
+            error::Error::NoParentDirectory { path: _ }
+        ));
+    }
+
+    #[test]
+    fn test_write_config_string_empty_content() -> Result<()> {
+        // Create a temporary directory for testing
+        let temp_dir = TempDir::new().unwrap();
+        let config_path = temp_dir.path().join("config.txt");
+        let empty_content = "";
+
+        // Write empty content to file
+        write_config_string(config_path.clone(), empty_content)?;
+
+        // Verify the content was written correctly
+        let read_content = fs::read_to_string(&config_path).unwrap();
+        assert_eq!(read_content, ""); // Note: writeln! adds a newline
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_write_config_string_overwrite_existing() -> Result<()> {
+        // Create a temporary directory for testing
+        let temp_dir = TempDir::new().unwrap();
+        let config_path = temp_dir.path().join("config.txt");
+
+        // Write initial content
+        let initial_content = "initial content";
+        write_config_string(config_path.clone(), initial_content)?;
+
+        // Write new content
+        let new_content = "new content";
+        write_config_string(config_path.clone(), new_content)?;
+
+        // Verify the content was overwritten correctly
+        let read_content = fs::read_to_string(&config_path).unwrap();
+        assert_eq!(read_content, format!("{}\n", new_content));
+
+        Ok(())
     }
 }
