@@ -1,5 +1,5 @@
 Name: %{_cross_os}libnvme
-Version: 1.11.1
+Version: 1.13
 Release: 1%{?dist}
 Epoch: 1
 Summary: Library for NVM Express
@@ -29,6 +29,7 @@ CONFIGURE_OPTS=(
  -Dopenssl=disabled
  -Djson-c=disabled
  -Dkeyutils=disabled
+ -Dliburing=disabled
 
  -Ddocs-build=false
 )
