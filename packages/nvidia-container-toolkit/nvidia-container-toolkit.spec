@@ -73,6 +73,8 @@ go build -ldflags="${GOLDFLAGS}" -o nvidia-container-runtime-hook ./cmd/nvidia-c
 go build -ldflags="${GOLDFLAGS}" -o nvidia-ctk ./cmd/nvidia-ctk
 go build -ldflags="${GOLDFLAGS}" -o nvidia-cdi-hook ./cmd/nvidia-cdi-hook
 go build -ldflags="${GOLDFLAGS}" -o nvidia-container-runtime ./cmd/nvidia-container-runtime
+go build -ldflags="${GOLDFLAGS}" -o nvidia-container-runtime.cdi ./cmd/nvidia-container-runtime.cdi
+go build -ldflags="${GOLDFLAGS}" -o nvidia-container-runtime.legacy ./cmd/nvidia-container-runtime.legacy
 
 %install
 install -d %{buildroot}%{_cross_bindir}
@@ -87,6 +89,8 @@ install -p -m 0755 nvidia-container-runtime-hook %{buildroot}%{_cross_bindir}/
 install -p -m 0755 nvidia-ctk %{buildroot}%{_cross_bindir}/
 install -p -m 0755 nvidia-cdi-hook %{buildroot}%{_cross_bindir}/
 install -p -m 0755 nvidia-container-runtime %{buildroot}%{_cross_bindir}/
+install -p -m 0755 nvidia-container-runtime.cdi %{buildroot}%{_cross_bindir}/
+install -p -m 0755 nvidia-container-runtime.legacy %{buildroot}%{_cross_bindir}/
 install -m 0644 %{S:1} %{buildroot}%{_cross_factorydir}/nvidia-container-runtime/
 install -m 0644 %{S:2} %{buildroot}%{_cross_factorydir}/nvidia-container-runtime/
 install -p -m 0644 %{S:3} %{buildroot}%{_cross_udevrulesdir}/90-nvidia-gpu-devices.rules
@@ -102,6 +106,8 @@ install -m 0644 %{S:7} %{buildroot}%{_cross_unitdir}/
 %{_cross_bindir}/nvidia-ctk
 %{_cross_bindir}/nvidia-cdi-hook
 %{_cross_bindir}/nvidia-container-runtime
+%{_cross_bindir}/nvidia-container-runtime.cdi
+%{_cross_bindir}/nvidia-container-runtime.legacy
 %{_cross_udevrulesdir}/90-nvidia-gpu-devices.rules
 
 %files ecs
