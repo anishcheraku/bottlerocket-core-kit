@@ -21,6 +21,7 @@ address = "/run/containerd/containerd.sock"
 [plugins."io.containerd.grpc.v1.cri"]
 device_ownership_from_security_context = {{default false settings.kubernetes.device-ownership-from-security-context}}
 enable_selinux = true
+enable_cdi = true
 # Pause container image is specified here, shares the same image as kubelet's pod-infra-container-image
 sandbox_image = "localhost/kubernetes/pause:0.1.0"
 {{#if settings.container-runtime.max-container-log-line-size}}
@@ -43,9 +44,29 @@ default_runtime_name = "nvidia"
 runtime_type = "io.containerd.runc.v2"
 base_runtime_spec = "/etc/containerd/cri-base.json"
 
+# cdi only nvidia container runtime
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia-cdi]
+runtime_type = "io.containerd.runc.v2"
+base_runtime_spec = "/etc/containerd/cri-base.json"
+
+# legacy only nvidia container runtime
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia-legacy]
+runtime_type = "io.containerd.runc.v2"
+base_runtime_spec = "/etc/containerd/cri-base.json"
+
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia.options]
 SystemdCgroup = true
 BinaryName = "nvidia-container-runtime"
+
+# cdi only nvidia container runtime
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia-cdi.options]
+SystemdCgroup = true
+BinaryName = "nvidia-container-runtime.cdi"
+
+# legacy only nvidia container runtime
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia-legacy.options]
+SystemdCgroup = true
+BinaryName = "nvidia-container-runtime.legacy"
 
 [plugins."io.containerd.grpc.v1.cri".cni]
 bin_dir = "/opt/cni/bin"
