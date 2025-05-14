@@ -36,7 +36,6 @@ Requires: (%{name}-k8s if %{_cross_os}variant-family(aws-k8s))
 %package ecs
 Summary: Files specific for the ECS variants
 Requires: %{name}
-Requires: %{name}-cdi-specs
 Conflicts: %{name}-k8s
 
 %description ecs
@@ -48,13 +47,6 @@ Requires: %{name}
 Conflicts: %{name}-ecs
 
 %description k8s
-%{summary}.
-
-%package cdi-specs
-Summary: Tools to generate CDI specifications
-Requires: %{name}
-
-%description cdi-specs
 %{summary}.
 
 %prep
@@ -109,6 +101,7 @@ install -m 0644 %{S:7} %{buildroot}%{_cross_unitdir}/
 %{_cross_bindir}/nvidia-container-runtime.cdi
 %{_cross_bindir}/nvidia-container-runtime.legacy
 %{_cross_udevrulesdir}/90-nvidia-gpu-devices.rules
+%{_cross_unitdir}/generate-cdi-specs.service
 
 %files ecs
 %{_cross_factorydir}/nvidia-container-runtime/nvidia-container-toolkit-config-ecs.toml
@@ -118,6 +111,3 @@ install -m 0644 %{S:7} %{buildroot}%{_cross_unitdir}/
 %{_cross_factorydir}/nvidia-container-runtime/nvidia-container-toolkit-config-k8s.toml
 %{_cross_templatedir}/nvidia-container-runtime/nvidia-container-toolkit-config-k8s
 %{_cross_tmpfilesdir}/nvidia-container-toolkit-k8s.conf
-
-%files cdi-specs
-%{_cross_unitdir}/generate-cdi-specs.service
