@@ -1,5 +1,5 @@
 Name: %{_cross_os}libselinux
-Version: 3.7
+Version: 3.8.1
 Release: 1%{?dist}
 Epoch: 1
 Summary: Library for SELinux
@@ -7,7 +7,7 @@ License: LicenseRef-SELinux-PD
 URL: https://github.com/SELinuxProject/
 Source0: https://github.com/SELinuxProject/selinux/releases/download/%{version}/libselinux-%{version}.tar.gz
 Source1: https://github.com/SELinuxProject/selinux/releases/download/%{version}/libselinux-%{version}.tar.gz.asc
-Source2: gpgkey-1BE2C0FF08949623102FD2564695881C254508D1.asc
+Source2: gpgkey-7200EB2C3F5E488463C0CE9ECDCAE8C927C6BE31.asc
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libpcre-devel
 BuildRequires: %{_cross_os}libsepol-devel
@@ -79,6 +79,7 @@ export USE_PCRE2='y' \\\
 %exclude %{_cross_sbindir}/getseuser
 %exclude %{_cross_sbindir}/matchpathcon
 %exclude %{_cross_sbindir}/policyvers
+%exclude %{_cross_sbindir}/selabel_compare
 %exclude %{_cross_sbindir}/selabel_digest
 %exclude %{_cross_sbindir}/selabel_get_digests_all_partial_matches
 %exclude %{_cross_sbindir}/selabel_lookup
