@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-leg349bma1kc"
+title = "aws-signing-helper CVE-2025-22870"
+cve = "CVE-2025-22870"
+severity = "moderate"
+description = "A flaw was found in aws-signing-helper dependency x/net, where proxy pattern matching can improperly treat an IPv6 zone ID as a hostname component."
+
+[[advisory.products]]
+package-name = "aws-signing-helper"
+patched-version = "1.6.0"
+patched-epoch = "1"
+
+[updateinfo]
+author = "yutongsu"
+issue-date = 2025-05-15T23:45:19Z
+arches = ["aarch64", "x86_64"]
+version = "staging"

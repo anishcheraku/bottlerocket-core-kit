@@ -1,0 +1,22 @@
+[advisory]
+id = "BRSA-newyz3jucdu5"
+title = "aws-signing-helper, nvidia-k8s-device-plugin CVE-2024-45338"
+cve = "CVE-2024-45338"
+severity = "moderate"
+description = "A flaw was found in aws-signing-helper and nvidia-k8s-device-plugin dependency x/net which could lead to a denial of service."
+
+[[advisory.products]]
+package-name = "aws-signing-helper"
+patched-version = "1.6.0"
+patched-epoch = "1"
+
+[[advisory.products]]
+package-name = "nvidia-k8s-device-plugin"
+patched-version = "0.17.1"
+patched-epoch = "1"
+
+[updateinfo]
+author = "yutongsu"
+issue-date = 2025-05-15T23:52:10Z
+arches = ["x86_64", "aarch64"]
+version = "staging"
