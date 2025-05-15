@@ -12,8 +12,8 @@ path = "../packages.rs"
 releases-url = "https://github.com/aws/rolesanywhere-credential-helper/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/aws/rolesanywhere-credential-helper/archive/v1.4.0/rolesanywhere-credential-helper-v1.4.0.tar.gz"
-sha512 = "6da4911c89ea24a1356964f5cedc2cdb06c927a930b189efbf5ccaae60e582714b264fb787b2ed9d575ce5e588d1a057d7f311022c459aca7b7afd9f9c2bc801"
+url = "https://github.com/aws/rolesanywhere-credential-helper/archive/v1.6.0/rolesanywhere-credential-helper-v1.6.0.tar.gz"
+sha512 = "be0486b7aad0a366835fe65ced3d8ab162866316f7d9c4d0acd11ad67a3d6e922b7890878bb683f625db2a9943d641a67b91bbb189a65ff9e61f13ddd05caa27"
 bundle-modules = [ "go" ]
 
 [build-dependencies]
