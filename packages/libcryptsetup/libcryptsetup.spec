@@ -1,4 +1,4 @@
-Name: %{_cross_os}cryptsetup
+Name: %{_cross_os}libcryptsetup
 Version: 2.7.5
 Release: 1%{?dist}
 Summary: Libraries for disk encryption support
@@ -25,11 +25,20 @@ Requires: %{_cross_os}libblkid
 Requires: %{_cross_os}libcrypto
 Requires: %{_cross_os}libdevmapper
 Requires: %{_cross_os}libjson-c
-Requires: %{_cross_os}libpopt
 Requires: %{_cross_os}libselinux
 Requires: %{_cross_os}libuuid
 
 %description
+%{summary}.
+
+%package tools
+Summary: Command line tools for the libraries for disk encryption support
+Provides: %{_cross_os}cryptsetup
+Requires: %{name}
+Requires: %{_cross_os}libpopt
+Requires: %{_cross_os}dmsetup
+
+%description tools
 %{summary}.
 
 %package devel
@@ -80,12 +89,14 @@ Requires: %{_cross_os}libuuid-devel
 %files
 %license COPYING COPYING.LGPL
 %{_cross_attribution_file}
-%{_cross_sbindir}/cryptsetup
-%{_cross_sbindir}/integritysetup
-%{_cross_sbindir}/veritysetup
 %{_cross_libdir}/*.so.*
 %{_cross_tmpfilesdir}/cryptsetup.conf
 %exclude %{_cross_mandir}
+
+%files tools
+%{_cross_sbindir}/cryptsetup
+%{_cross_sbindir}/integritysetup
+%{_cross_sbindir}/veritysetup
 
 %files devel
 %{_cross_libdir}/*.so
