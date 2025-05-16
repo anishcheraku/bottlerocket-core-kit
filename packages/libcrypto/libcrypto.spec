@@ -24,6 +24,13 @@ Requires: %{_cross_os}glibc
 %description
 %{summary}.
 
+%package tools
+Summary: Command line tools for the AWS-LC cryptographic library
+Requires: %{name}
+
+%description tools
+%{summary}.
+
 %package devel
 Summary: Files for development using the AWS-LC cryptographic library
 Requires: %{name}
@@ -56,6 +63,8 @@ Requires: %{name}
 %{_cross_attribution_file}
 %{_cross_libdir}/libcrypto.so
 %{_cross_libdir}/libssl.so
+
+%files tools
 %{_cross_bindir}/bssl
 %{_cross_bindir}/openssl
 
