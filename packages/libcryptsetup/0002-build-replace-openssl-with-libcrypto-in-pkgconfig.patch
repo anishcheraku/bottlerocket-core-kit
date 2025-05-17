@@ -1,0 +1,26 @@
+From b25fb07213c0dfd91693bfa1ee375b8b26525734 Mon Sep 17 00:00:00 2001
+From: Ben Cressey <bcressey@amazon.com>
+Date: Sat, 17 May 2025 18:01:33 +0000
+Subject: [PATCH] build: replace openssl with libcrypto in pkgconfig
+
+Signed-off-by: Ben Cressey <bcressey@amazon.com>
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index a5535731..58019842 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -710,7 +710,7 @@ dnl pwquality is used only by tools
+ PKGMODULES="uuid devmapper json-c"
+ case $with_crypto_backend in
+ 	gcrypt)  PKGMODULES="$PKGMODULES libgcrypt" ;;
+-	openssl) PKGMODULES="$PKGMODULES openssl" ;;
++	openssl) PKGMODULES="$PKGMODULES libcrypto" ;;
+ 	nss)     PKGMODULES="$PKGMODULES nss" ;;
+ 	nettle)  PKGMODULES="$PKGMODULES nettle" ;;
+ esac
+-- 
+2.49.0
+

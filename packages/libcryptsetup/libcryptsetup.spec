@@ -12,6 +12,9 @@ Source2: gpgkey-2A2918243FDE46648D0686F9D9B0577BD93E98FC.asc
 # This patch allows argon2 usage unless the kernel is also in FIPS mode.
 Patch0001: 0001-pbkdf-check-whether-FIPS-is-enabled-at-runtime.patch
 
+# cryptsetup only depends on libcrypto, not libssl.
+Patch0002: 0002-build-replace-openssl-with-libcrypto-in-pkgconfig.patch
+
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libblkid-devel
 BuildRequires: %{_cross_os}libcrypto-devel
@@ -58,6 +61,7 @@ Requires: %{_cross_os}libuuid-devel
 %autosetup -n cryptsetup-%{version} -p1
 
 %build
+autoreconf -fi
 %cross_configure \
   --disable-asciidoc \
   --disable-libargon2 \
