@@ -1,3 +1,6 @@
+# Disable LTO since it's not compatible with libaio's symbol versioning.
+%global _cross_cflags %{_cross_cflags} -fno-lto
+
 Name: %{_cross_os}libaio
 Version: 0.3.113
 Release: 1%{?dist}
