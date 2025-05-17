@@ -44,6 +44,5 @@ Requires: %{name}
 %dir %{_cross_includedir}/libmnl
 %{_cross_includedir}/libmnl/*.h
 %{_cross_pkgconfigdir}/*.pc
-%exclude %{_cross_libdir}/*.la
 
 %changelog

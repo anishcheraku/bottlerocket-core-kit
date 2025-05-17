@@ -60,11 +60,9 @@ Requires: %{name}
 %exclude %{_cross_libdir}/pkgconfig/liburcu-mb.pc
 %exclude %{_cross_libdir}/pkgconfig/liburcu-memb.pc
 %exclude %{_cross_libdir}/pkgconfig/liburcu-qsbr.pc
-%exclude %{_cross_libdir}/pkgconfig/liburcu-signal.pc
 %exclude %{_cross_libdir}/liburcu-bp.so
 %exclude %{_cross_libdir}/liburcu-cds.so
 %exclude %{_cross_libdir}/liburcu-common.so
 %exclude %{_cross_libdir}/liburcu-mb.so
 %exclude %{_cross_libdir}/liburcu-memb.so
 %exclude %{_cross_libdir}/liburcu-qsbr.so
-%exclude %{_cross_libdir}/liburcu-signal.so

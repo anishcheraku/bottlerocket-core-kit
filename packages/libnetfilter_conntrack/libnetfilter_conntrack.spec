@@ -50,6 +50,5 @@ Requires: %{name}
 %dir %{_cross_includedir}/libnetfilter_conntrack
 %{_cross_includedir}/libnetfilter_conntrack/*.h
 %{_cross_pkgconfigdir}/*.pc
-%exclude %{_cross_libdir}/*.la
 
 %changelog

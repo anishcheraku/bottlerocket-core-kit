@@ -48,6 +48,5 @@ Requires: %{name}
 %dir %{_cross_includedir}/libnftnl
 %{_cross_includedir}/libnftnl/*.h
 %{_cross_pkgconfigdir}/*.pc
-%exclude %{_cross_libdir}/*.la
 
 %changelog

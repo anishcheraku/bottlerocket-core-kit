@@ -79,8 +79,6 @@ install -p -m 0644 %{S:2} %{buildroot}%{_cross_factorydir}%{_cross_sysconfdir}/v
 install -d %{buildroot}%{_cross_tmpfilesdir}
 install -p -m 0644 %{S:3} %{buildroot}%{_cross_tmpfilesdir}/open-vm-tools.conf
 
-find %{buildroot} -name '*.la' -delete
-
 %files
 %license COPYING LICENSE
 %{_cross_attribution_file}
@@ -104,9 +102,7 @@ find %{buildroot} -name '*.la' -delete
 %exclude %{_cross_bindir}/vmware-hgfsclient
 %exclude %{_cross_sysconfdir}
 %exclude %{_cross_udevrulesdir}
-
 %exclude %{_bindir}
-%exclude /sbin
 
 %files devel
 %{_cross_libdir}/*.a

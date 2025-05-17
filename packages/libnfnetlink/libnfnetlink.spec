@@ -44,6 +44,5 @@ Requires: %{name}
 %dir %{_cross_includedir}/libnfnetlink
 %{_cross_includedir}/libnfnetlink/*.h
 %{_cross_pkgconfigdir}/*.pc
-%exclude %{_cross_libdir}/*.la
 
 %changelog

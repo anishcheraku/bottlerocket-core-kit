@@ -79,7 +79,6 @@ rm -rf %{buildroot}%{_cross_docdir}/dbus/examples
 %dir %{_cross_includedir}/dbus-1.0
 %{_cross_includedir}/dbus-1.0/*
 %{_cross_pkgconfigdir}/*.pc
-%exclude %{_cross_libdir}/*.la
 %exclude %{_cross_libdir}/cmake
 
 %changelog

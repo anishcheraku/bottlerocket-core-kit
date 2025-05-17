@@ -74,7 +74,6 @@ export PKG_CONFIG_PATH='%{_cross_pkgconfigdir}' \\\
 %dir %{_cross_datadir}/iproute2
 %{_cross_datadir}/iproute2/*
 %exclude %{_cross_bashdir}/*
-%exclude %{_cross_docdir}/*
 %exclude %{_cross_mandir}/*
 %exclude %{_cross_includedir}/*
 

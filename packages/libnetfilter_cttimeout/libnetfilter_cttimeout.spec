@@ -46,6 +46,5 @@ Requires: %{name}
 %dir %{_cross_includedir}/libnetfilter_cttimeout
 %{_cross_includedir}/libnetfilter_cttimeout/*.h
 %{_cross_pkgconfigdir}/*.pc
-%exclude %{_cross_libdir}/*.la
 
 %changelog

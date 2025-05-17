@@ -56,7 +56,6 @@ Requires: %{name}
 %exclude %{_cross_mandir}
 %exclude %{_cross_localedir}
 %exclude %{_cross_libdir}/ldscripts
-%exclude %{_cross_libdir}/lib*.la
 %exclude %{_cross_bindir}/addr2line
 %exclude %{_cross_bindir}/ar
 %exclude %{_cross_bindir}/c++filt

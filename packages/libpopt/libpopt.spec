@@ -38,7 +38,6 @@ Requires: %{name}
 %{_cross_attribution_file}
 %{_cross_libdir}/libpopt.so.*
 %exclude %{_cross_mandir}
-%exclude %{_cross_datadir}/locale
 
 %files devel
 %{_cross_includedir}/popt.h

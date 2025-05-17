@@ -52,6 +52,11 @@ Requires: %{name}
 %install
 %make_install
 
+# Replace absolute symlink with relative one.
+ln -srnf \
+  %{buildroot}%{_cross_sbindir}/xtables-legacy-multi \
+  %{buildroot}%{_cross_bindir}/iptables-xml
+
 %files
 %license COPYING
 %{_cross_attribution_file}
