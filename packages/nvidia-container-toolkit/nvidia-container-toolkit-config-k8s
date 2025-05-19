@@ -31,3 +31,9 @@ mode="legacy"
 {{else}}
 mode="legacy"
 {{/if}}
+
+[nvidia-container-runtime-hook]
+# For the legacy NVIDIA runtime, skip detecting the mode used in the
+# NVIDA Container Runtime. This prevents failures in the legacy NVIDIA runtime
+# when the selected mode is 'cdi'.
+skip-mode-detection = true
