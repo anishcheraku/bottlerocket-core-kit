@@ -1,14 +1,39 @@
 [required-extensions]
 nvidia-container-runtime = "v1"
-std = { version = "v1", helpers = ["default"] }
+kubelet-device-plugins = "v1"
+std = { version = "v1", helpers = ["default", "is_array"] }
 
 +++
 ### generated from the template file ###
 accept-nvidia-visible-devices-as-volume-mounts = {{default true settings.nvidia-container-runtime.visible-devices-as-volume-mounts}}
 accept-nvidia-visible-devices-envvar-when-unprivileged = {{default false settings.nvidia-container-runtime.visible-devices-envvar-when-unprivileged}}
-
 [nvidia-container-cli]
 root = "/"
 path = "/usr/bin/nvidia-container-cli"
 environment = []
 ldconfig = "@/sbin/ldconfig"
+
+[nvidia-container-runtime]
+{{#if settings.kubelet-device-plugins.nvidia.device-list-strategy}}
+{{~#if (is_array settings.kubelet-device-plugins.nvidia.device-list-strategy) ~}}
+{{~#if (eq settings.kubelet-device-plugins.nvidia.device-list-strategy.[0] "cdi-cri") ~}}
+mode="cdi"
+{{~else~}}
+mode="legacy"
+{{~/if~}}
+{{~else~}}
+{{~#if (eq settings.kubelet-device-plugins.nvidia.device-list-strategy "cdi-cri") ~}}
+mode="cdi"
+{{~else~}}
+mode="legacy"
+{{~/if~}}
+{{/if}}
+{{else}}
+mode="legacy"
+{{/if}}
+
+[nvidia-container-runtime-hook]
+# For the legacy NVIDIA runtime, skip detecting the mode used in the
+# NVIDA Container Runtime. This prevents failures in the legacy NVIDIA runtime
+# when the selected mode is 'cdi'.
+skip-mode-detection = true
