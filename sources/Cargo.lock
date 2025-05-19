@@ -2444,6 +2444,7 @@ dependencies = [
  "serde_json",
  "signpost",
  "snafu",
+ "tempfile",
 ]
 
 [[package]]
