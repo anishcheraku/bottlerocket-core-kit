@@ -1360,7 +1360,7 @@ pub fn oci_defaults(
     // Extract the last part of the settings path, which is the OCI spec section we want to render.
     let oci_spec_section = settings_path
         .split('.')
-        .last()
+        .next_back()
         .expect("did not find (got None for) an oci_spec_section");
 
     // Render the requested OCI spec section

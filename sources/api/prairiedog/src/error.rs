@@ -13,7 +13,7 @@ pub(super) enum Error {
 
     #[snafu(display("Failed to execute '{:?}': {}", command, source))]
     ExecutionFailure {
-        command: Command,
+        command: Box<Command>,
         source: std::io::Error,
     },
 

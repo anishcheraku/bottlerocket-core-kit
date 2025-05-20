@@ -35,8 +35,11 @@ pub enum Error {
 
     #[snafu(display("SignalResource request failed: {}", source))]
     SignalResource {
-        source: aws_sdk_cloudformation::error::SdkError<
-            aws_sdk_cloudformation::operation::signal_resource::SignalResourceError,
+        #[snafu(source(from(aws_sdk_cloudformation::error::SdkError<aws_sdk_cloudformation::operation::signal_resource::SignalResourceError>, Box::new)))]
+        source: Box<
+            aws_sdk_cloudformation::error::SdkError<
+                aws_sdk_cloudformation::operation::signal_resource::SignalResourceError,
+            >,
         >,
     },
 }

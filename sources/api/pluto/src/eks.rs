@@ -14,8 +14,11 @@ pub(crate) type ClusterNetworkConfig = KubernetesNetworkConfigResponse;
 pub(super) enum Error {
     #[snafu(display("Error describing cluster: {}", source))]
     DescribeCluster {
-        source: aws_sdk_eks::error::SdkError<
-            aws_sdk_eks::operation::describe_cluster::DescribeClusterError,
+        #[snafu(source(from(aws_sdk_eks::error::SdkError<aws_sdk_eks::operation::describe_cluster::DescribeClusterError>, Box::new)))]
+        source: Box<
+            aws_sdk_eks::error::SdkError<
+                aws_sdk_eks::operation::describe_cluster::DescribeClusterError,
+            >,
         >,
     },
 
