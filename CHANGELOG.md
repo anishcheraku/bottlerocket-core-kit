@@ -1,9 +1,47 @@
+# v8.2.0 (2025-05-20)
+
+## OS Changes
+* Third party package updates ([#494], [#498], [#513], [#514])
+* Extend `ghostdog` for Infiniband detection and configuration ([#499])
+
+* Enable `cryptsetup` and `tpm2` functionality for systemd ([#518])
+
+## Build Changes
+* Update `twoliter` from 0.9.0 to 0.10.1 ([#491], [#509])
+* Update bottlerocket-settings-models to 0.10.0 ([#520])
+
+## Orchestrator changes
+### ECS
+* Migrate ECS to use CDI ([#482])
+
+### Kubernetes
+* Support CDI and legacy NVIDIA Container Runtime modes ([#459], [#500], [#507], [#511])
+* Patch `nvidia-k8s-device-plugin` to add ldcache parsing ([#501])
+* Apply upstream patches for EKS 1.26 ([#517])
+
+[#459]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/459
+[#482]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/482
+[#491]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/491
+[#494]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/494
+[#498]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/498
+[#499]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/499
+[#500]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/500
+[#501]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/501
+[#507]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/507
+[#509]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/509
+[#511]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/511
+[#513]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/513
+[#514]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/514
+[#517]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/517
+[#518]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/518
+[#520]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/520
+
 # v8.1.1 (2025-05-14)
 
 ## OS Changes
 * Fix `containerd-2.0` settings for `container-registry` ([#504])
 
-[#504] : https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/504
+[#504]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/504
 
 # v8.1.0 (2025-05-05)
 
@@ -15,9 +53,9 @@
 ## Orchestrator Changes
 ### Kubernetes
 * Add support for more Kubernetes Settings ([#487], [#489])
-  * containerLogMaxWorkers
-  * containerLogMonitorInterval
-  * singleProcessOOMKill
+  * `containerLogMaxWorkers`
+  * `containerLogMonitorInterval`
+  * `singleProcessOOMKill`
 * Update `kubernetes-1.33` and `ecr-credential-provider-1.33` packages with official sources ([#488])
 
 [#485]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/485
