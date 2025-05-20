@@ -1,4 +1,4 @@
-Name: %{_cross_os}cryptsetup
+Name: %{_cross_os}libcryptsetup
 Version: 2.7.5
 Release: 1%{?dist}
 Summary: Libraries for disk encryption support
@@ -11,6 +11,9 @@ Source2: gpgkey-2A2918243FDE46648D0686F9D9B0577BD93E98FC.asc
 # AWS-LC is always in FIPS mode, which will prevent any use of the argon2 PBKDF.
 # This patch allows argon2 usage unless the kernel is also in FIPS mode.
 Patch0001: 0001-pbkdf-check-whether-FIPS-is-enabled-at-runtime.patch
+
+# cryptsetup only depends on libcrypto, not libssl.
+Patch0002: 0002-build-replace-openssl-with-libcrypto-in-pkgconfig.patch
 
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libblkid-devel
@@ -25,11 +28,20 @@ Requires: %{_cross_os}libblkid
 Requires: %{_cross_os}libcrypto
 Requires: %{_cross_os}libdevmapper
 Requires: %{_cross_os}libjson-c
-Requires: %{_cross_os}libpopt
 Requires: %{_cross_os}libselinux
 Requires: %{_cross_os}libuuid
 
 %description
+%{summary}.
+
+%package tools
+Summary: Command line tools for the libraries for disk encryption support
+Provides: %{_cross_os}cryptsetup
+Requires: %{name}
+Requires: %{_cross_os}libpopt
+Requires: %{_cross_os}dmsetup
+
+%description tools
 %{summary}.
 
 %package devel
@@ -49,6 +61,7 @@ Requires: %{_cross_os}libuuid-devel
 %autosetup -n cryptsetup-%{version} -p1
 
 %build
+autoreconf -fi
 %cross_configure \
   --disable-asciidoc \
   --disable-libargon2 \
@@ -80,12 +93,14 @@ Requires: %{_cross_os}libuuid-devel
 %files
 %license COPYING COPYING.LGPL
 %{_cross_attribution_file}
-%{_cross_sbindir}/cryptsetup
-%{_cross_sbindir}/integritysetup
-%{_cross_sbindir}/veritysetup
 %{_cross_libdir}/*.so.*
 %{_cross_tmpfilesdir}/cryptsetup.conf
 %exclude %{_cross_mandir}
+
+%files tools
+%{_cross_sbindir}/cryptsetup
+%{_cross_sbindir}/integritysetup
+%{_cross_sbindir}/veritysetup
 
 %files devel
 %{_cross_libdir}/*.so

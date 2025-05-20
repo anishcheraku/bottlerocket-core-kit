@@ -24,11 +24,36 @@ Requires: %{_cross_os}glibc
 %description
 %{summary}.
 
+%package -n %{_cross_os}libssl
+Summary: OpenSSL shim for the AWS-LC cryptographic library
+Provides: %{_cross_os}openssl
+Requires: %{name}
+
+%description -n %{_cross_os}libssl
+%{summary}.
+
+%package tools
+Summary: Command line tools for the AWS-LC cryptographic library
+Provides: %{_cross_os}openssl-tools
+Requires: %{name}
+Requires: %{_cross_os}libssl
+
+%description tools
+%{summary}.
+
 %package devel
 Summary: Files for development using the AWS-LC cryptographic library
 Requires: %{name}
 
 %description devel
+%{summary}.
+
+%package -n %{_cross_os}libssl-devel
+Summary: Files for development using the OpenSSL shim for the AWS-LC cryptographic library
+Provides: %{_cross_os}openssl-devel
+Requires: %{_cross_os}libssl-devel
+
+%description -n %{_cross_os}libssl-devel
 %{summary}.
 
 %prep
@@ -55,12 +80,20 @@ Requires: %{name}
 %license LICENSE NOTICE
 %{_cross_attribution_file}
 %{_cross_libdir}/libcrypto.so
+
+%files -n %{_cross_os}libssl
 %{_cross_libdir}/libssl.so
+
+%files tools
 %{_cross_bindir}/bssl
 %{_cross_bindir}/openssl
 
 %files devel
 %{_cross_includedir}/openssl
-%{_cross_pkgconfigdir}/*.pc
+%{_cross_pkgconfigdir}/libcrypto.pc
 %exclude %{_cross_libdir}/crypto/cmake
 %exclude %{_cross_libdir}/ssl/cmake
+
+%files -n %{_cross_os}libssl-devel
+%{_cross_pkgconfigdir}/libssl.pc
+%{_cross_pkgconfigdir}/openssl.pc

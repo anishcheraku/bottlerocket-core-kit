@@ -80,7 +80,6 @@ dependencies = [
  "containerd-1_7",
  "containerd-2_0",
  "coreutils",
- "cryptsetup",
  "dbus-broker",
  "docker-cli",
  "docker-engine",
@@ -124,6 +123,7 @@ dependencies = [
  "libbpf",
  "libcap",
  "libcrypto",
+ "libcryptsetup",
  "libdbus",
  "libdevmapper",
  "libelf",
@@ -250,19 +250,6 @@ dependencies = [
  "libcap",
  "libselinux",
  "libxcrypt",
-]
-
-[[package]]
-name = "cryptsetup"
-version = "0.1.0"
-dependencies = [
- "glibc",
- "libcrypto",
- "libdevmapper",
- "libjson-c",
- "libpopt",
- "libselinux",
- "util-linux",
 ]
 
 [[package]]
@@ -581,6 +568,19 @@ name = "libcrypto"
 version = "0.1.0"
 dependencies = [
  "glibc",
+]
+
+[[package]]
+name = "libcryptsetup"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+ "libcrypto",
+ "libdevmapper",
+ "libjson-c",
+ "libpopt",
+ "libselinux",
+ "util-linux",
 ]
 
 [[package]]
@@ -1025,8 +1025,11 @@ dependencies = [
  "libacl",
  "libattr",
  "libcap",
+ "libcrypto",
+ "libcryptsetup",
  "libseccomp",
  "libselinux",
+ "libtss2",
  "libxcrypt",
  "util-linux",
 ]

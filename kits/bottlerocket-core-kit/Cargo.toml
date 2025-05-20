@@ -27,7 +27,6 @@ conntrack-tools = { path = "../../packages/conntrack-tools" }
 containerd-1_7 = { path = "../../packages/containerd-1.7" }
 containerd-2_0 = { path = "../../packages/containerd-2.0" }
 coreutils = { path = "../../packages/coreutils" }
-cryptsetup = { path = "../../packages/cryptsetup" }
 dbus-broker = { path = "../../packages/dbus-broker" }
 docker-cli = { path = "../../packages/docker-cli" }
 docker-engine = { path = "../../packages/docker-engine" }
@@ -71,6 +70,7 @@ libaudit = { path = "../../packages/libaudit" }
 libbpf = { path = "../../packages/libbpf" }
 libcap = { path = "../../packages/libcap" }
 libcrypto = { path = "../../packages/libcrypto" }
+libcryptsetup = { path = "../../packages/libcryptsetup" }
 libdbus = { path = "../../packages/libdbus" }
 libdevmapper = { path = "../../packages/libdevmapper" }
 libelf = { path = "../../packages/libelf" }
