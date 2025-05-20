@@ -17,6 +17,6 @@ patched-epoch = "1"
 
 [updateinfo]
 author = "yutongsu"
-issue-date = 2025-05-15T23:52:10Z
-arches = ["x86_64", "aarch64"]
-version = "staging"
+issue-date = 2025-05-19T23:30:19Z
+arches = ["aarch64", "x86_64"]
+version = "8.2.0"
