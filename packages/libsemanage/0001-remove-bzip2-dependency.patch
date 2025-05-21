@@ -1,18 +1,20 @@
-From 227391a3403dc480c31e5d8dc96aaa085e91610a Mon Sep 17 00:00:00 2001
-From: Ben Cressey <bcressey@amazon.com>
-Date: Sat, 30 Mar 2024 04:57:02 +0000
+From 2299d65a12381244a8a58a526bfd79e52a0cd031 Mon Sep 17 00:00:00 2001
+From: Kush Upadhyay <kushupad@amazon.com>
+Date: Thu, 15 May 2025 20:45:56 +0000
 Subject: [PATCH] remove bzip2 dependency
 
 Signed-off-by: Ben Cressey <bcressey@amazon.com>
+[kushupad: update for libsemanage-3.8.1]
+Signed-off-by: Kush Upadhyay <kushupad@amazon.com>
 ---
  src/Makefile          |   2 +-
- src/compressed_file.c | 179 ++++++------------------------------------
+ src/compressed_file.c | 184 ++++++------------------------------------
  src/libsemanage.pc.in |   1 -
  tests/Makefile        |   2 +-
- 4 files changed, 26 insertions(+), 158 deletions(-)
+ 4 files changed, 26 insertions(+), 163 deletions(-)
 
 diff --git a/src/Makefile b/src/Makefile
-index d525996..314d064 100644
+index 8dfbd76..1f6ab6a 100644
 --- a/src/Makefile
 +++ b/src/Makefile
 @@ -90,7 +90,7 @@ $(LIBA): $(OBJS)
@@ -25,10 +27,10 @@ index d525996..314d064 100644
  
  $(LIBPC): $(LIBPC).in ../VERSION
 diff --git a/src/compressed_file.c b/src/compressed_file.c
-index 5546b83..3632d79 100644
+index 4fa5b3e..f85c820 100644
 --- a/src/compressed_file.c
 +++ b/src/compressed_file.c
-@@ -27,148 +27,14 @@
+@@ -27,153 +27,14 @@
  #include <unistd.h>
  #include <fcntl.h>
  
@@ -50,10 +52,10 @@ index 5546b83..3632d79 100644
 -	size_t  size = 1<<16;
 -	int     bzerror;
 -	size_t  total = 0;
--	size_t len = 0;
+-	size_t len;
 -	FILE *f;
 -
--	if ((f = fopen(filename, "wb")) == NULL) {
+-	if ((f = fopen(filename, "wbe")) == NULL) {
 -		return -1;
 -	}
 -
@@ -109,7 +111,7 @@ index 5546b83..3632d79 100644
 -	size_t   total = 0;
 -	uint8_t* uncompress = NULL;
 -	uint8_t* tmpalloc = NULL;
--	int      ret = -1;
+-	ssize_t  ret = -1;
 -
 -	buf = malloc(bufsize);
 -	if (buf == NULL) {
@@ -119,7 +121,12 @@ index 5546b83..3632d79 100644
 -
 -	/* Check if the file is bzipped */
 -	bzerror = fread(buf, 1, BZ2_MAGICLEN, f);
--	rewind(f);
+-
+-	if (fseek(f, 0L, SEEK_SET) == -1) {
+-		ERR(sh, "Failure rewinding file.");
+-		goto exit;
+-	}
+-
 -	if ((bzerror != BZ2_MAGICLEN) || memcmp(buf, BZ2_MAGICSTR, BZ2_MAGICLEN)) {
 -		goto exit;
 -	}
@@ -178,7 +185,7 @@ index 5546b83..3632d79 100644
  	int ret = 0, fd = -1;
  	FILE *file = NULL;
  
-@@ -185,22 +51,17 @@ int map_compressed_file(semanage_handle_t *sh, const char *path,
+@@ -190,22 +51,17 @@ int map_compressed_file(semanage_handle_t *sh, const char *path,
  		return -1;
  	}
  
@@ -210,7 +217,7 @@ index 5546b83..3632d79 100644
  	fclose(file);
  	return ret;
  }
-@@ -210,15 +71,23 @@ void unmap_compressed_file(struct file_contents *contents)
+@@ -215,15 +71,23 @@ void unmap_compressed_file(struct file_contents *contents)
  	if (!contents->data)
  		return;
  
@@ -251,12 +258,12 @@ index 43681dd..6616bd1 100644
 -Libs.private: -lbz2
  Cflags: -I${includedir}
 diff --git a/tests/Makefile b/tests/Makefile
-index 69f49a3..ff54969 100644
+index 241ff17..af1def3 100644
 --- a/tests/Makefile
 +++ b/tests/Makefile
 @@ -7,7 +7,7 @@ CILS = $(sort $(wildcard *.cil))
  EXECUTABLE = libsemanage-tests
- CFLAGS += -g -O0 -Wall -W -Wundef -Wmissing-noreturn -Wmissing-format-attribute -Wno-unused-parameter
+ CFLAGS += -g -O0 -Wall -W -Wundef -Wmissing-noreturn -Wmissing-format-attribute
  override CFLAGS += -I../src -I../include
 -override LDLIBS += -lcunit -lbz2 -laudit -lselinux -lsepol
 +override LDLIBS += -lcunit -laudit -lselinux -lsepol
@@ -264,5 +271,5 @@ index 69f49a3..ff54969 100644
  OBJECTS = $(SOURCES:.c=.o)
  POLICIES = $(CILS:.cil=.policy)
 -- 
-2.44.0
+2.47.1
 

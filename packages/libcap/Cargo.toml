@@ -13,12 +13,12 @@ releases-url = "https://cdn.kernel.org/pub/linux/libs/security/linux-privs/libca
 # Changelog can be found here: https://sites.google.com/site/fullycapable/release-notes-for-libcap
 
 [[package.metadata.build-package.external-files]]
-url = "https://cdn.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.75.tar.gz"
-sha512 = "152d7a135856868840da9685b0094c818312634b8bc7e9a8f5f7088fab9ff16358fc6d26886a6d93784a8d5262c787c338daad06065cd493b2686834a6e523ec"
+url = "https://cdn.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.76.tar.gz"
+sha512 = "673ed11d46f0e7033f6094893f82e5a141be31fa23626e968b199baecf8f60b37a84248a826afc45a65851c1ce14ac25973ae982c8a3035823450259df4b4383"
 
 [[package.metadata.build-package.external-files]]
-url = "https://cdn.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.75.tar.sign"
-sha512 = "6a6af52ef3a48356d8c205827aa039ed852ec4a1cfea44f00613457380478ebd4946caf933a8ebdf98899b14340b9a7ef9b7151c4659329e2fd80590667d59d9"
+url = "https://cdn.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.76.tar.sign"
+sha512 = "277d64dc2e76ade6780e49d7fb4b8280cfabb1f4c2e553d97c0b35ae7fee8aafb660d8dd9962427525a2fd8111b019ff642448b4caa598afad736779f5f37520"
 
 [build-dependencies]
 glibc = { path = "../glibc" }

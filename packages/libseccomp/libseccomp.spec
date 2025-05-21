@@ -1,5 +1,5 @@
 Name: %{_cross_os}libseccomp
-Version: 2.5.5
+Version: 2.6.0
 Release: 1%{?dist}
 Epoch: 1
 Summary: Library for enhanced seccomp

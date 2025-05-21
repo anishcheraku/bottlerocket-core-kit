@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://github.com/SELinuxProject/selinux/releases/"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/SELinuxProject/selinux/releases/download/3.7/libsemanage-3.7.tar.gz"
-sha512 = "4b6370b02116364964ff24b93fb6629c885611de78419f649a027db38b4f1c3b3adf3b438efb34a92b49407ab8f9446ed4091fe4c99fa4752f0f5e3e31589415"
+url = "https://github.com/SELinuxProject/selinux/releases/download/3.8.1/libsemanage-3.8.1.tar.gz"
+sha512 = "ac3729ba4934a48a33e082af35baa9e25e6806855afb0f0e4e22aa67be201518c3d4933b8cf4dec83e5acbe178301276f51850bb1b16bc13e027a470ac7f1eb5"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/SELinuxProject/selinux/releases/download/3.7/libsemanage-3.7.tar.gz.asc"
-sha512 = "670ea358add41fd07828ffeb83aae676cd1fdc9abbad8afaa3fd9ee1f42891ec4ae03320e324bac99335159e4e2794bbc3c6f66715cae47b1745b609abd68e34"
+url = "https://github.com/SELinuxProject/selinux/releases/download/3.8.1/libsemanage-3.8.1.tar.gz.asc"
+sha512 = "b21cf3e0a5e28ddddaaded81fc00080d13a8aaac44357bf980fa1c28899e50e0791b66f407eaffd6ce0719caee356e02e576947949cf5cb34665fe0bb90f7108"
 
 [build-dependencies]
 glibc = { path = "../glibc" }

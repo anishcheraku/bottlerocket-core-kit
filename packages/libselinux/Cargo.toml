@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://github.com/SELinuxProject/selinux/releases/"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/SELinuxProject/selinux/releases/download/3.7/libselinux-3.7.tar.gz"
-sha512 = "e949c20b606c50ad521b9592ce55ad6658e8c4b24d9838028f5aba0a4fc762b6d0d0d0d207f5bef7a2e41485e12d91382fa6090df27152dbb40071b273419352"
+url = "https://github.com/SELinuxProject/selinux/releases/download/3.8.1/libselinux-3.8.1.tar.gz"
+sha512 = "646a31dff3b670a530adb9fc2fdc3ca9fe34a58e67e0fac52cc33bc7a01fa63c175987ef254c6c3bc7299cef137bc6f258dc378f4d70ae5c0fa0ece3bef42ab4"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/SELinuxProject/selinux/releases/download/3.7/libselinux-3.7.tar.gz.asc"
-sha512 = "5be2fdc0deda62f240276413d1b95a57d467fe989ddb31b34f7743cbd03d69385ac3321af10c97aded119ae5f0a4d8ec5894f8647a45f2902c0e8ff1e96787aa"
+url = "https://github.com/SELinuxProject/selinux/releases/download/3.8.1/libselinux-3.8.1.tar.gz.asc"
+sha512 = "ece79feb7758eafb8cf60092039596971140d8af7049671dfa8a7be6cc3167e928e361d8a9b26abfd855520413533890c280eec1e8107b260e3bbadb79c5159a"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
