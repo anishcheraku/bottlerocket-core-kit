@@ -1,0 +1,35 @@
+From 2352d837aa1c7a53fa546bb4918afe3129fb42dc Mon Sep 17 00:00:00 2001
+From: Ben Cressey <bcressey@amazon.com>
+Date: Wed, 21 May 2025 21:00:04 +0000
+Subject: [PATCH] build: do not build examples
+
+The examples expect the libraries they link with to have been built
+with an embedded rpath, in order to resolve the dependencies of those
+libraries. This leads to linker warnings like the following:
+
+  warning: liburcu-common.so.8, needed by liburcu-cds.so, not found
+  (try using -rpath or -rpath-link)
+
+We don't need the examples, so just stop building them.
+
+Signed-off-by: Ben Cressey <bcressey@amazon.com>
+---
+ Makefile.am | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 539a2ca..bea30de 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -4,7 +4,7 @@
+ 
+ ACLOCAL_AMFLAGS=-I m4
+ 
+-SUBDIRS = include src doc tests extras
++SUBDIRS = include src tests extras
+ 
+ dist_doc_DATA = \
+ 	LICENSE.md \
+-- 
+2.49.0
+
