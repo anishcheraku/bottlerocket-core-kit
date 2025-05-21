@@ -48,6 +48,22 @@ Requires: %{name}
 %install
 %make_install
 
+# Replace identical binaries with symlinks to avoid duplicate build ID warnings.
+declare -A aliases=(
+  [pgrep]="pkill"
+  [pidwait]="pkill"
+  [snice]="skill"
+)
+
+pushd %{buildroot}/%{_cross_bindir}
+for a in ${!aliases[*]} ; do
+  b="${aliases[${a}]}"
+  if cmp --quiet ${b} ${a} ; then
+    ln -snf "${b}" "${a}"
+  fi
+done
+popd
+
 %files
 %license COPYING COPYING.LIB
 %{_cross_attribution_file}
