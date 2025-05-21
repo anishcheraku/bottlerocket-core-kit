@@ -24,7 +24,6 @@ members = [
   "packages/docker-init",
   "packages/e2fsprogs",
   "packages/early-boot-config",
-  "packages/ecr-credential-provider-1.26",
   "packages/ecr-credential-provider-1.27",
   "packages/ecr-credential-provider-1.28",
   "packages/ecr-credential-provider-1.29",
