@@ -37,6 +37,7 @@ impl Interfaces for NetConfigV2 {
         !self.interfaces.is_empty()
     }
 
+    #[cfg(not(feature = "wicked"))]
     fn interfaces(&self) -> Vec<InterfaceId> {
         self.interfaces
             .keys()

@@ -36,6 +36,7 @@ impl Interfaces for NetConfigV3 {
         !self.net_devices.is_empty()
     }
 
+    #[cfg(not(feature = "wicked"))]
     fn interfaces(&self) -> Vec<InterfaceId> {
         self.net_devices.keys().cloned().collect()
     }
