@@ -108,7 +108,6 @@ dependencies = [
  "kexec-tools",
  "keyutils",
  "kmod",
- "kubernetes-1_26",
  "kubernetes-1_27",
  "kubernetes-1_28",
  "kubernetes-1_29",
@@ -459,13 +458,6 @@ dependencies = [
  "glibc",
  "libz",
  "libzstd",
-]
-
-[[package]]
-name = "kubernetes-1_26"
-version = "0.1.0"
-dependencies = [
- "glibc",
 ]
 
 [[package]]
