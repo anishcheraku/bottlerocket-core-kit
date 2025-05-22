@@ -9,11 +9,13 @@ build = "../build.rs"
 path = "../packages.rs"
 
 [package.metadata.build-package]
-releases-url = "https://cdn.kernel.org/pub/linux/utils/raid/mdadm/"
+releases-url = "https://github.com/md-raid-utilities/mdadm/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://cdn.kernel.org/pub/linux/utils/raid/mdadm/mdadm-4.3.tar.xz"
-sha512 = "e44977f2f80d2471cb313803a60c92dafe8282ac06bbbfd41ae90ca493c64a3da94db924538788d045fd7f0667333912dabedb0b070f9abf5c0540b32e0fa08f"
+url = "https://github.com/md-raid-utilities/mdadm/archive/mdadm-4.4/mdadm-4.4.tar.gz"
+path = "mdadm-4.4.tar.gz"
+sha512 = "7999457dd1d7b29307b1cc6932a6d444429f8d1a444a714cdf749cc7a80cc21f51bf65e644a029c97a96055537cced37b8bb8ade8c5a1f3977c3da8442517670"
+
 
 [build-dependencies]
 glibc = { path = "../glibc" }

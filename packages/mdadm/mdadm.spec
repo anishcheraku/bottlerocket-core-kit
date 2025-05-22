@@ -1,15 +1,15 @@
 Name: %{_cross_os}mdadm
-Version: 4.3
+Version: 4.4
 Release: 1%{?dist}
 Summary: mdadm is used for controlling Linux md devices (aka RAID arrays)
 License: GPL-2.0-only
-URL: https://cdn.kernel.org/pub/linux/utils/raid/mdadm/
-Source0: https://cdn.kernel.org/pub/linux/utils/raid/mdadm/mdadm-%{version}.tar.xz
+URL: https://github.com/md-raid-utilities/mdadm/releases
+Source0: https://github.com/md-raid-utilities/mdadm/archive/mdadm-%{version}/mdadm-%{version}.tar.gz
+Source100: mdadm-tmpfiles.conf
+Patch0001: 0001-report-monitor-output-to-syslog.patch
+
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}systemd-devel
-
-Source100: mdadm-tmpfiles.conf
-Patch100: 0001-report-monitor-output-to-syslog.patch
 
 %description
 %{summary}.
@@ -21,7 +21,7 @@ CXFLAGS="%{_cross_cflags} -DNO_COROSYNC -DNO_DLM" \
 %{nil}
 
 %prep
-%autosetup -n mdadm-%{version} -p1
+%autosetup -n mdadm-mdadm-%{version} -p1
 
 %build
 %set_env
