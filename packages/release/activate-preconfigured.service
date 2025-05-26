@@ -1,13 +1,13 @@
 [Unit]
-Description=Isolates preconfigured.target
+Description=Activate preconfigured.target
 DefaultDependencies=no
 After=fipscheck.target
 Requires=fipscheck.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/systemctl set-default preconfigured
-ExecStart=/usr/bin/systemctl isolate default --no-block
+ExecStart=/usr/bin/systemctl set-default preconfigured.target
+ExecStart=/usr/bin/systemctl start preconfigured.target --no-block
 RemainAfterExit=true
 StandardOutput=tty
 StandardError=inherit
