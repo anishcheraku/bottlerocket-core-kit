@@ -1,5 +1,5 @@
 Name: %{_cross_os}ethtool
-Version: 6.11
+Version: 6.14
 Release: 1%{?dist}
 Summary: Settings tool for Ethernet NICs
 License: GPL-2.0-only AND GPL-2.0-or-later
@@ -30,3 +30,4 @@ BuildRequires: %{_cross_os}libmnl-devel
 %{_cross_sbindir}/ethtool
 %exclude %{_cross_datadir}/bash-completion
 %exclude %{_cross_mandir}
+%exclude %{_cross_datadir}/metainfo/org.kernel.software.network.ethtool.metainfo.xml
