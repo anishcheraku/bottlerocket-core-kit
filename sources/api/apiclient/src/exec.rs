@@ -694,7 +694,10 @@ mod error {
 
         // This is from our own module which includes enough context.
         #[snafu(display("{}", source))]
-        Connect { source: connect::Error },
+        Connect {
+            #[snafu(source(from(connect::Error, Box::new)))]
+            source: Box<connect::Error>,
+        },
 
         #[snafu(display("Failed to deserialize message from server: {}", source))]
         Deserialize { source: serde_json::Error },
@@ -707,7 +710,8 @@ mod error {
 
         #[snafu(display("Failed to read from WebSocket: {}", source))]
         ReadWebSocket {
-            source: tokio_tungstenite::tungstenite::Error,
+            #[snafu(source(from(tokio_tungstenite::tungstenite::Error, Box::new)))]
+            source: Box<tokio_tungstenite::tungstenite::Error>,
         },
 
         #[snafu(display("Failed to send {} message to server: {}", kind, source))]

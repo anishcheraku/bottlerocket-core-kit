@@ -912,9 +912,9 @@ impl ResponseError for error::Error {
             // 404 Not Found
             MissingData { .. } => StatusCode::NOT_FOUND,
             ListKeys { .. } => StatusCode::NOT_FOUND,
-            UpdateDoesNotExist { .. } => StatusCode::NOT_FOUND,
-            NoStagedImage { .. } => StatusCode::NOT_FOUND,
-            UninitializedUpdateStatus { .. } => StatusCode::NOT_FOUND,
+            UpdateDoesNotExist => StatusCode::NOT_FOUND,
+            NoStagedImage => StatusCode::NOT_FOUND,
+            UninitializedUpdateStatus => StatusCode::NOT_FOUND,
 
             // 422 Unprocessable Entity
             CommitWithNoPending => StatusCode::UNPROCESSABLE_ENTITY,
@@ -922,10 +922,10 @@ impl ResponseError for error::Error {
 
             // 423 Locked
             UpdateShareLock { .. } => StatusCode::LOCKED,
-            UpdateLockHeld { .. } => StatusCode::LOCKED,
+            UpdateLockHeld => StatusCode::LOCKED,
 
             // 409 Conflict
-            DisallowCommand { .. } => StatusCode::CONFLICT,
+            DisallowCommand => StatusCode::CONFLICT,
 
             // 500 Internal Server Error
             DataStoreLock => StatusCode::INTERNAL_SERVER_ERROR,
@@ -947,7 +947,7 @@ impl ResponseError for error::Error {
             ConfigApplierWait { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             ConfigApplierWrite { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             SystemdNotify { .. } => StatusCode::INTERNAL_SERVER_ERROR,
-            SystemdNotifyStatus {} => StatusCode::INTERNAL_SERVER_ERROR,
+            SystemdNotifyStatus => StatusCode::INTERNAL_SERVER_ERROR,
             SetPermissions { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             SetGroup { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             SettingsToJson { .. } => StatusCode::INTERNAL_SERVER_ERROR,
@@ -955,7 +955,7 @@ impl ResponseError for error::Error {
             Shutdown { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             Reboot { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             UpdateDispatcher { .. } => StatusCode::INTERNAL_SERVER_ERROR,
-            UpdateError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
+            UpdateError => StatusCode::INTERNAL_SERVER_ERROR,
             UpdateStatusParse { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             UpdateInfoParse { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             UpdateLockOpen { .. } => StatusCode::INTERNAL_SERVER_ERROR,

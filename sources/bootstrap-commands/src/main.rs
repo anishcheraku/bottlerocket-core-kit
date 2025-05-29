@@ -251,7 +251,7 @@ mod error {
 
         #[snafu(display("Failed to execute '{:?}': {}", command, source))]
         ExecutionFailure {
-            command: Command,
+            command: Box<Command>,
             source: std::io::Error,
         },
 

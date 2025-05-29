@@ -363,8 +363,8 @@ fn match_error_to_exit_status(err: Error) -> i32 {
     match err {
         Error::UpdateLockHeld { .. } => TbuErrorStatus::UpdateLockHeld,
         Error::DisallowCommand { .. } => TbuErrorStatus::DisallowCommand,
-        Error::UpdateDoesNotExist { .. } => TbuErrorStatus::UpdateDoesNotExist,
-        Error::StagingPartition { .. } => TbuErrorStatus::NoStagedImage,
+        Error::UpdateDoesNotExist => TbuErrorStatus::UpdateDoesNotExist,
+        Error::StagingPartition => TbuErrorStatus::NoStagedImage,
         _ => TbuErrorStatus::OtherError,
     }
     .to_i32()

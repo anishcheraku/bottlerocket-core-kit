@@ -86,7 +86,7 @@ impl Error {
             Error::DirtyLogs => ExitCode::from(4),
             Error::MakeDir { .. } => ExitCode::from(1),
             Error::Mount => ExitCode::from(1),
-            Error::RepairFailure { .. } => ExitCode::from(4),
+            Error::RepairFailure => ExitCode::from(4),
             Error::UnrecognizedExitCode { .. } => ExitCode::from(4),
 
             // Return 8 when device argument is not provided

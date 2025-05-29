@@ -4,7 +4,7 @@ use futures::StreamExt;
 use futures::TryStreamExt;
 use futures_core::Stream;
 use log::error;
-use std::io::{ErrorKind, Read};
+use std::io::Read;
 use std::pin::Pin;
 use std::sync::{Arc, RwLock};
 use tokio_util::compat::FuturesAsyncReadCompatExt;
@@ -92,7 +92,7 @@ pub(crate) fn reader_from_stream<S>(stream: S) -> impl Read
 where
     S: Stream<Item = Result<Bytes, tough::error::Error>> + Send + Unpin,
 {
-    let mapped_err = stream.map(|next| next.map_err(|e| std::io::Error::new(ErrorKind::Other, e)));
+    let mapped_err = stream.map(|next| next.map_err(std::io::Error::other));
     let async_read = mapped_err.into_async_read().compat();
     SyncIoBridge::new(async_read)
 }

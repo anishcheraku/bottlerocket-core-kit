@@ -101,11 +101,11 @@ impl Metricdog {
     /// # Parameters
     ///
     /// * `sender`:          This is the name of the application sending the metrics e.g.
-    ///                      `metricdog` or `updog`.
+    ///   `metricdog` or `updog`.
     /// * `event`:           The metrics event that is being sent. For example `BootSuccess` or
-    ///                      `HealthPing`.
+    ///   `HealthPing`.
     /// * `timeout_seconds`: The timeout setting for the HTTP client. Defaults to
-    ///                      `DEFAULT_TIMEOUT_SECONDS` when `None` is passed.
+    ///   `DEFAULT_TIMEOUT_SECONDS` when `None` is passed.
     pub(crate) fn send<S1>(
         &self,
         sender: S1,

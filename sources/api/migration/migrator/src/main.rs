@@ -35,7 +35,6 @@ use snafu::{ensure, OptionExt, ResultExt};
 use std::collections::{HashMap, HashSet};
 use std::convert::TryInto;
 use std::env;
-use std::io::ErrorKind;
 use std::os::unix::fs::symlink;
 use std::os::unix::io::AsRawFd;
 use std::path::{Path, PathBuf};
@@ -401,7 +400,7 @@ where
             })?
             .map(|entry| {
                 let annotated: std::result::Result<bytes::Bytes, tough::error::Error> = entry;
-                annotated.map_err(|tough_error| std::io::Error::new(ErrorKind::Other, tough_error))
+                annotated.map_err(std::io::Error::other)
             });
 
         // Convert the stream to a blocking Read object.
@@ -672,7 +671,7 @@ async fn load_manifest(repository: tough::Repository) -> Result<Manifest> {
         .context(error::ManifestNotFoundSnafu)?
         .map(|entry| {
             let annotated: std::result::Result<bytes::Bytes, tough::error::Error> = entry;
-            annotated.map_err(|tough_error| std::io::Error::new(ErrorKind::Other, tough_error))
+            annotated.map_err(std::io::Error::other)
         });
 
     // Convert the stream to a blocking Read object.
