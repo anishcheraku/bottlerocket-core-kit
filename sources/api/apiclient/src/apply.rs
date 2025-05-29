@@ -10,6 +10,7 @@ use serde::de::{Deserialize, IntoDeserializer};
 use snafu::{futures::try_future::TryFutureExt as SnafuTryFutureExt, OptionExt, ResultExt};
 use std::path::Path;
 use tokio::io::AsyncReadExt;
+use aws_sdk_s3::Client;
 
 /// Reads settings in TOML or JSON format from files at the requested URIs (or from stdin, if given
 /// "-"), then commits them in a single transaction and applies them to the system.
@@ -96,6 +97,41 @@ where
         tokio::fs::read_to_string(path)
             .context(error::FileReadSnafu { input_source })
             .await
+    } else if uri.scheme() == "s3" {
+        // Parse the S3 URI components
+        let bucket = uri.host_str().context(error::MissingHostSnafu {
+            input_source: &input_source,
+        })?;
+        // Remove leading '/' from key
+        let key = uri.path().trim_start_matches('/');
+
+        // Create S3 client
+        let config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
+        let client = Client::new(&config);
+
+        // Get object from S3
+        let output = client
+            .get_object()
+            .bucket(bucket)
+            .key(key)
+            .send()
+            .await
+            .context(error::S3RequestSnafu {
+                uri: input_source.clone(),
+            })?;
+
+        // Read the body to string
+        let body = output
+            .body
+            .collect()
+            .await
+            .context(error::S3BodySnafu {
+                uri: input_source.clone(),
+            })?;
+        
+        String::from_utf8(body.into_bytes().to_vec()).context(error::S3Utf8Snafu {
+            uri: input_source,
+        })
     } else {
         // Return a future that contains the text of the (non-file) URI.
         reqwest::get(uri)
@@ -235,6 +271,27 @@ mod error {
         Uri {
             input_source: String,
             source: url::ParseError,
+        },
+
+        #[snafu(display("Missing host in S3 URI '{}'", input_source))]
+        MissingHost { input_source: String },
+
+        #[snafu(display("S3 request failed for '{}': {}", uri, source))]
+        S3Request {
+            uri: String,
+            source: aws_sdk_s3::error::SdkError<aws_sdk_s3::operation::get_object::GetObjectError>,
+        },
+
+        #[snafu(display("Failed to collect S3 response body for '{}': {}", uri, source))]
+        S3Body {
+            uri: String,
+            source: aws_smithy_types::byte_stream::error::Error,
+        },
+
+        #[snafu(display("Failed to convert S3 response to UTF-8 for '{}': {}", uri, source))]
+        S3Utf8 {
+            uri: String,
+            source: std::string::FromUtf8Error,
         },
     }
 }
