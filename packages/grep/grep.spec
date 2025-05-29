@@ -1,5 +1,5 @@
 Name: %{_cross_os}grep
-Version: 3.11
+Version: 3.12
 Release: 1%{?dist}
 Epoch: 1
 Summary: GNU grep utility
