@@ -3,7 +3,6 @@
 ## OS Changes
 * Third party package updates ([#494], [#498], [#513], [#514])
 * Extend `ghostdog` for Infiniband detection and configuration ([#499])
-
 * Enable `cryptsetup` and `tpm2` functionality for systemd ([#518])
 
 ## Build Changes
