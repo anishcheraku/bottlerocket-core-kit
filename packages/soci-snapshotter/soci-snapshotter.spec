@@ -1,6 +1,7 @@
 %global gorepo soci-snapshotter
 %global gover 0.9.0
 %global rpmver %{gover}
+%global gitrev 737f61a3db40c386f997c1f126344158aa3ad43c
 
 Name: %{_cross_os}soci-snapshotter
 Version: %{gover}
@@ -49,11 +50,14 @@ Conflicts: (%{_cross_os}image-feature(no-fips) or %{name}-bin)
 %build
 %set_cross_go_flags
 
-go build -C cmd -ldflags="${GOLDFLAGS}" -o "../out/soci-snapshotter-grpc" ./soci-snapshotter-grpc
-go build -C cmd -ldflags="${GOLDFLAGS}" -o "../out/soci" ./soci
+export LD_VERSION="-X github.com/awslabs/soci-snapshotter/version.Version=v%{gover}+bottlerocket"
+export LD_REVISION="-X github.com/awslabs/soci-snapshotter/version.Revision=%{gitrev}"
 
-gofips build -C cmd -ldflags="${GOLDFLAGS}" -o "../out/fips/soci-snapshotter-grpc" ./soci-snapshotter-grpc
-gofips build -C cmd -ldflags="${GOLDFLAGS}" -o "../out/fips/soci" ./soci
+go build -C cmd -ldflags="${GOLDFLAGS} ${LD_VERSION} ${LD_REVISION}" -o "../out/soci-snapshotter-grpc" ./soci-snapshotter-grpc
+go build -C cmd -ldflags="${GOLDFLAGS} ${LD_VERSION} ${LD_REVISION}" -o "../out/soci" ./soci
+
+gofips build -C cmd -ldflags="${GOLDFLAGS} ${LD_VERSION} ${LD_REVISION}" -o "../out/fips/soci-snapshotter-grpc" ./soci-snapshotter-grpc
+gofips build -C cmd -ldflags="${GOLDFLAGS} ${LD_VERSION} ${LD_REVISION}" -o "../out/fips/soci" ./soci
 
 %install
 install -d %{buildroot}%{_cross_bindir}
