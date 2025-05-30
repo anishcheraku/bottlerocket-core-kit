@@ -13,6 +13,7 @@ Source0: https://github.com/awslabs/soci-snapshotter/archive/refs/tags/v%{gover}
 Source1: bundled-v%{gover}.tar.gz
 Source2: bundled-cmd.tar.gz
 Source101: soci-snapshotter.service
+Source102: soci-snapshotter.socket
 Source1000: clarify.toml
 
 BuildRequires: %{_cross_os}glibc-devel
@@ -63,12 +64,14 @@ install -p -m 0755 out/soci %{buildroot}%{_cross_bindir}
 install -p -m 0755 out/fips/soci-snapshotter-grpc %{buildroot}%{_cross_fips_bindir}
 install -p -m 0755 out/fips/soci %{buildroot}%{_cross_fips_bindir}
 install -D -p -m 0644 %{S:101} %{buildroot}%{_cross_unitdir}
+install -D -p -m 0644 %{S:102} %{buildroot}%{_cross_unitdir}
 
 %cross_scan_attribution --clarify %{S:1000} go-vendor vendor
 
 %files
 %license LICENSE NOTICE.md
 %{_cross_unitdir}/soci-snapshotter.service
+%{_cross_unitdir}/soci-snapshotter.socket
 %{_cross_attribution_vendor_dir}
 %{_cross_attribution_file}
 

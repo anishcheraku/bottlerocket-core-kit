@@ -7,10 +7,6 @@ Before=containerd.service
 
 [Service]
 Type=notify
-ExecStart=/usr/bin/soci-snapshotter-grpc
+ExecStart=/usr/bin/soci-snapshotter-grpc --address fd://
 Restart=always
 RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-RequiredBy=containerd.service
