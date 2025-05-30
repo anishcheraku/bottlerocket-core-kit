@@ -66,3 +66,7 @@
 ; operations can be carried out via fcntl, and are always allowed
 ; through that path.
 (policycap "ioctl_skip_cloexec")
+
+; The policy provides the intended label for any userspace processes
+; executed before the SELinux policy is loaded.
+(policycap "userspace_initial_context")
