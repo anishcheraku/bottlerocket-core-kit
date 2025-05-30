@@ -83,7 +83,7 @@ Requires: %{name}
 %autosetup -Sgit -n glibc-%{version} -p1
 
 %global glibc_configure %{shrink: \
-BUILDFLAGS="-O2 -g -Wp,-D_GLIBCXX_ASSERTIONS -fstack-clash-protection" \
+BUILDFLAGS="-O2 -g -Wp,-D_GLIBCXX_ASSERTIONS -fstack-clash-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer" \
 CFLAGS="${BUILDFLAGS}" CPPFLAGS="" CXXFLAGS="${BUILDFLAGS}" \
 ../configure \
   --prefix="%{_cross_prefix}" \
@@ -127,6 +127,7 @@ git diff --quiet
 # for the C.UTF-8 locale, which we need `localedef` to generate.
 mkdir build
 pushd build
+CC="%{_cross_target}-gcc %{?_cross_arch_cflags}" CXX="%{_cross_target}-g++ %{?_cross_arch_cflags}" \
 %glibc_configure \
   --target="%{_cross_target}" \
   --host="%{_cross_target}" \
