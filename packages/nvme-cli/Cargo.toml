@@ -12,8 +12,8 @@ path = "../packages.rs"
 releases-url = "https://github.com/linux-nvme/nvme-cli/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/linux-nvme/nvme-cli/archive/v2.13/nvme-cli-2.13.tar.gz"
-sha512 = "71ade7b97354bf70e4909d85265db157715c1afe52fba6d1e2aa614900a8059830e85029f71680884966476363e8846d6cfbc1dcfe57330c749775acc39df6e7"
+url = "https://github.com/linux-nvme/nvme-cli/archive/v2.14/nvme-cli-2.14.tar.gz"
+sha512 = "7f600ee719f06283e136427a0f9eb0b22412f7f4549c774768caff54150207ba87e2a431ea1569e5ed86a554aecd23c00c4e8c351aa0168a81807c86a0cb2edc"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
