@@ -40,7 +40,6 @@ Requires: %{name}
 %exclude %{_cross_sysconfdir}/xattr.conf
 %exclude %{_cross_bindir}
 %exclude %{_cross_docdir}
-%exclude %{_cross_infodir}
 %exclude %{_cross_localedir}
 %exclude %{_cross_mandir}
 
@@ -50,6 +49,5 @@ Requires: %{name}
 %dir %{_cross_includedir}/attr
 %{_cross_includedir}/attr/*.h
 %{_cross_pkgconfigdir}/*.pc
-%exclude %{_cross_libdir}/*.la
 
 %changelog

@@ -1,3 +1,9 @@
+# Disable LTO since the performance critical code is all written in
+# assembly, and optimizations applied to the C code could affect FIPS
+# or overall correctness.
+%global _cross_cflags %{_cross_cflags} -fno-lto
+%global _cross_cxxflags %{_cross_cflags}
+
 Name: %{_cross_os}libcrypto
 Version: 3.0.0
 Release: 1%{?dist}

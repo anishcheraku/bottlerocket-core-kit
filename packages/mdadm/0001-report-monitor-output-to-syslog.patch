@@ -1,39 +1,40 @@
-From a277a7b7d171dbc7cee691ee20a9990fec524581 Mon Sep 17 00:00:00 2001
+From cf0120078f0ee80c6ac8af37eeed8a337d998ae8 Mon Sep 17 00:00:00 2001
 From: Todd Neal <tnealt@amazon.com>
-Date: Fri, 7 Jun 2024 18:22:52 +0000
+Date: Thu, 22 May 2025 22:23:27 +0000
 Subject: [PATCH] report monitor output to syslog and remove env script
 
+Signed-off-by: Todd Neal <tnealt@amazon.com>
+[bcressey: port to 4.4]
+Signed-off-by: Ben Cressey <bcressey@amazon.com>
+
 ---
- systemd/mdmonitor-oneshot.service | 3 +--
- systemd/mdmonitor.service         | 3 +--
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ systemd/mdmonitor-oneshot.service | 5 +----
+ systemd/mdmonitor.service         | 2 +-
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/systemd/mdmonitor-oneshot.service b/systemd/mdmonitor-oneshot.service
-index ba86b44..c54f080 100644
+index ba86b44..3c114de 100644
 --- a/systemd/mdmonitor-oneshot.service
 +++ b/systemd/mdmonitor-oneshot.service
-@@ -10,7 +10,6 @@ Description=Reminder for degraded MD arrays
+@@ -10,7 +10,4 @@ Description=Reminder for degraded MD arrays
  Documentation=man:mdadm(8)
  
  [Service]
 -Environment=MDADM_MONITOR_ARGS=--scan
-+Environment=MDADM_MONITOR_ARGS="--scan --syslog"
- EnvironmentFile=-/run/sysconfig/mdadm
+-EnvironmentFile=-/run/sysconfig/mdadm
 -ExecStartPre=-/usr/lib/mdadm/mdadm_env.sh
- ExecStart=BINDIR/mdadm --monitor --oneshot $MDADM_MONITOR_ARGS
+-ExecStart=BINDIR/mdadm --monitor --oneshot $MDADM_MONITOR_ARGS
++ExecStart=BINDIR/mdadm --monitor --oneshot --scan --syslog
 diff --git a/systemd/mdmonitor.service b/systemd/mdmonitor.service
-index 9c36478..fcf895b 100644
+index 95046bc..7468a79 100644
 --- a/systemd/mdmonitor.service
 +++ b/systemd/mdmonitor.service
-@@ -11,7 +11,6 @@ DefaultDependencies=no
- Documentation=man:mdadm(8)
+@@ -28,4 +28,4 @@ Documentation=man:mdadm(8)
+ # - --fork (Type=forking must be added, not recommended and not needed with systemd)
+ # - --pid-file (allowed only when --fork selected)
  
- [Service]
--Environment=  MDADM_MONITOR_ARGS=--scan
-+Environment=  MDADM_MONITOR_ARGS="--scan --syslog"
- EnvironmentFile=-/run/sysconfig/mdadm
--ExecStartPre=-/usr/lib/mdadm/mdadm_env.sh
- ExecStart=BINDIR/mdadm --monitor $MDADM_MONITOR_ARGS
+-ExecStart=BINDIR/mdadm --monitor --scan
++ExecStart=BINDIR/mdadm --monitor --scan --syslog
 -- 
-2.40.1
+2.49.0
 

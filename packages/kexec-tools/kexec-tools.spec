@@ -30,6 +30,8 @@ rm -f kexec-tools.spec.in
 %license COPYING
 %{_cross_attribution_file}
 %{_cross_sbindir}/kexec
-%exclude %{_cross_libdir}
 %exclude %{_cross_mandir}
 %exclude %{_cross_sbindir}/vmcore-dmesg
+%if "%{_cross_arch}" == "x86_64"
+%exclude %{_cross_libdir}
+%endif

@@ -29,7 +29,6 @@ BuildRequires: %{_cross_os}glibc-devel
 %license COPYING LGPL-2.1-or-later
 %{_cross_attribution_file}
 %{_cross_bindir}/strace
-%exclude %{_cross_bindir}/strace-graph
 %exclude %{_cross_bindir}/strace-log-merge
 %exclude %{_cross_mandir}/*
 

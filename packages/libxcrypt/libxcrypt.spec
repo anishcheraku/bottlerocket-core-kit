@@ -51,6 +51,5 @@ Requires: %{name}
 %{_cross_libdir}/*.so
 %{_cross_includedir}/*.h
 %{_cross_pkgconfigdir}/*.pc
-%exclude %{_cross_libdir}/*.la
 
 %changelog

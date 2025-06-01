@@ -8,6 +8,7 @@ URL: http://liburcu.org
 Source0: http://lttng.org/files/urcu/userspace-rcu-%{version}.tar.bz2
 Source1: http://lttng.org/files/urcu/userspace-rcu-%{version}.tar.bz2.asc
 Source2: gpgkey-2A0B4ED915F2D3FA45F5B16217280A9781186ACF.asc
+Patch0001: 0001-build-do-not-build-examples.patch
 
 BuildRequires: %{_cross_os}glibc-devel
 
@@ -23,9 +24,10 @@ Requires: %{name}
 
 %prep
 %{gpgverify} --data=%{S:0} --signature=%{S:1} --keyring=%{S:2}
-%autosetup -n userspace-rcu-%{version}
+%autosetup -n userspace-rcu-%{version} -p1
 
 %build
+autoreconf -fi
 %cross_configure --disable-static
 
 %force_disable_rpath
@@ -60,11 +62,9 @@ Requires: %{name}
 %exclude %{_cross_libdir}/pkgconfig/liburcu-mb.pc
 %exclude %{_cross_libdir}/pkgconfig/liburcu-memb.pc
 %exclude %{_cross_libdir}/pkgconfig/liburcu-qsbr.pc
-%exclude %{_cross_libdir}/pkgconfig/liburcu-signal.pc
 %exclude %{_cross_libdir}/liburcu-bp.so
 %exclude %{_cross_libdir}/liburcu-cds.so
 %exclude %{_cross_libdir}/liburcu-common.so
 %exclude %{_cross_libdir}/liburcu-mb.so
 %exclude %{_cross_libdir}/liburcu-memb.so
 %exclude %{_cross_libdir}/liburcu-qsbr.so
-%exclude %{_cross_libdir}/liburcu-signal.so

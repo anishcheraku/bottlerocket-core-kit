@@ -53,6 +53,5 @@ Requires: %{name}
 %{_cross_includedir}/acl/*.h
 %{_cross_includedir}/sys/acl.h
 %{_cross_pkgconfigdir}/*.pc
-%exclude %{_cross_libdir}/*.la
 
 %changelog

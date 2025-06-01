@@ -57,6 +57,10 @@ install -d %{buildroot}%{_cross_factorydir}%{_cross_sysconfdir}
 install -p -m 0644 %{S:1} %{buildroot}%{_cross_tmpfilesdir}/keyutils.conf
 install -p -m 0644 %{S:2} %{buildroot}%{_cross_factorydir}%{_cross_sysconfdir}/request-key.conf
 
+# Replace absolute symlink with relative one.
+ln -snf libkeyutils.so.? \
+  %{buildroot}%{_cross_libdir}/libkeyutils.so
+
 %files
 %{_cross_attribution_file}
 %license LICENCE.GPL LICENCE.LGPL

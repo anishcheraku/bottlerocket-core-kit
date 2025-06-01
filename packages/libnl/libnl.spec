@@ -50,8 +50,7 @@ autoreconf -fi
 %{_cross_libdir}/*.a
 %{_cross_libdir}/*.so
 %dir %{_cross_includedir}/libnl3
-%{_cross_includedir}/libnl3
+%{_cross_includedir}/libnl3/*
 %{_cross_pkgconfigdir}/*.pc
-%exclude %{_cross_libdir}/*.la
 
 %changelog

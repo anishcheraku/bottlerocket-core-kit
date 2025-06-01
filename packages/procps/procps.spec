@@ -5,6 +5,13 @@ Summary: A set of process monitoring tools
 License: GPL-2.0-or-later AND LGPL-2.1-or-later
 URL: https://gitlab.com/procps-ng/procps
 Source0: https://gitlab.com/procps-ng/procps/-/archive/v%{version}/procps-v%{version}.tar.gz
+
+# Upstream patch to fix warning about format truncation.
+Patch0001: 0001-library-internal-expand-buffer-for-stat_fd.patch
+
+# Local patch to fix warning about implicit definition of pidfd_open.
+Patch1001: 1001-check-for-sys-pidfd.h.patch
+
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libselinux-devel
 Requires: %{_cross_os}libselinux
@@ -40,6 +47,22 @@ Requires: %{name}
 
 %install
 %make_install
+
+# Replace identical binaries with symlinks to avoid duplicate build ID warnings.
+declare -A aliases=(
+  [pgrep]="pkill"
+  [pidwait]="pkill"
+  [snice]="skill"
+)
+
+pushd %{buildroot}/%{_cross_bindir}
+for a in ${!aliases[*]} ; do
+  b="${aliases[${a}]}"
+  if cmp --quiet ${b} ${a} ; then
+    ln -snf "${b}" "${a}"
+  fi
+done
+popd
 
 %files
 %license COPYING COPYING.LIB

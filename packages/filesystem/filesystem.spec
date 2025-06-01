@@ -86,7 +86,7 @@ ln -s .%{_sbindir} %{buildroot}/sbin
 %exclude %{_cross_fips_libexecdir}
 
 %files fips
-%{_cross_prefix}/fips
+%dir %{_cross_prefix}/fips
 %{_cross_fips_bindir}
 %{_cross_fips_libexecdir}
 

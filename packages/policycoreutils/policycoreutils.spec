@@ -57,7 +57,6 @@ rm %{buildroot}%{_cross_sbindir}/sestatus
 %exclude %{_cross_sbindir}/genhomedircon
 %exclude %{_cross_sbindir}/restorecon
 %exclude %{_cross_sbindir}/restorecon_xattr
-%exclude %{_cross_bashdir}
 %exclude %{_cross_mandir}
 %exclude %{_cross_sysconfdir}
 

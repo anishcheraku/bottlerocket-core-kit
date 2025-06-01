@@ -45,6 +45,5 @@ Requires: %{name}
 %dir %{_cross_includedir}/tirpc
 %{_cross_includedir}/tirpc/*
 %{_cross_pkgconfigdir}/*.pc
-%exclude %{_cross_libdir}/*.la
 
 %changelog

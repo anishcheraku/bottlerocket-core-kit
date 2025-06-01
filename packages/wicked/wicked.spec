@@ -161,6 +161,5 @@ install -p -m 0644 %{S:30} %{buildroot}%{_cross_datadir}/logdog.d
 %dir %{_cross_includedir}/wicked
 %{_cross_includedir}/wicked/*.h
 %{_cross_pkgconfigdir}/*.pc
-%exclude %{_cross_libdir}/*.la
 
 %changelog
