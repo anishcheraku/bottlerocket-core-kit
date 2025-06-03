@@ -12,8 +12,8 @@ path = "../packages.rs"
 releases-url = "https://github.com/makedumpfile/makedumpfile/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/makedumpfile/makedumpfile/archive/1.7.6/makedumpfile-1.7.6.tar.gz"
-sha512 = "2436bbc5ced82e95e1c528cc63c6d71b5a386f34623f2f3cf6050019d21e6e81a15ddb5aa50cbec33b86228d2ba622f3ff37989b7cbeb6e66c94380380518f60"
+url = "https://github.com/makedumpfile/makedumpfile/archive/1.7.7/makedumpfile-1.7.7.tar.gz"
+sha512 = "530dff86f00bfda529926baf71012d865dab517c749837eb51f8b06145922f64a00dcbf6632c1ef7cd286072ae01243011ab70d67ab8e63ebb8657f2c2f5c4b5"
 
 [build-dependencies]
 glibc = { path = "../glibc" }

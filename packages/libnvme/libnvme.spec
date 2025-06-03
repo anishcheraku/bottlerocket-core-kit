@@ -1,5 +1,5 @@
 Name: %{_cross_os}libnvme
-Version: 1.13
+Version: 1.14
 Release: 1%{?dist}
 Epoch: 1
 Summary: Library for NVM Express
