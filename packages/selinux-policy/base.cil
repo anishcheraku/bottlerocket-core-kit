@@ -61,3 +61,12 @@
 ; Enable policy to label symlinks on kernel file systems using
 ; "genfscon" statements, as with directories and files.
 (policycap "genfs_seclabel_symlinks")
+
+; Always allow FIOCLEX and FIONCLEX ioctls, since the equivalent
+; operations can be carried out via fcntl, and are always allowed
+; through that path.
+(policycap "ioctl_skip_cloexec")
+
+; The policy provides the intended label for any userspace processes
+; executed before the SELinux policy is loaded.
+(policycap "userspace_initial_context")

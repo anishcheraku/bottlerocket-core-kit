@@ -47,6 +47,10 @@
 (sidcontext unlabeled local)
 (sidcontext file local)
 
+; Apply the "init" context for userspace processes started before the
+; SELinux policy is loaded.
+(sidcontext init init)
+
 ; Apply the "any" context for entities like sockets, ports, and
 ; network interfaces if they are otherwise unlabeled.
 (sidcontext any_socket any)
