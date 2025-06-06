@@ -200,6 +200,10 @@ reservedMemory:
 reservedSystemCPUs: {{settings.kubernetes.reserved-cpus}}
 {{/if}}
 failSwapOn: false
+{{#if settings.kubernetes.memory-swap-behavior}}
+memorySwap:
+  swapBehavior: {{settings.kubernetes.memory-swap-behavior}}
+{{/if}}
 {{#if settings.kubernetes.single-process-oom-kill}}
 singleProcessOOMKill: {{settings.kubernetes.single-process-oom-kill}}
 {{/if}}
