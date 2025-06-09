@@ -10,6 +10,7 @@ use serde::de::{Deserialize, IntoDeserializer};
 use snafu::{futures::try_future::TryFutureExt as SnafuTryFutureExt, OptionExt, ResultExt};
 use std::path::Path;
 use tokio::io::AsyncReadExt;
+use crate::uri_resolver::{FileResolver, HttpResolver, StdinResolver, UriResolver};
 
 /// Reads settings in TOML or JSON format from files at the requested URIs (or from stdin, if given
 /// "-"), then commits them in a single transaction and applies them to the system.
@@ -73,40 +74,28 @@ where
 {
     let input_source = input_source.into();
 
-    // Read from stdin if "-" was given.
-    if input_source == "-" {
-        let mut output = String::new();
-        tokio::io::stdin()
-            .read_to_string(&mut output)
-            .context(error::StdinReadSnafu)
-            .await?;
-        return Ok(output);
+    // 1) stdin
+    if StdinResolver.can_resolve(&input_source) {
+        return StdinResolver.resolve(&input_source).await;
     }
 
-    // Otherwise, the input should be a URI; parse it to know what kind.
-    // Until reqwest handles file:// URIs: https://github.com/seanmonstar/reqwest/issues/178
+    // 2) parse as URI (this also validates http(s) and file schemes)
     let uri = Url::parse(&input_source).context(error::UriSnafu {
         input_source: &input_source,
     })?;
-    if uri.scheme() == "file" {
-        // Turn the URI to a file path, and return a future that reads it.
-        let path = uri.to_file_path().ok().context(error::FileUriSnafu {
-            input_source: &input_source,
-        })?;
-        tokio::fs::read_to_string(path)
-            .context(error::FileReadSnafu { input_source })
-            .await
-    } else {
-        // Return a future that contains the text of the (non-file) URI.
-        reqwest::get(uri)
-            .and_then(|response| ready(response.error_for_status()))
-            .and_then(|response| response.text())
-            .context(error::ReqwestSnafu {
-                uri: input_source,
-                method: "GET",
-            })
-            .await
+
+    // 3) file://
+    if FileResolver.can_resolve(&input_source) {
+        return FileResolver.resolve(&input_source).await;
     }
+
+    // 4) http:// or https://
+    if HttpResolver.can_resolve(&input_source) {
+        return HttpResolver.resolve(&input_source).await;
+    }
+
+    unreachable!("No URI resolver found for “{}”", input_source);
+    
 }
 
 /// Takes a string of TOML or JSON settings data and reserializes
@@ -142,11 +131,11 @@ fn format_change(input: &str, input_source: &str) -> Result<String> {
     serde_json::to_string(&json_inner).context(error::JsonSerializeSnafu { input_source })
 }
 
-mod error {
+pub(crate) mod error {
     use snafu::Snafu;
 
     #[derive(Debug, Snafu)]
-    #[snafu(visibility(pub(super)))]
+    #[snafu(visibility(pub(crate)))]
     pub enum Error {
         #[snafu(display("Failed to commit combined settings to '{}': {}", uri, source))]
         CommitApply {

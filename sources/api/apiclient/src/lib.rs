@@ -27,6 +27,7 @@ pub mod reboot;
 pub mod report;
 pub mod set;
 pub mod update;
+pub mod uri_resolver;
 
 mod error {
     use snafu::Snafu;
