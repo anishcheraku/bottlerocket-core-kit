@@ -33,7 +33,6 @@ docker-engine = { path = "../../packages/docker-engine" }
 docker-init = { path = "../../packages/docker-init" }
 e2fsprogs = { path = "../../packages/e2fsprogs" }
 early-boot-config = { path = "../../packages/early-boot-config" }
-ecr-credential-provider-1_26 = { path = "../../packages/ecr-credential-provider-1.26" }
 ecr-credential-provider-1_27 = { path = "../../packages/ecr-credential-provider-1.27" }
 ecr-credential-provider-1_28 = { path = "../../packages/ecr-credential-provider-1.28" }
 ecr-credential-provider-1_29 = { path = "../../packages/ecr-credential-provider-1.29" }
@@ -55,7 +54,6 @@ iputils = { path = "../../packages/iputils" }
 kexec-tools = { path = "../../packages/kexec-tools" }
 keyutils = { path = "../../packages/keyutils" }
 kmod = { path = "../../packages/kmod" }
-kubernetes-1_26 = { path = "../../packages/kubernetes-1.26" }
 kubernetes-1_27 = { path = "../../packages/kubernetes-1.27" }
 kubernetes-1_28 = { path = "../../packages/kubernetes-1.28" }
 kubernetes-1_29 = { path = "../../packages/kubernetes-1.29" }
