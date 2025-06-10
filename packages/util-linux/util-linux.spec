@@ -273,6 +273,7 @@ done
 %{_cross_sbindir}/resizepart
 %{_cross_sbindir}/switch_root
 %{_cross_sbindir}/wipefs
+%{_cross_sbindir}/zramctl
 %exclude %{_cross_sbindir}/hwclock
 %exclude %{_cross_sbindir}/cfdisk
 %exclude %{_cross_sbindir}/ctrlaltdel
@@ -292,7 +293,6 @@ done
 %exclude %{_cross_sbindir}/uuidd
 %exclude %{_cross_sbindir}/vigr
 %exclude %{_cross_sbindir}/vipw
-%exclude %{_cross_sbindir}/zramctl
 %exclude %{_cross_sbindir}/blkpr
 
 %exclude %{_cross_bashdir}
