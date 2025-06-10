@@ -2,7 +2,7 @@
 %global gorepo cloud-provider-aws
 %global goimport %{goproject}/%{gorepo}
 
-%global gover 1.32.2
+%global gover 1.32.3
 %global rpmver %{gover}
 
 %global _dwz_low_mem_die_limit 0
@@ -54,7 +54,7 @@ Conflicts: (%{_cross_os}image-feature(no-fips) or %{name}-bin)
 %set_cross_go_flags
 
 export GOTOOLCHAIN=local
-export GO_MAJOR="1.23"
+export GO_MAJOR="1.24"
 
 go build -ldflags="${GOLDFLAGS}" -o=ecr-credential-provider cmd/ecr-credential-provider/*.go
 gofips build -ldflags="${GOLDFLAGS}" -o=fips/ecr-credential-provider cmd/ecr-credential-provider/*.go
