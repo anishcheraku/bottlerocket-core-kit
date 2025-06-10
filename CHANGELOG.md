@@ -1,3 +1,46 @@
+# v9.0.0 (2025-06-10)
+
+## OS Changes
+* Add support for default configuration file in `xfsprogs` ([#521])
+* Add support for more AWS regions in `schnauzer` and `host-ctr` ([#535])
+* Backport systemd fix to speed up `systemctl daemon-reload` ([#528])
+* Replace `systemctl isolate` with `systemctl start` ([#528])
+* Add capability markers `ioctl_skip_cloexec` and `userspace_initial_context` to SELinux policy ([#534])
+* Add `zramctl` to `util-linux` package ([#543])
+### Third Party Package Updates
+- Update to latest versions of `aws-iam-authenticator`, `ecr-credential-provider`, and `kubernetes` packages ([#531])
+- Update multiple core libraries: SELinux components, `libseccomp`, `libinih`, `libffi`, `libnftnl`, `libelf`, `liburcu`, `libglib`, and `libcap` ([#515])
+- Update core system utilities: `ethtool`, `grep`, `iproute`, `strace`, `makedumpfile`, `nvme-cli`, and `libnvme` ([#532])
+
+## Build Changes
+* Fix clippy warnings for Rust 1.87.0 ([#525])
+* Build `glibc` with frame pointers ([#527])
+* Fix various build warnings and LTO compatibility issues in packages ([#526])
+* Update `bottlerocket-sdk` from 0.61.0 to 0.62.0 ([#542])
+
+## Orchestrator changes
+
+### Kubernetes
+* Drop `kubernetes-1.26` and `ecr-credential-provider-1.26` ([#523])
+* Make `soci-snapshotter` a socket-activated systemd service ([#529])
+* Add latest instance types to `eni-max-pods` mapping ([#538])
+
+[#515]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/515
+[#521]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/521
+[#523]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/523
+[#525]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/525
+[#526]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/526
+[#527]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/527
+[#528]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/528
+[#529]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/529
+[#531]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/531
+[#532]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/532
+[#534]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/534
+[#535]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/535
+[#538]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/538
+[#542]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/542
+[#543]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/543
+
 # v8.2.0 (2025-05-20)
 
 ## OS Changes
