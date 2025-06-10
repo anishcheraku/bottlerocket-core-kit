@@ -1,0 +1,86 @@
+From 19a27be700c1703a121848635c4c1ffae9be7a4d Mon Sep 17 00:00:00 2001
+From: Piyush Jena <piyushjena1996@gmail.com>
+Date: Fri, 6 Jun 2025 07:13:14 +0000
+Subject: [PATCH] mkfs: source defaults from config file
+
+Signed-off-by: Piyush Jena <piyushjena1996@gmail.com>
+---
+ mkfs/xfs_mkfs.c | 47 +++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 39 insertions(+), 8 deletions(-)
+
+diff --git a/mkfs/xfs_mkfs.c b/mkfs/xfs_mkfs.c
+index 3f4455d4..06fd3f79 100644
+--- a/mkfs/xfs_mkfs.c
++++ b/mkfs/xfs_mkfs.c
+@@ -40,6 +40,10 @@
+  */
+ #define WHACK_SIZE (128 * 1024)
+
++/* Default path for the mkfs.xfs configuration file */
++#define DEFAULT_CONFIG_PATH "/usr/share/xfsprogs/mkfs/default.conf"
++static bool cfgdefs = false;
++
+ /*
+  * XXX: The configured block and sector sizes are defined as global variables so
+  * that they don't need to be passed to getnum/cvtnum().
+@@ -1579,15 +1583,19 @@ check_opt(
+ 	 * conversion into a number and bounds checking. Hence the two variables
+ 	 * used to track the different uses based on the @str parameter passed
+ 	 * to us.
++	 * Added cfgdefs to make sure we don't set the seen value when configuring
++	 * defaults to allow reassignment through command line parameters.
+ 	 */
+-	if (!str_seen) {
+-		if (sp->seen)
+-			respec(opts->name, opts->subopts, index);
+-		sp->seen = true;
+-	} else {
+-		if (sp->str_seen)
+-			respec(opts->name, opts->subopts, index);
+-		sp->str_seen = true;
++	if (!cfgdefs) {
++		if (!str_seen) {
++			if (sp->seen)
++				respec(opts->name, opts->subopts, index);
++			sp->seen = true;
++		} else {
++			if (sp->str_seen)
++				respec(opts->name, opts->subopts, index);
++			sp->str_seen = true;
++		}
+ 	}
+
+ 	/* check for conflicts with the option */
+@@ -5250,6 +5258,29 @@ main(
+ 	 * printf(_("Default configuration sourced from %s\n"), dft.source);
+ 	 */
+
++	// check if default config path exists
++	struct stat defcfg_statbuf;
++	if (stat (DEFAULT_CONFIG_PATH, &defcfg_statbuf) == 0) {
++		/*
++		* We start with the hardcoded defaults and overwrite them with
++		* the values in the default config file. We use the global variable
++		* cfgdefs to avoid setting the seen value for these parameters so
++		* that they can be overriden through the CLI.
++		*/
++
++		struct cli_params defcfg_args = {
++			.cfgfile = DEFAULT_CONFIG_PATH,
++			.sb_feat = dft.sb_feat
++		};
++
++		cfgdefs = true;
++		cfgfile_parse(&defcfg_args);
++		cfgdefs = false;
++
++		dft.source = defcfg_args.cfgfile;
++		dft.sb_feat = defcfg_args.sb_feat;
++	}
++
+ 	/* copy new defaults into CLI parsing structure */
+ 	memcpy(&cli.sb_feat, &dft.sb_feat, sizeof(cli.sb_feat));
+ 	memcpy(&cli.fsx, &dft.fsx, sizeof(cli.fsx));
+--
+2.47.1
+

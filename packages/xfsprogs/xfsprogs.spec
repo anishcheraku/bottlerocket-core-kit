@@ -1,12 +1,13 @@
 Name: %{_cross_os}xfsprogs
-Version: 6.9.0
+Version: 6.14.0
 Release: 1%{?dist}
 Summary: Utilities for managing the XFS filesystem
 License: GPL-2.0-only AND LGPL-2.1-only
 URL: https://xfs.wiki.kernel.org
 Source0: http://kernel.org/pub/linux/utils/fs/xfs/xfsprogs/xfsprogs-%{version}.tar.xz
 Source1: http://kernel.org/pub/linux/utils/fs/xfs/xfsprogs/xfsprogs-%{version}.tar.sign
-Source2: gpgkey-0C1D891C50A732E0680F7B644675A111E50B5FA6.asc
+Source2: gpgkey-AE1B2A9562721A6FC4307C1F46A7EA18AC33E108.asc
+Patch0001: 0001-mkfs-source-defaults-from-config-file.patch
 
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libuuid-devel
@@ -29,7 +30,7 @@ Requires: %{name}
 
 %prep
 %{gpgverify} --data=<(xzcat %{S:0}) --signature=%{S:1} --keyring=%{S:2}
-%autosetup -n xfsprogs-%{version}
+%autosetup -n xfsprogs-%{version} -p1
 
 %build
 %cross_configure \
@@ -74,6 +75,8 @@ rm -f %{buildroot}/%{_cross_libdir}/*.{la,a}
 %exclude %{_cross_sbindir}/xfs_metadump
 %exclude %{_cross_sbindir}/xfs_mkfile
 %exclude %{_cross_sbindir}/xfs_ncheck
+%exclude %{_cross_sbindir}/xfs_property
+%exclude %{_cross_sbindir}/xfs_protofile
 
 %exclude %{_cross_mandir}
 %exclude %{_cross_localedir}
