@@ -31,7 +31,7 @@ use bottlerocket_release::BottlerocketRelease;
 use bottlerocket_settings_models::model_derive::model;
 use bottlerocket_settings_plugin::BottlerocketSettings;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, path::Path};
 
 use bottlerocket_settings_models::modeled_types::SingleLineString;
 
@@ -77,6 +77,16 @@ struct ConfigurationFile {
     template_path: SingleLineString,
     #[serde(skip_serializing_if = "Option::is_none")]
     mode: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    overwrite_path_if_present: Option<bool>,
+}
+
+impl ConfigurationFile {
+    /// Checks whether the configuration file should be written if the path is present.
+    /// and overwrite_path_if_present is set.
+    pub fn should_render(&self) -> bool {
+        self.overwrite_path_if_present != Some(false) || !Path::new(&self.path.as_ref()).exists()
+    }
 }
 
 ///// Metadata
@@ -92,4 +102,86 @@ struct Metadata {
 struct Report {
     name: String,
     description: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use tempfile::TempDir;
+
+    #[test]
+    fn test_should_render_with_existing_file() {
+        let temp_dir = TempDir::new().unwrap();
+        let temp_path = temp_dir.path();
+        let existing_file_path = temp_path.join("existing_file.conf");
+
+        // Create an existing file.
+        fs::write(&existing_file_path, "existing content").unwrap();
+
+        // Test case 1: overwrite_path_if_present = Some(false) with existing file
+        // Should return false (don't overwrite)
+        let config_file_no_overwrite = ConfigurationFile {
+            path: existing_file_path.to_str().unwrap().try_into().unwrap(),
+            template_path: "/mock/template.toml".try_into().unwrap(),
+            mode: None,
+            overwrite_path_if_present: Some(false),
+        };
+        assert!(!config_file_no_overwrite.should_render());
+
+        // Test case 2: overwrite_path_if_present = Some(true) with existing file
+        // Should return true (do overwrite)
+        let config_file_overwrite = ConfigurationFile {
+            path: existing_file_path.to_str().unwrap().try_into().unwrap(),
+            template_path: "/mock/template.toml".try_into().unwrap(),
+            mode: None,
+            overwrite_path_if_present: Some(true),
+        };
+        assert!(config_file_overwrite.should_render());
+
+        // Test case 3: overwrite_path_if_present = None with existing file
+        // Should return true (default behavior is to overwrite)
+        let config_file_default = ConfigurationFile {
+            path: existing_file_path.to_str().unwrap().try_into().unwrap(),
+            template_path: "/mock/template.toml".try_into().unwrap(),
+            mode: None,
+            overwrite_path_if_present: None,
+        };
+        assert!(config_file_default.should_render());
+    }
+
+    #[test]
+    fn test_should_render_with_non_existing_file() {
+        let non_existing_file_path = "fake_file.conf";
+
+        // Test case 1: overwrite_path_if_present = Some(false) with non-existing file
+        // Should return true (file doesn't exist, so create it)
+        let config_file_no_overwrite = ConfigurationFile {
+            path: non_existing_file_path.try_into().unwrap(),
+            template_path: "/mock/template.toml".try_into().unwrap(),
+            mode: None,
+            overwrite_path_if_present: Some(false),
+        };
+        assert!(config_file_no_overwrite.should_render());
+
+        // Test case 2: overwrite_path_if_present = Some(true) with non-existing file
+        // Should return true (do overwrite/create)
+        let config_file_overwrite = ConfigurationFile {
+            path: non_existing_file_path.try_into().unwrap(),
+            template_path: "/mock/template.toml".try_into().unwrap(),
+            mode: None,
+            overwrite_path_if_present: Some(true),
+        };
+        assert!(config_file_overwrite.should_render());
+
+        // Test case 3: overwrite_path_if_present = None with non-existing file
+        // Should return true (default behavior is to create)
+        let config_file_default = ConfigurationFile {
+            path: non_existing_file_path.try_into().unwrap(),
+            template_path: "/mock/template.toml".try_into().unwrap(),
+            mode: None,
+            overwrite_path_if_present: None,
+        };
+        assert!(config_file_default.should_render());
+    }
 }

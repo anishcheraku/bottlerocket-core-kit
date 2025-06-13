@@ -19,6 +19,9 @@ bottlerocket-settings-plugin.workspace = true
 bottlerocket-settings-models.workspace = true
 serde_plain.workspace = true
 
+[dev-dependencies]
+tempfile.workspace = true
+
 [build-dependencies]
 generate-readme.workspace = true
 
