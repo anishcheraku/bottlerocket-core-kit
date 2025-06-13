@@ -1,10 +1,8 @@
 // src/uri_resolver.rs
-use std::future::Future;
-use std::pin::Pin;
-
+use std::{fs, io::Read};
+use reqwest::blocking;
 use reqwest::Url;
 use snafu::{OptionExt, ResultExt};
-use tokio::io::AsyncReadExt;
 
 use crate::apply::{error, Result};
 
@@ -14,10 +12,7 @@ pub trait UriResolver {
     fn can_resolve(&self, uri: &str) -> bool;
 
     /// Fetches the contents of `uri` as a `String`.
-    fn resolve<'a>(
-        &self,
-        uri: &'a str,
-    ) -> Pin<Box<dyn Future<Output = Result<String>> + Send + 'a>>;
+    fn resolve(&self, uri: &str) -> Result<String>;
 }
 
 /// Resolver for reading from stdin when the input is `"-"`.
@@ -28,18 +23,12 @@ impl UriResolver for StdinResolver {
         uri == "-"
     }
 
-    fn resolve<'a>(
-        &self,
-        _uri: &'a str,
-    ) -> Pin<Box<dyn Future<Output = Result<String>> + Send + 'a>> {
-        Box::pin(async move {
-            let mut output = String::new();
-            tokio::io::stdin()
-                .read_to_string(&mut output)
-                .await
-                .context(error::StdinReadSnafu)?;
-            Ok(output)
-        })
+    fn resolve(&self, _uri: &str) -> Result<String> {
+        let mut output = String::new();
+        std::io::stdin()
+            .read_to_string(&mut output)
+            .context(error::StdinReadSnafu)?;
+        Ok(output)
     }
 }
 
@@ -54,26 +43,20 @@ impl UriResolver for FileResolver {
         }
     }
 
-    fn resolve<'a>(
-        &self,
-        uri: &'a str,
-    ) -> Pin<Box<dyn Future<Output = Result<String>> + Send + 'a>> {
-        Box::pin(async move {
-            let parsed = Url::parse(uri).context(error::UriSnafu {
+    fn resolve(&self, uri: &str) -> Result<String> {
+        let parsed = Url::parse(uri).context(error::UriSnafu {
+            input_source: uri.to_string(),
+        })?;
+        let path = parsed
+            .to_file_path()
+            .ok()
+            .context(error::FileUriSnafu {
                 input_source: uri.to_string(),
             })?;
-            let path = parsed
-                .to_file_path()
-                .ok()
-                .context(error::FileUriSnafu {
-                    input_source: uri.to_string(),
-                })?;
-            tokio::fs::read_to_string(path)
-                .await
-                .context(error::FileReadSnafu {
-                    input_source: uri.to_string(),
-                })
-        })
+        fs::read_to_string(path)
+            .context(error::FileReadSnafu {
+                input_source: uri.to_string(),
+            })
     }
 }
 
@@ -83,39 +66,37 @@ pub struct HttpResolver;
 impl UriResolver for HttpResolver {
     fn can_resolve(&self, uri: &str) -> bool {
         match Url::parse(uri) {
-            Ok(parsed) => matches!(parsed.scheme(), "http" | "https"),
+            Ok(parsed) => {
+                let s = parsed.scheme();
+                s == "http" || s == "https"
+            }
             Err(_) => false,
         }
     }
 
-    fn resolve<'a>(
-        &self,
-        uri: &'a str,
-    ) -> Pin<Box<dyn Future<Output = Result<String>> + Send + 'a>> {
-        Box::pin(async move {
-            // Validate URI
-            let parsed = Url::parse(uri).context(error::UriSnafu {
-                input_source: uri.to_string(),
-            })?;
-            // Perform GET
-            let resp = reqwest::get(parsed)
-                .await
-                .context(error::ReqwestSnafu {
-                    uri: uri.to_string(),
-                    method: "GET".to_string(),
-                })?;
-            // Check status
-            let resp = resp.error_for_status().context(error::ReqwestSnafu {
+    fn resolve(&self, uri: &str) -> Result<String> {
+        // Validate URI
+        let parsed = Url::parse(uri).context(error::UriSnafu {
+            input_source: uri.to_string(),
+        })?;
+
+        // Perform blocking GET
+        let resp = blocking::get(parsed)
+            .context(error::ReqwestSnafu {
+                uri: uri.to_string(),
+                method: "GET".to_string(),
+            })?
+            .error_for_status()
+            .context(error::ReqwestSnafu {
                 uri: uri.to_string(),
                 method: "GET".to_string(),
             })?;
-            // Read body
-            resp.text()
-                .await
-                .context(error::ReqwestSnafu {
-                    uri: uri.to_string(),
-                    method: "GET".to_string(),
-                })
-        })
+
+        // Read body
+        resp.text()
+            .context(error::ReqwestSnafu {
+                uri: uri.to_string(),
+                method: "GET".to_string(),
+            })
     }
 }

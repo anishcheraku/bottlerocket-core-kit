@@ -8,9 +8,18 @@ use futures::stream::{self, StreamExt};
 use reqwest::Url;
 use serde::de::{Deserialize, IntoDeserializer};
 use snafu::{futures::try_future::TryFutureExt as SnafuTryFutureExt, OptionExt, ResultExt};
+use std::io::Stdin;
 use std::path::Path;
 use tokio::io::AsyncReadExt;
 use crate::uri_resolver::{FileResolver, HttpResolver, StdinResolver, UriResolver};
+
+//array
+const RESOLVERS: &[&dyn UriResolver] = &[
+    &StdinResolver,
+    &FileResolver,
+    &HttpResolver,
+
+];
 
 /// Reads settings in TOML or JSON format from files at the requested URIs (or from stdin, if given
 /// "-"), then commits them in a single transaction and applies them to the system.
@@ -70,32 +79,38 @@ where
 /// Retrieves the given source location and returns the result in a String.
 async fn get<S>(input_source: S) -> Result<String>
 where
-    S: Into<String>,
+    S: AsRef<str>,
 {
-    let input_source = input_source.into();
+    let input_source = input_source.as_ref();
 
+    let resolver: Box<dyn UriResolver> = get_resolver_for_source(input_source)?;
+    resolver.resolve(input_source)
+}
+
+fn get_resolver_for_source(input_source: impl AsRef<str>) -> Result<Box<dyn UriResolver>> {
+    let input_source = input_source.as_ref();
+    
     // 1) stdin
     if StdinResolver.can_resolve(&input_source) {
-        return StdinResolver.resolve(&input_source).await;
+        return Ok(Box::new(StdinResolver));
     }
 
     // 2) parse as URI (this also validates http(s) and file schemes)
     let uri = Url::parse(&input_source).context(error::UriSnafu {
-        input_source: &input_source,
+        input_source: input_source,
     })?;
 
     // 3) file://
     if FileResolver.can_resolve(&input_source) {
-        return FileResolver.resolve(&input_source).await;
+        return Ok(Box::new(FileResolver))
     }
 
     // 4) http:// or https://
     if HttpResolver.can_resolve(&input_source) {
-        return HttpResolver.resolve(&input_source).await;
+        return Ok(Box::new(HttpResolver))
     }
 
     unreachable!("No URI resolver found for “{}”", input_source);
-    
 }
 
 /// Takes a string of TOML or JSON settings data and reserializes
