@@ -1,102 +1,133 @@
 // src/uri_resolver.rs
-use std::{fs, io::Read};
-use reqwest::blocking;
+use std::{convert::TryFrom, future::Future, pin::Pin, path::PathBuf};
 use reqwest::Url;
-use snafu::{OptionExt, ResultExt};
+use tokio::io::AsyncReadExt;
 
-use crate::apply::{error, Result};
+use crate::apply::{Error, Result};
 
-/// Trait for resolving different URI‐style inputs.
+/// Anything that can fetch itself as a UTF-8 `String`.
 pub trait UriResolver {
-    /// Can this resolver handle the given input string?
-    fn can_resolve(&self, uri: &str) -> bool;
-
-    /// Fetches the contents of `uri` as a `String`.
-    fn resolve(&self, uri: &str) -> Result<String>;
+    fn resolve(&self) -> Pin<Box<dyn Future<Output = Result<String>> + Send>>;
 }
 
-/// Resolver for reading from stdin when the input is `"-"`.
-pub struct StdinResolver;
+/// “-” ⇒ stdin
+pub struct StdinUri;
 
-impl UriResolver for StdinResolver {
-    fn can_resolve(&self, uri: &str) -> bool {
-        uri == "-"
-    }
+impl TryFrom<&str> for StdinUri {
+    type Error = ();
 
-    fn resolve(&self, _uri: &str) -> Result<String> {
-        let mut output = String::new();
-        std::io::stdin()
-            .read_to_string(&mut output)
-            .context(error::StdinReadSnafu)?;
-        Ok(output)
-    }
-}
-
-/// Resolver for `file://` URIs.
-pub struct FileResolver;
-
-impl UriResolver for FileResolver {
-    fn can_resolve(&self, uri: &str) -> bool {
-        match Url::parse(uri) {
-            Ok(parsed) => parsed.scheme() == "file",
-            Err(_) => false,
+    fn try_from(s: &str) -> std::result::Result<Self, Self::Error> {
+        if s == "-" {
+            Ok(StdinUri)
+        } else {
+            Err(())
         }
     }
+}
 
-    fn resolve(&self, uri: &str) -> Result<String> {
-        let parsed = Url::parse(uri).context(error::UriSnafu {
-            input_source: uri.to_string(),
-        })?;
-        let path = parsed
+impl UriResolver for StdinUri {
+    fn resolve(&self) -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
+        Box::pin(async {
+            let mut buf = String::new();
+            tokio::io::stdin()
+                .read_to_string(&mut buf)
+                .await
+                .map_err(|e| Error::StdinRead { source: e })?;
+            Ok(buf)
+        })
+    }
+}
+
+/// file:// ⇒ local file
+pub struct FileUri {
+    path: PathBuf,
+}
+
+impl TryFrom<Url> for FileUri {
+    type Error = Error;
+
+    fn try_from(url: Url) -> std::result::Result<Self, Self::Error> {
+        if url.scheme() != "file" {
+            return Err(Error::Uri { input_source: url.to_string(), source: url::ParseError::RelativeUrlWithoutBase });
+        }
+        let path = url
             .to_file_path()
-            .ok()
-            .context(error::FileUriSnafu {
-                input_source: uri.to_string(),
-            })?;
-        fs::read_to_string(path)
-            .context(error::FileReadSnafu {
-                input_source: uri.to_string(),
-            })
+            .map_err(|_| Error::FileUri { input_source: url.to_string() })?;
+        Ok(FileUri { path })
     }
 }
 
-/// Resolver for `http://` and `https://` URIs.
-pub struct HttpResolver;
+impl UriResolver for FileUri {
+    fn resolve(&self) -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
+        let path = self.path.clone();
+        Box::pin(async move {
+            tokio::fs::read_to_string(&path)
+                .await
+                .map_err(|e| Error::FileRead { input_source: path.to_string_lossy().into_owned(), source: e })
+        })
+    }
+}
 
-impl UriResolver for HttpResolver {
-    fn can_resolve(&self, uri: &str) -> bool {
-        match Url::parse(uri) {
-            Ok(parsed) => {
-                let s = parsed.scheme();
-                s == "http" || s == "https"
-            }
-            Err(_) => false,
+/// http:// or https://
+pub struct HttpUri {
+    url: Url,
+}
+
+impl TryFrom<Url> for HttpUri {
+    type Error = Error;
+
+    fn try_from(url: Url) -> std::result::Result<Self, Self::Error> {
+        match url.scheme() {
+            "http" | "https" => Ok(HttpUri { url }),
+            _ => Err(Error::Uri { input_source: url.to_string(), source: url::ParseError::RelativeUrlWithoutBase }),
         }
     }
+}
 
-    fn resolve(&self, uri: &str) -> Result<String> {
-        // Validate URI
-        let parsed = Url::parse(uri).context(error::UriSnafu {
-            input_source: uri.to_string(),
-        })?;
+impl UriResolver for HttpUri {
+    fn resolve(&self) -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
+        let url = self.url.clone();
+        Box::pin(async move {
+            // <-- drop the `&` here, IntoUrl is implemented for Url, not &Url
+            let resp = reqwest::get(url.clone())
+                .await
+                .map_err(|e| Error::Reqwest { uri: url.to_string(), method: "GET".to_string(), source: e })?
+                .error_for_status()
+                .map_err(|e| Error::Reqwest { uri: url.to_string(), method: "GET".to_string(), source: e })?;
+            resp
+                .text()
+                .await
+                .map_err(|e| Error::Reqwest { uri: url.to_string(), method: "GET".to_string(), source: e })
+        })
+    }
+}
 
-        // Perform blocking GET
-        let resp = blocking::get(parsed)
-            .context(error::ReqwestSnafu {
-                uri: uri.to_string(),
-                method: "GET".to_string(),
-            })?
-            .error_for_status()
-            .context(error::ReqwestSnafu {
-                uri: uri.to_string(),
-                method: "GET".to_string(),
-            })?;
 
-        // Read body
-        resp.text()
-            .context(error::ReqwestSnafu {
-                uri: uri.to_string(),
-                method: "GET".to_string(),
-            })
+/// s3://bucket/key  (stub; requires aws-sdk-s3 to work)
+pub struct S3Uri {
+    bucket: String,
+    key: String,
+}
+
+impl TryFrom<Url> for S3Uri {
+    type Error = Error;
+
+    fn try_from(url: Url) -> std::result::Result<Self, Self::Error> {
+        if url.scheme() != "s3" {
+            return Err(Error::Uri { input_source: url.to_string(), source: url::ParseError::RelativeUrlWithoutBase });
+        }
+        let bucket = url
+            .host_str()
+            .ok_or_else(|| Error::Uri { input_source: url.to_string(), source: url::ParseError::EmptyHost })?
+            .to_string();
+        let key = url.path().trim_start_matches('/').to_string();
+        Ok(S3Uri { bucket, key })
+    }
+}
+
+impl UriResolver for S3Uri {
+    fn resolve(&self) -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
+        let uri = format!("s3://{}/{}", self.bucket, self.key);
+        Box::pin(async move { Err(Error::Uri { input_source: uri, source: url::ParseError::RelativeUrlWithoutBase }) })
     }
 }

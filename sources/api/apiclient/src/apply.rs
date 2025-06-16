@@ -3,23 +3,21 @@
 //! pulled and applied to the API server in a single transaction.
 
 use crate::rando;
-use futures::future::{join, ready, TryFutureExt};
+use futures::future::{join, ready};
 use futures::stream::{self, StreamExt};
-use reqwest::Url;
 use serde::de::{Deserialize, IntoDeserializer};
-use snafu::{futures::try_future::TryFutureExt as SnafuTryFutureExt, OptionExt, ResultExt};
-use std::io::Stdin;
-use std::path::Path;
-use tokio::io::AsyncReadExt;
-use crate::uri_resolver::{FileResolver, HttpResolver, StdinResolver, UriResolver};
+use snafu::{OptionExt, ResultExt};
+use std::{convert::TryFrom, path::Path};
+use reqwest::Url;
 
-//array
-const RESOLVERS: &[&dyn UriResolver] = &[
-    &StdinResolver,
-    &FileResolver,
-    &HttpResolver,
+// bring in our typed URI structs + the trait
+use crate::uri_resolver::{StdinUri, FileUri, HttpUri, S3Uri, UriResolver};
 
-];
+// bring in our Snafu context selectors
+use crate::apply::error::{
+    CommitApplySnafu, InputTypeSnafu, JsonSerializeSnafu, ModelTypeSnafu, MissingSettingsSnafu,
+    PatchSnafu, TomlToJsonSnafu, UriSnafu,
+};
 
 /// Reads settings in TOML or JSON format from files at the requested URIs (or from stdin, if given
 /// "-"), then commits them in a single transaction and applies them to the system.
@@ -27,123 +25,88 @@ pub async fn apply<P>(socket_path: P, input_sources: Vec<String>) -> Result<()>
 where
     P: AsRef<Path>,
 {
-    // We want to retrieve URIs in parallel because they're arbitrary and could be slow.  First, we
-    // build a list of request futures, and we store the source of the data with the future for
-    // inclusion in later error messages.
-    let mut get_requests = Vec::with_capacity(input_sources.len());
-    for input_source in &input_sources {
-        let get_future = get(input_source);
-        let info_future = ready(input_source);
-        get_requests.push(join(info_future, get_future));
+    // 1) pair each `&String` with its future
+    let mut requests = Vec::with_capacity(input_sources.len());
+    for src in &input_sources {
+        requests.push(join(ready(src), get(src)));
     }
 
-    // Stream out the requests and await responses (in order).
-    let get_request_stream = stream::iter(get_requests).buffered(4);
-    let get_responses: Vec<(&String, Result<String>)> = get_request_stream.collect().await;
+    // 2) drive up to 4 at once, preserving order
+    let responses: Vec<(&String, Result<String>)> =
+        stream::iter(requests).buffered(4).collect().await;
 
-    // Reformat the responses to JSON we can send to the API.
-    let mut changes = Vec::with_capacity(get_responses.len());
-    for (input_source, get_response) in get_responses {
-        let response = get_response?;
-        let json = format_change(&response, input_source)?;
-        changes.push((input_source, json));
+    // 3) TOML/JSON → inner JSON
+    let mut changes = Vec::with_capacity(responses.len());
+    for (src, body_res) in responses {
+        let body = body_res?;
+        let json = format_change(&body, src)?;
+        changes.push((src, json));
     }
 
-    // We use a specific transaction ID so we don't commit any other changes that may be pending.
-    let transaction = format!("apiclient-apply-{}", rando());
-
-    // Send the settings changes to the server in the same transaction.  (They're quick local
-    // requests, so don't add the complexity of making them run concurrently.)
-    for (input_source, json) in changes {
-        let uri = format!("/settings?tx={}", transaction);
+    // 4) PATCH each in one tx
+    let tx = format!("apiclient-apply-{}", rando());
+    for (src, json) in changes {
+        let uri = format!("/settings?tx={}", tx);
         let method = "PATCH";
-        let (_status, _body) = crate::raw_request(&socket_path, &uri, method, Some(json))
+        let (_st, _body) = crate::raw_request(&socket_path, &uri, method, Some(json))
             .await
-            .context(error::PatchSnafu {
-                input_source,
-                uri,
-                method,
-            })?;
+            .context(PatchSnafu { input_source: src, uri, method })?;
     }
 
-    // Commit the transaction and apply it to the system.
-    let uri = format!("/tx/commit_and_apply?tx={}", transaction);
+    // 5) commit & apply
+    let uri = format!("/tx/commit_and_apply?tx={}", tx);
     let method = "POST";
-    let (_status, _body) = crate::raw_request(&socket_path, &uri, method, None)
+    let (_st, _body) = crate::raw_request(&socket_path, &uri, method, None)
         .await
-        .context(error::CommitApplySnafu { uri })?;
+        .context(CommitApplySnafu { uri })?;
 
     Ok(())
 }
 
 /// Retrieves the given source location and returns the result in a String.
-async fn get<S>(input_source: S) -> Result<String>
-where
-    S: AsRef<str>,
-{
-    let input_source = input_source.as_ref();
-
-    let resolver: Box<dyn UriResolver> = get_resolver_for_source(input_source)?;
-    resolver.resolve(input_source)
-}
-
-fn get_resolver_for_source(input_source: impl AsRef<str>) -> Result<Box<dyn UriResolver>> {
-    let input_source = input_source.as_ref();
-    
+pub async fn get(input: &str) -> Result<String> {
     // 1) stdin
-    if StdinResolver.can_resolve(&input_source) {
-        return Ok(Box::new(StdinResolver));
+    if let Ok(resolver) = StdinUri::try_from(input) {
+        return resolver.resolve().await;
     }
 
-    // 2) parse as URI (this also validates http(s) and file schemes)
-    let uri = Url::parse(&input_source).context(error::UriSnafu {
-        input_source: input_source,
-    })?;
+    // 2) parse once
+    let url = Url::parse(input).context(UriSnafu { input_source: input.to_string() })?;
 
     // 3) file://
-    if FileResolver.can_resolve(&input_source) {
-        return Ok(Box::new(FileResolver))
+    if let Ok(resolver) = FileUri::try_from(url.clone()) {
+        return resolver.resolve().await;
     }
 
-    // 4) http:// or https://
-    if HttpResolver.can_resolve(&input_source) {
-        return Ok(Box::new(HttpResolver))
+    // 4) http(s)://
+    if let Ok(resolver) = HttpUri::try_from(url.clone()) {
+        return resolver.resolve().await;
     }
 
-    unreachable!("No URI resolver found for “{}”", input_source);
+    // 5) s3://
+    if let Ok(resolver) = S3Uri::try_from(url) {
+        return resolver.resolve().await;
+    }
+
+    unreachable!("No URI resolver found for `{}`", input);
 }
 
 /// Takes a string of TOML or JSON settings data and reserializes
 /// it to JSON for sending to the API.
 fn format_change(input: &str, input_source: &str) -> Result<String> {
-    // Try to parse the input as (arbitrary) TOML.  If that fails, try to parse it as JSON.
-    let mut json_val = match toml::from_str::<toml::Value>(input) {
-        Ok(toml_val) => {
-            // We need JSON for the API.  serde lets us convert between Deserialize-able types by
-            // reusing the deserializer.  Turn the TOML value into a JSON value.
-            let d = toml_val.into_deserializer();
-            serde_json::Value::deserialize(d).context(error::TomlToJsonSnafu { input_source })?
+    let mut val = match toml::from_str::<toml::Value>(input) {
+        Ok(tv) => {
+            let de = tv.into_deserializer();
+            serde_json::Value::deserialize(de).context(TomlToJsonSnafu { input_source })?
         }
         Err(toml_err) => {
-            // TOML failed, try JSON; include the toml parsing error, because if they intended to
-            // give TOML we should still tell them what was wrong with it.
-            serde_json::from_str(input).context(error::InputTypeSnafu {
-                input_source,
-                toml_err,
-            })
-        }?,
+            serde_json::from_str(input).context(InputTypeSnafu { input_source, toml_err })?
+        }
     };
 
-    // Remove outer "settings" layer before sending to API or deserializing it into the model,
-    // neither of which expects it.
-    let json_object = json_val
-        .as_object_mut()
-        .context(error::ModelTypeSnafu { input_source })?;
-    let json_inner = json_object
-        .remove("settings")
-        .context(error::MissingSettingsSnafu { input_source })?;
-    // Return JSON text we can send to the API.
-    serde_json::to_string(&json_inner).context(error::JsonSerializeSnafu { input_source })
+    let obj = val.as_object_mut().context(ModelTypeSnafu { input_source })?;
+    let inner = obj.remove("settings").context(MissingSettingsSnafu { input_source })?;
+    serde_json::to_string(&inner).context(JsonSerializeSnafu { input_source })
 }
 
 pub(crate) mod error {
@@ -168,36 +131,30 @@ pub(crate) mod error {
         #[snafu(display("Given invalid file URI '{}'", input_source))]
         FileUri { input_source: String },
 
-        #[snafu(display(
-            "Input '{}' is not valid TOML or JSON.  (TOML error: {})  (JSON error: {})",
-            input_source,
-            toml_err,
-            source
-        ))]
+        #[snafu(display("Invalid URI '{}': {}", input_source, source))]
+        Uri {
+            input_source: String,
+            source: url::ParseError,
+        },
+
+        #[snafu(display("Failed to translate TOML to JSON for API: {}", source))]
+        TomlToJson {
+            input_source: String,
+            source: toml::de::Error,
+        },
+
+        #[snafu(display("Input '{}' is not valid JSON: {}", input_source, source))]
         InputType {
             input_source: String,
-            toml_err: Box<toml::de::Error>,
+            toml_err: toml::de::Error,
             #[snafu(source(from(serde_json::Error, Box::new)))]
             source: Box<serde_json::Error>,
         },
 
-        #[snafu(display(
-            "Failed to serialize settings from '{}' to JSON: {}",
-            input_source,
-            source
-        ))]
-        JsonSerialize {
-            input_source: String,
-            source: serde_json::Error,
-        },
-
-        #[snafu(display(
-            "Settings from '{}' did not contain a 'settings' key at top level",
-            input_source
-        ))]
+        #[snafu(display("Missing top-level 'settings' key in '{}'", input_source))]
         MissingSettings { input_source: String },
 
-        #[snafu(display("Settings from '{}' are not a TOML table / JSON object", input_source))]
+        #[snafu(display("Settings from '{}' are not an object", input_source))]
         ModelType { input_source: String },
 
         #[snafu(display(
@@ -222,25 +179,16 @@ pub(crate) mod error {
             source: reqwest::Error,
         },
 
-        #[snafu(display("Failed to read standard input: {}", source))]
+        #[snafu(display("Failed to read from stdin: {}", source))]
         StdinRead { source: std::io::Error },
 
-        #[snafu(display(
-            "Failed to translate TOML from '{}' to JSON for API: {}",
-            input_source,
-            source
-        ))]
-        TomlToJson {
+        #[snafu(display("Failed to serialize settings to JSON: {}", source))]
+        JsonSerialize {
             input_source: String,
-            source: toml::de::Error,
-        },
-
-        #[snafu(display("Given invalid URI '{}': {}", input_source, source))]
-        Uri {
-            input_source: String,
-            source: url::ParseError,
+            source: serde_json::Error,
         },
     }
 }
+
 pub use error::Error;
 pub type Result<T> = std::result::Result<T, error::Error>;
