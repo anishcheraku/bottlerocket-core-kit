@@ -25,40 +25,51 @@ pub async fn apply<P>(socket_path: P, input_sources: Vec<String>) -> Result<()>
 where
     P: AsRef<Path>,
 {
-    // 1) pair each `&String` with its future
-    let mut requests = Vec::with_capacity(input_sources.len());
-    for src in &input_sources {
-        requests.push(join(ready(src), get(src)));
+    // We want to retrieve URIs in parallel because they're arbitrary and could be slow.  First, we
+    // build a list of request futures, and we store the source of the data with the future for
+    // inclusion in later error messages.
+    let mut get_requests = Vec::with_capacity(input_sources.len());
+    for input_source in &input_sources {
+        let get_future = get(input_source);
+        let info_future = ready(input_source);
+        get_requests.push(join(info_future, get_future));
     }
 
-    // 2) drive up to 4 at once, preserving order
-    let responses: Vec<(&String, Result<String>)> =
-        stream::iter(requests).buffered(4).collect().await;
+    // Stream out the requests and await responses (in order).
+    let get_request_stream = stream::iter(get_requests).buffered(4);
+    let get_responses: Vec<(&String, Result<String>)> = get_request_stream.collect().await;
 
-    // 3) TOML/JSON → inner JSON
-    let mut changes = Vec::with_capacity(responses.len());
-    for (src, body_res) in responses {
-        let body = body_res?;
-        let json = format_change(&body, src)?;
-        changes.push((src, json));
+    // Reformat the responses to JSON we can send to the API.
+    let mut changes = Vec::with_capacity(get_responses.len());
+    for (input_source, get_response) in get_responses {
+        let response = get_response?;
+        let json = format_change(&response, input_source)?;
+        changes.push((input_source, json));
     }
 
-    // 4) PATCH each in one tx
-    let tx = format!("apiclient-apply-{}", rando());
-    for (src, json) in changes {
-        let uri = format!("/settings?tx={}", tx);
+    // We use a specific transaction ID so we don't commit any other changes that may be pending.
+    let transaction = format!("apiclient-apply-{}", rando());
+
+    // Send the settings changes to the server in the same transaction.  (They're quick local
+    // requests, so don't add the complexity of making them run concurrently.)
+    for (input_source, json) in changes {
+        let uri = format!("/settings?tx={}", transaction);
         let method = "PATCH";
-        let (_st, _body) = crate::raw_request(&socket_path, &uri, method, Some(json))
+        let (_status, _body) = crate::raw_request(&socket_path, &uri, method, Some(json))
             .await
-            .context(PatchSnafu { input_source: src, uri, method })?;
+            .context(error::PatchSnafu {
+                input_source,
+                uri,
+                method,
+            })?;
     }
 
-    // 5) commit & apply
-    let uri = format!("/tx/commit_and_apply?tx={}", tx);
+    // Commit the transaction and apply it to the system.
+    let uri = format!("/tx/commit_and_apply?tx={}", transaction);
     let method = "POST";
-    let (_st, _body) = crate::raw_request(&socket_path, &uri, method, None)
+    let (_status, _body) = crate::raw_request(&socket_path, &uri, method, None)
         .await
-        .context(CommitApplySnafu { uri })?;
+        .context(error::CommitApplySnafu { uri })?;
 
     Ok(())
 }
@@ -94,19 +105,34 @@ pub async fn get(input: &str) -> Result<String> {
 /// Takes a string of TOML or JSON settings data and reserializes
 /// it to JSON for sending to the API.
 fn format_change(input: &str, input_source: &str) -> Result<String> {
-    let mut val = match toml::from_str::<toml::Value>(input) {
-        Ok(tv) => {
-            let de = tv.into_deserializer();
-            serde_json::Value::deserialize(de).context(TomlToJsonSnafu { input_source })?
+    // Try to parse the input as (arbitrary) TOML.  If that fails, try to parse it as JSON.
+    let mut json_val = match toml::from_str::<toml::Value>(input) {
+        Ok(toml_val) => {
+            // We need JSON for the API.  serde lets us convert between Deserialize-able types by
+            // reusing the deserializer.  Turn the TOML value into a JSON value.
+            let d = toml_val.into_deserializer();
+            serde_json::Value::deserialize(d).context(error::TomlToJsonSnafu { input_source })?
         }
         Err(toml_err) => {
-            serde_json::from_str(input).context(InputTypeSnafu { input_source, toml_err })?
-        }
+            // TOML failed, try JSON; include the toml parsing error, because if they intended to
+            // give TOML we should still tell them what was wrong with it.
+            serde_json::from_str(input).context(error::InputTypeSnafu {
+                input_source,
+                toml_err,
+            })
+        }?,
     };
 
-    let obj = val.as_object_mut().context(ModelTypeSnafu { input_source })?;
-    let inner = obj.remove("settings").context(MissingSettingsSnafu { input_source })?;
-    serde_json::to_string(&inner).context(JsonSerializeSnafu { input_source })
+    // Remove outer "settings" layer before sending to API or deserializing it into the model,
+    // neither of which expects it.
+    let json_object = json_val
+        .as_object_mut()
+        .context(error::ModelTypeSnafu { input_source })?;
+    let json_inner = json_object
+        .remove("settings")
+        .context(error::MissingSettingsSnafu { input_source })?;
+    // Return JSON text we can send to the API.
+    serde_json::to_string(&json_inner).context(error::JsonSerializeSnafu { input_source })
 }
 
 pub(crate) mod error {
