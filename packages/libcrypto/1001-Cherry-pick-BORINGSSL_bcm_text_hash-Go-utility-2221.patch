@@ -152,6 +152,3 @@ index 000000000..cda6a1385
 +
 +	return hashSymbolSectionData[hashSymbolOffset : hashSymbolOffset+hashSymbol.Size], nil
 +}
--- 
-2.48.1
-

@@ -13,16 +13,21 @@ URL: https://github.com/aws/aws-lc
 
 Source0: https://github.com/aws/aws-lc/archive/AWS-LC-FIPS-%{version}/aws-lc-AWS-LC-FIPS-%{version}.tar.gz
 
-# Upstream patches from AWS-LC-FIPS 3.0 branch.
-# ```
-# git clone https://github.com/aws/aws-lc
-# cd aws-lc
-# git checkout origin/fips-2024-09-27
-# git format-patch --no-numbered AWS-LC-FIPS-3.0.0..
-# ```
-Patch0001: 0001-Cherry-pick-BORINGSSL_bcm_text_hash-Go-utility-2221.patch
-Patch0002: 0002-Cherry-pick-Fix-out-of-bound-OOB-input-read-in-AES-X.patch
-Patch0003: 0003-Cherry-pick-support-for-CMake-4.0-to-fips-2024-09-27.patch
+# Upstream patches from AWS-LC-FIPS 3.0 branch can be fetched using the script
+# at generate-aws-lc-patches.sh
+
+Patch1001: 1001-Cherry-pick-BORINGSSL_bcm_text_hash-Go-utility-2221.patch
+Patch1002: 1002-Cherry-pick-Fix-out-of-bound-OOB-input-read-in-AES-X.patch
+Patch1003: 1003-Move-OCSP-ASN1-type-functions-to-public-header-2239.patch
+Patch1004: 1004-Add-test-around-OpenSSL-behavior-for-BIO_get_mem_dat.patch
+Patch1005: 1005-Cherry-pick-support-for-CMake-4.0-to-fips-2024-09-27.patch
+Patch1006: 1006-Remove-some-indirection-in-SSL_certs_clear.patch
+Patch1007: 1007-Add-SSL_CTX_use_cert_and_key-2163.patch
+Patch1008: 1008-fips-2024-09-27-cherry-pick-FIPS-Integrity-Hash-Tool.patch
+Patch1009: 1009-Adding-detection-of-out-of-bound-pre-bound-memory-re.patch
+Patch1010: 1010-Avoid-mixing-SSE-and-AVX-in-XTS-mode-AVX512-implemen.patch
+Patch1011: 1011-Update-BoringSSL-benchmark-to-use-C-17-2063.patch
+Patch1012: 1012-FIPS-Cherry-pick-Support-allowing-specific-unknown-c.patch
 
 BuildRequires: %{_cross_os}glibc-devel
 Requires: %{_cross_os}glibc
@@ -63,7 +68,7 @@ Requires: %{_cross_os}libssl-devel
 %{summary}.
 
 %prep
-%setup -n aws-lc-AWS-LC-FIPS-%{version}
+%autosetup -n aws-lc-AWS-LC-FIPS-%{version} -p1
 
 %build
 %cross_cmake \

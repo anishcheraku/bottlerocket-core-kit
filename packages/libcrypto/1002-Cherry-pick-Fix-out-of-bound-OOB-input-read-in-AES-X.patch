@@ -215,6 +215,3 @@ index 039f0c7ac..1aabee193 100644
  	add	rcx,0x100
  	vpxorq	zmm1,zmm1,zmm9
  	vpxorq	zmm2,zmm2,zmm10
--- 
-2.48.1
-
