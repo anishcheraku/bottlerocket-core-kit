@@ -61,6 +61,13 @@ pub async fn render_config_files(
     // Go write all the configuration files from template
     let mut rendered_configs = Vec::new();
     for (name, metadata) in config_files {
+        if !metadata.should_render() {
+            info!(
+                "File {} already exists and overwrite-path-if-present=false, skipping render of config file",
+                &metadata.path,
+            );
+            continue;
+        }
         debug!("Rendering {}", &name);
 
         let try_rendered =

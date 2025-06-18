@@ -1053,6 +1053,7 @@ mod test {
                 path: "file".try_into().unwrap(),
                 template_path: "template".try_into().unwrap(),
                 mode: None,
+                overwrite_path_if_present: None
             })
         );
 

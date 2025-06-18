@@ -3431,6 +3431,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_plain",
+ "tempfile",
  "toml",
 ]
 
@@ -5236,6 +5237,7 @@ dependencies = [
  "serde_json",
  "simplelog",
  "snafu",
+ "tempfile",
  "tokio",
 ]
 
