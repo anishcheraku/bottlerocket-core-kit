@@ -16,7 +16,7 @@
 * [**logdog**](sources/logdog): A program that one can use to collect logs when things go wrong.
 * [**metricdog**](sources/metricdog): A program that sends anonymous health pings.
 * [**model**](sources/models): The API system has a data model defined for each variant, and this model is used by other programs to serialize and deserialize requests while maintaining safety around data types.
-* [**netdog**](sources/api/netdog): A program called by wicked to retrieve and write out network configuration from DHCP.
+* [**netdog**](sources/api/netdog): A program that works with systemd-networkd to retrieve and write out network configuration from DHCP.
 * [**pluto**](sources/api/pluto): A setting generator called by sundog to find networking settings required by Kubernetes.
 * [**schnauzer**](sources/api/schnauzer): A setting generator called by sundog to build setting values that contain template variables referencing other settings.
 * **setting generator**: A binary that generates the default value of a setting.
@@ -42,4 +42,3 @@
 * [**tuftool**](https://crates.io/crates/tuftool): a command line program for interacting with a TUF repo.
 * **TUF**: [The Update Framework](https://theupdateframework.io/).
   A framework that helps developers maintain the security of software update systems.
-* [**wicked**](https://github.com/openSUSE/wicked): A network interface framework and management system.

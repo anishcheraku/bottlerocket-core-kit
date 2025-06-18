@@ -1,8 +1,8 @@
 /*!
 # Introduction
 
-netdog is a small helper program for wicked, to apply network settings received from DHCP.  It
-generates `/etc/resolv.conf`, generates and sets the hostname, and persists the current IP to a
+netdog is a small helper program for systemd-networkd, to apply network settings received from DHCP.  
+It generates `/etc/resolv.conf`, generates and sets the hostname, and persists the current IP to a
 file.
 
 It contains two subcommands meant for use as settings generators:

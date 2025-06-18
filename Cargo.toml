@@ -119,6 +119,5 @@ members = [
   "packages/systemd-252",
   "packages/tpm2-tools",
   "packages/util-linux",
-  "packages/wicked",
   "packages/xfsprogs"
 ]

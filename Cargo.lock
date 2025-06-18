@@ -183,7 +183,6 @@ dependencies = [
  "systemd-252",
  "tpm2-tools",
  "util-linux",
- "wicked",
  "xfsprogs",
 ]
 
@@ -1047,17 +1046,6 @@ dependencies = [
  "libncurses",
  "libselinux",
  "libxcrypt",
-]
-
-[[package]]
-name = "wicked"
-version = "0.1.0"
-dependencies = [
- "glibc",
- "libdbus",
- "libiw",
- "libnl",
- "systemd-252",
 ]
 
 [[package]]

@@ -130,5 +130,4 @@ strace = { path = "../../packages/strace" }
 systemd-252 = { path = "../../packages/systemd-252" }
 tpm2-tools = { path = "../../packages/tpm2-tools" }
 util-linux = { path = "../../packages/util-linux" }
-wicked = { path = "../../packages/wicked" }
 xfsprogs = { path = "../../packages/xfsprogs" }
