@@ -2,7 +2,9 @@
 //! TOML settings files, in the same format as user data, or the JSON equivalent.  The inputs are
 //! pulled and applied to the API server in a single transaction.
 
-use crate::rando;
+use aws_sdk_s3::Client;use crate::rando;
+use crate::uri_resolver::{StdinUri, FileUri, HttpUri, S3Uri, UriResolver};
+use crate::apply::error::{UriSnafu, NoResolverSnafu};
 use futures::future::{join, ready};
 use futures::stream::{self, StreamExt};
 use serde::de::{Deserialize, IntoDeserializer};
@@ -10,14 +12,6 @@ use snafu::{OptionExt, ResultExt};
 use std::{convert::TryFrom, path::Path};
 use reqwest::Url;
 
-// bring in our typed URI structs + the trait
-use crate::uri_resolver::{StdinUri, FileUri, HttpUri, S3Uri, UriResolver};
-
-// bring in our Snafu context selectors
-use crate::apply::error::{
-    CommitApplySnafu, InputTypeSnafu, JsonSerializeSnafu, ModelTypeSnafu, MissingSettingsSnafu,
-    PatchSnafu, TomlToJsonSnafu, UriSnafu,
-};
 
 /// Reads settings in TOML or JSON format from files at the requested URIs (or from stdin, if given
 /// "-"), then commits them in a single transaction and applies them to the system.
@@ -76,30 +70,39 @@ where
 
 /// Retrieves the given source location and returns the result in a String.
 pub async fn get(input: &str) -> Result<String> {
-    // 1) stdin
-    if let Ok(resolver) = StdinUri::try_from(input) {
-        return resolver.resolve().await;
+    let resolver = select_resolver(input)?;
+    resolver.resolve().await
+}
+
+/// Choose which UriResolver applies to `input` (stdin, file://, http(s):// or s3://).
+fn select_resolver(input: &str) -> Result<Box<dyn UriResolver>> {
+    // 1) "-" → stdin
+    if let Ok(r) = StdinUri::try_from(input) {
+        return Ok(Box::new(r));
     }
 
-    // 2) parse once
+    // 2) parse as a URL
     let url = Url::parse(input).context(UriSnafu { input_source: input.to_string() })?;
 
     // 3) file://
-    if let Ok(resolver) = FileUri::try_from(url.clone()) {
-        return resolver.resolve().await;
+    if let Ok(r) = FileUri::try_from(url.clone()) {
+        return Ok(Box::new(r));
     }
 
     // 4) http(s)://
-    if let Ok(resolver) = HttpUri::try_from(url.clone()) {
-        return resolver.resolve().await;
+    if let Ok(r) = HttpUri::try_from(url.clone()) {
+        return Ok(Box::new(r));
     }
 
     // 5) s3://
-    if let Ok(resolver) = S3Uri::try_from(url) {
-        return resolver.resolve().await;
+    if let Ok(r) = S3Uri::try_from(url) {
+        return Ok(Box::new(r));
     }
 
-    unreachable!("No URI resolver found for `{}`", input);
+    NoResolverSnafu {
+        input_source: input.to_string(),
+    }
+    .fail()
 }
 
 /// Takes a string of TOML or JSON settings data and reserializes
@@ -139,7 +142,7 @@ pub(crate) mod error {
     use snafu::Snafu;
 
     #[derive(Debug, Snafu)]
-    #[snafu(visibility(pub(crate)))]
+    #[snafu(visibility(pub(super)))]
     pub enum Error {
         #[snafu(display("Failed to commit combined settings to '{}': {}", uri, source))]
         CommitApply {
@@ -157,30 +160,39 @@ pub(crate) mod error {
         #[snafu(display("Given invalid file URI '{}'", input_source))]
         FileUri { input_source: String },
 
-        #[snafu(display("Invalid URI '{}': {}", input_source, source))]
-        Uri {
-            input_source: String,
-            source: url::ParseError,
-        },
+        #[snafu(display("No URI resolver for '{}'", input_source))]
+        NoResolver { input_source: String },
 
-        #[snafu(display("Failed to translate TOML to JSON for API: {}", source))]
-        TomlToJson {
-            input_source: String,
-            source: toml::de::Error,
-        },
-
-        #[snafu(display("Input '{}' is not valid JSON: {}", input_source, source))]
+        #[snafu(display(
+            "Input '{}' is not valid TOML or JSON.  (TOML error: {})  (JSON error: {})",
+            input_source,
+            toml_err,
+            source
+        ))]
         InputType {
             input_source: String,
-            toml_err: toml::de::Error,
+            toml_err: Box<toml::de::Error>,
             #[snafu(source(from(serde_json::Error, Box::new)))]
             source: Box<serde_json::Error>,
         },
 
-        #[snafu(display("Missing top-level 'settings' key in '{}'", input_source))]
+        #[snafu(display(
+            "Failed to serialize settings from '{}' to JSON: {}",
+            input_source,
+            source
+        ))]
+        JsonSerialize {
+            input_source: String,
+            source: serde_json::Error,
+        },
+
+        #[snafu(display(
+            "Settings from '{}' did not contain a 'settings' key at top level",
+            input_source
+        ))]
         MissingSettings { input_source: String },
 
-        #[snafu(display("Settings from '{}' are not an object", input_source))]
+        #[snafu(display("Settings from '{}' are not a TOML table / JSON object", input_source))]
         ModelType { input_source: String },
 
         #[snafu(display(
@@ -205,16 +217,25 @@ pub(crate) mod error {
             source: reqwest::Error,
         },
 
-        #[snafu(display("Failed to read from stdin: {}", source))]
+        #[snafu(display("Failed to read standard input: {}", source))]
         StdinRead { source: std::io::Error },
 
-        #[snafu(display("Failed to serialize settings to JSON: {}", source))]
-        JsonSerialize {
+        #[snafu(display(
+            "Failed to translate TOML from '{}' to JSON for API: {}",
+            input_source,
+            source
+        ))]
+        TomlToJson {
             input_source: String,
-            source: serde_json::Error,
+            source: toml::de::Error,
+        },
+
+        #[snafu(display("Given invalid URI '{}': {}", input_source, source))]
+        Uri {
+            input_source: String,
+            source: url::ParseError,
         },
     }
 }
-
 pub use error::Error;
 pub type Result<T> = std::result::Result<T, error::Error>;

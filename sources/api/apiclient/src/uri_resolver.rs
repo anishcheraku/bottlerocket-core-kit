@@ -1,16 +1,18 @@
-// src/uri_resolver.rs
-use std::{convert::TryFrom, future::Future, pin::Pin, path::PathBuf};
+use async_trait::async_trait;
+use std::{convert::TryFrom, path::PathBuf};
 use reqwest::Url;
 use tokio::io::AsyncReadExt;
 
 use crate::apply::{Error, Result};
 
-/// Anything that can fetch itself as a UTF-8 `String`.
+/// Anything that can fetch itself as a UTF-8 String.
+#[async_trait]
 pub trait UriResolver {
-    fn resolve(&self) -> Pin<Box<dyn Future<Output = Result<String>> + Send>>;
+    /// Fetches the contents and returns as a String.
+    async fn resolve(&self) -> Result<String>;
 }
 
-/// “-” ⇒ stdin
+/// "-" → stdin
 pub struct StdinUri;
 
 impl TryFrom<&str> for StdinUri {
@@ -25,20 +27,19 @@ impl TryFrom<&str> for StdinUri {
     }
 }
 
+#[async_trait]
 impl UriResolver for StdinUri {
-    fn resolve(&self) -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
-        Box::pin(async {
-            let mut buf = String::new();
-            tokio::io::stdin()
-                .read_to_string(&mut buf)
-                .await
-                .map_err(|e| Error::StdinRead { source: e })?;
-            Ok(buf)
-        })
+    async fn resolve(&self) -> Result<String> {
+        let mut buf = String::new();
+        tokio::io::stdin()
+            .read_to_string(&mut buf)
+            .await
+            .map_err(|e| Error::StdinRead { source: e })?;
+        Ok(buf)
     }
 }
 
-/// file:// ⇒ local file
+/// file:// → local file
 pub struct FileUri {
     path: PathBuf,
 }
@@ -57,14 +58,13 @@ impl TryFrom<Url> for FileUri {
     }
 }
 
+#[async_trait]
 impl UriResolver for FileUri {
-    fn resolve(&self) -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
-        let path = self.path.clone();
-        Box::pin(async move {
-            tokio::fs::read_to_string(&path)
-                .await
-                .map_err(|e| Error::FileRead { input_source: path.to_string_lossy().into_owned(), source: e })
-        })
+    async fn resolve(&self) -> Result<String> {
+        let content = tokio::fs::read_to_string(&self.path)
+            .await
+            .map_err(|e| Error::FileRead { input_source: self.path.to_string_lossy().into_owned(), source: e })?;
+        Ok(content)
     }
 }
 
@@ -84,26 +84,23 @@ impl TryFrom<Url> for HttpUri {
     }
 }
 
+#[async_trait]
 impl UriResolver for HttpUri {
-    fn resolve(&self) -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
-        let url = self.url.clone();
-        Box::pin(async move {
-            // <-- drop the `&` here, IntoUrl is implemented for Url, not &Url
-            let resp = reqwest::get(url.clone())
-                .await
-                .map_err(|e| Error::Reqwest { uri: url.to_string(), method: "GET".to_string(), source: e })?
-                .error_for_status()
-                .map_err(|e| Error::Reqwest { uri: url.to_string(), method: "GET".to_string(), source: e })?;
-            resp
-                .text()
-                .await
-                .map_err(|e| Error::Reqwest { uri: url.to_string(), method: "GET".to_string(), source: e })
-        })
+    async fn resolve(&self) -> Result<String> {
+        let resp = reqwest::get(self.url.clone())
+            .await
+            .map_err(|e| Error::Reqwest { uri: self.url.to_string(), method: "GET".to_string(), source: e })?
+            .error_for_status()
+            .map_err(|e| Error::Reqwest { uri: self.url.to_string(), method: "GET".to_string(), source: e })?;
+        let text = resp
+            .text()
+            .await
+            .map_err(|e| Error::Reqwest { uri: self.url.to_string(), method: "GET".to_string(), source: e })?;
+        Ok(text)
     }
 }
 
-
-/// s3://bucket/key  (stub; requires aws-sdk-s3 to work)
+/// s3://bucket/key (stub; requires aws-sdk-s3)
 pub struct S3Uri {
     bucket: String,
     key: String,
@@ -125,9 +122,10 @@ impl TryFrom<Url> for S3Uri {
     }
 }
 
+#[async_trait]
 impl UriResolver for S3Uri {
-    fn resolve(&self) -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
-        let uri = format!("s3://{}/{}", self.bucket, self.key);
-        Box::pin(async move { Err(Error::Uri { input_source: uri, source: url::ParseError::RelativeUrlWithoutBase }) })
+    async fn resolve(&self) -> Result<String> {
+        // TODO: implement using aws-sdk-s3
+        Err(Error::Uri { input_source: format!("s3://{}/{}", self.bucket, self.key), source: url::ParseError::RelativeUrlWithoutBase })
     }
 }
