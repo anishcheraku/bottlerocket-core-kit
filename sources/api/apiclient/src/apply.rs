@@ -2,15 +2,17 @@
 //! TOML settings files, in the same format as user data, or the JSON equivalent.  The inputs are
 //! pulled and applied to the API server in a single transaction.
 
-use aws_sdk_s3::Client;use crate::rando;
+use aws_sdk_s3::Client;
 use crate::uri_resolver::{StdinUri, FileUri, HttpUri, S3Uri, UriResolver};
 use crate::apply::error::{UriSnafu, NoResolverSnafu};
-use futures::future::{join, ready};
+use crate::rando;
+use futures::future::{join, ready, TryFutureExt};
 use futures::stream::{self, StreamExt};
-use serde::de::{Deserialize, IntoDeserializer};
-use snafu::{OptionExt, ResultExt};
-use std::{convert::TryFrom, path::Path};
 use reqwest::Url;
+use serde::de::{Deserialize, IntoDeserializer};
+use snafu::{futures::try_future::TryFutureExt as SnafuTryFutureExt, OptionExt, ResultExt};
+use std::{convert::TryFrom, path::Path};
+use tokio::io::AsyncReadExt;
 
 
 /// Reads settings in TOML or JSON format from files at the requested URIs (or from stdin, if given
