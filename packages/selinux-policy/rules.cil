@@ -271,8 +271,12 @@
 (allow container_s constrained_o (files (relabel)))
 
 ; Containers are also allowed to "relabel" filesystems at mount time
-; using "*context=" options, but only to and from "local_t".
+; using "*context=" options, but only to and from the "local_t" and
+; "data_t" types. This enables CSI drivers to mount filesystems on
+; behalf of containers with the appropriate label, so the container
+; runtime does not need to relabel all files.
 (allow container_s local_t (filesystems (relabel)))
+(allow container_s data_t (filesystems (relabel)))
 
 ; Untrusted components are not allowed to relabel most files, and
 ; cannot use "*context=" options to impose arbitrary labels.
