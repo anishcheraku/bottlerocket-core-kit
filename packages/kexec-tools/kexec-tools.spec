@@ -1,5 +1,5 @@
 Name: %{_cross_os}kexec-tools
-Version: 2.0.30
+Version: 2.0.31
 Release: 1%{?dist}
 Epoch: 1
 Summary: Linux tool to load kernels from the running system
