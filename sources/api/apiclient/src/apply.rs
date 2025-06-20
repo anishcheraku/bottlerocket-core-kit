@@ -144,7 +144,7 @@ pub(crate) mod error {
     use snafu::Snafu;
 
     #[derive(Debug, Snafu)]
-    #[snafu(visibility(pub(super)))]
+    #[snafu(visibility(pub(crate)))]
     pub enum Error {
         #[snafu(display("Failed to commit combined settings to '{}': {}", uri, source))]
         CommitApply {
@@ -219,8 +219,20 @@ pub(crate) mod error {
             source: reqwest::Error,
         },
 
+        #[snafu(display("Invalid S3 URI '{}': missing bucket name", input_source))]
+        S3UriMissingBucket { input_source: String },
+
+        #[snafu(display("Given invalid file URI '{}'", input_source))]
+        InvalidFileUri { input_source: String },
+
+        #[snafu(display("Given HTTP(S) URI '{}'", input_source))]
+        InvalidHTTPUri { input_source: String },
+
         #[snafu(display("Failed to read standard input: {}", source))]
         StdinRead { source: std::io::Error },
+
+        #[snafu(display("Invalid S3 URI scheme for '{}', expected s3://", input_source))]
+        S3UriScheme { input_source: String },
 
         #[snafu(display(
             "Failed to translate TOML from '{}' to JSON for API: {}",

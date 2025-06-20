@@ -1,18 +1,24 @@
+// src/uri_resolver.rs
+
 use async_trait::async_trait;
+use snafu::{ensure, ResultExt, OptionExt};
 use std::{convert::TryFrom, path::PathBuf};
-use reqwest::Url;
 use tokio::io::AsyncReadExt;
 
+use reqwest::Url;
 use crate::apply::{Error, Result};
+use crate::apply::error::{
+    FileReadSnafu, FileUriSnafu, ReqwestSnafu, StdinReadSnafu, S3UriMissingBucketSnafu, InvalidFileUriSnafu, InvalidHTTPUriSnafu, S3UriSchemeSnafu
+};
 
-/// Anything that can fetch itself as a UTF-8 String.
+/// Anything that can fetch itself as a UTF-8 `String`.
 #[async_trait]
 pub trait UriResolver {
-    /// Fetches the contents and returns as a String.
+    /// Fetches the contents of this URI as a `String`.
     async fn resolve(&self) -> Result<String>;
 }
 
-/// "-" → stdin
+/// “-” → standard input
 pub struct StdinUri;
 
 impl TryFrom<&str> for StdinUri {
@@ -34,12 +40,12 @@ impl UriResolver for StdinUri {
         tokio::io::stdin()
             .read_to_string(&mut buf)
             .await
-            .map_err(|e| Error::StdinRead { source: e })?;
+            .context(StdinReadSnafu)?;
         Ok(buf)
     }
 }
 
-/// file:// → local file
+/// file:// URLs map to local filesystem paths
 pub struct FileUri {
     path: PathBuf,
 }
@@ -48,12 +54,18 @@ impl TryFrom<Url> for FileUri {
     type Error = Error;
 
     fn try_from(url: Url) -> std::result::Result<Self, Self::Error> {
-        if url.scheme() != "file" {
-            return Err(Error::Uri { input_source: url.to_string(), source: url::ParseError::RelativeUrlWithoutBase });
-        }
+        // only accept file://
+        ensure!(
+            url.scheme() == "file",
+            InvalidFileUriSnafu { input_source: url.to_string() }
+        );
+
+        // convert to PathBuf or error
         let path = url
             .to_file_path()
-            .map_err(|_| Error::FileUri { input_source: url.to_string() })?;
+            .ok()
+            .context(FileUriSnafu { input_source: url.to_string() })?;
+
         Ok(FileUri { path })
     }
 }
@@ -61,14 +73,15 @@ impl TryFrom<Url> for FileUri {
 #[async_trait]
 impl UriResolver for FileUri {
     async fn resolve(&self) -> Result<String> {
-        let content = tokio::fs::read_to_string(&self.path)
+        tokio::fs::read_to_string(&self.path)
             .await
-            .map_err(|e| Error::FileRead { input_source: self.path.to_string_lossy().into_owned(), source: e })?;
-        Ok(content)
+            .context(FileReadSnafu {
+                input_source: self.path.to_string_lossy().into_owned(),
+            })
     }
 }
 
-/// http:// or https://
+/// http:// or https:// URLs
 pub struct HttpUri {
     url: Url,
 }
@@ -77,10 +90,11 @@ impl TryFrom<Url> for HttpUri {
     type Error = Error;
 
     fn try_from(url: Url) -> std::result::Result<Self, Self::Error> {
-        match url.scheme() {
-            "http" | "https" => Ok(HttpUri { url }),
-            _ => Err(Error::Uri { input_source: url.to_string(), source: url::ParseError::RelativeUrlWithoutBase }),
-        }
+        ensure!(
+            url.scheme() == "http" || url.scheme() == "https",
+            InvalidHTTPUriSnafu { input_source: url.to_string() }
+        );
+        Ok(HttpUri { url })
     }
 }
 
@@ -89,18 +103,26 @@ impl UriResolver for HttpUri {
     async fn resolve(&self) -> Result<String> {
         let resp = reqwest::get(self.url.clone())
             .await
-            .map_err(|e| Error::Reqwest { uri: self.url.to_string(), method: "GET".to_string(), source: e })?
+            .context(ReqwestSnafu {
+                uri: self.url.to_string(),
+                method: "GET".to_string(),
+            })?
             .error_for_status()
-            .map_err(|e| Error::Reqwest { uri: self.url.to_string(), method: "GET".to_string(), source: e })?;
-        let text = resp
-            .text()
+            .context(ReqwestSnafu {
+                uri: self.url.to_string(),
+                method: "GET".to_string(),
+            })?;
+
+        resp.text()
             .await
-            .map_err(|e| Error::Reqwest { uri: self.url.to_string(), method: "GET".to_string(), source: e })?;
-        Ok(text)
+            .context(ReqwestSnafu {
+                uri: self.url.to_string(),
+                method: "GET".to_string(),
+            })
     }
 }
 
-/// s3://bucket/key (stub; requires aws-sdk-s3)
+/// s3://bucket/key URLs (stub; add aws-sdk-s3 later)
 pub struct S3Uri {
     bucket: String,
     key: String,
@@ -110,12 +132,13 @@ impl TryFrom<Url> for S3Uri {
     type Error = Error;
 
     fn try_from(url: Url) -> std::result::Result<Self, Self::Error> {
-        if url.scheme() != "s3" {
-            return Err(Error::Uri { input_source: url.to_string(), source: url::ParseError::RelativeUrlWithoutBase });
-        }
+        ensure!(
+            url.scheme() == "s3",
+            S3UriSchemeSnafu { input_source: url.to_string() }
+        );
         let bucket = url
             .host_str()
-            .ok_or_else(|| Error::Uri { input_source: url.to_string(), source: url::ParseError::EmptyHost })?
+            .context(S3UriMissingBucketSnafu { input_source: url.to_string() })?
             .to_string();
         let key = url.path().trim_start_matches('/').to_string();
         Ok(S3Uri { bucket, key })
@@ -125,7 +148,10 @@ impl TryFrom<Url> for S3Uri {
 #[async_trait]
 impl UriResolver for S3Uri {
     async fn resolve(&self) -> Result<String> {
-        // TODO: implement using aws-sdk-s3
-        Err(Error::Uri { input_source: format!("s3://{}/{}", self.bucket, self.key), source: url::ParseError::RelativeUrlWithoutBase })
+        // still unimplemented
+        Err(Error::Uri {
+            input_source: format!("s3://{}/{}", self.bucket, self.key),
+            source: url::ParseError::RelativeUrlWithoutBase,
+        })
     }
 }
