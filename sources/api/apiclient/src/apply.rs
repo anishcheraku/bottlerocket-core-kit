@@ -2,7 +2,8 @@
 //! TOML settings files, in the same format as user data, or the JSON equivalent.  The inputs are
 //! pulled and applied to the API server in a single transaction.
 
-use crate::uri_resolver::{StdinUri, FileUri, HttpUri, UriResolver};
+use aws_sdk_s3::Client;
+use crate::uri_resolver::{StdinUri, FileUri, HttpUri, S3Uri, UriResolver};
 use crate::rando;
 use futures::future::{join, ready, TryFutureExt};
 use futures::stream::{self, StreamExt};
@@ -75,7 +76,7 @@ pub async fn get(input: &str) -> Result<String> {
     resolver.resolve().await
 }
 
-/// Choose which UriResolver applies to `input` (stdin, file://, http(s)://).
+/// Choose which UriResolver applies to `input` (stdin, file://, http(s):// or s3://).
 fn select_resolver(input: &str) -> Result<Box<dyn UriResolver>> {
     // 1) "-" → stdin
     if let Ok(r) = StdinUri::try_from(input) {
@@ -95,8 +96,12 @@ fn select_resolver(input: &str) -> Result<Box<dyn UriResolver>> {
         return Ok(Box::new(r));
     }
 
+    // 5) s3://
+    if let Ok(r) = S3Uri::try_from(url) {
+        return Ok(Box::new(r));
+    }
 
-    error::NoResolverSnafu {
+    NoResolverSnafu {
         input_source: input.to_string(),
     }
     .fail()
@@ -214,6 +219,9 @@ pub(crate) mod error {
             source: reqwest::Error,
         },
 
+        #[snafu(display("Invalid S3 URI '{}': missing bucket name", input_source))]
+        S3UriMissingBucket { input_source: String },
+
         #[snafu(display("Given invalid file URI '{}'", input_source))]
         InvalidFileUri { input_source: String },
 
@@ -222,6 +230,9 @@ pub(crate) mod error {
 
         #[snafu(display("Failed to read standard input: {}", source))]
         StdinRead { source: std::io::Error },
+
+        #[snafu(display("Invalid S3 URI scheme for '{}', expected s3://", input_source))]
+        S3UriScheme { input_source: String },
 
         #[snafu(display(
             "Failed to translate TOML from '{}' to JSON for API: {}",
