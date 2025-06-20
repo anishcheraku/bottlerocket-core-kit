@@ -1,18 +1,15 @@
 //! This module allows application of settings from URIs or stdin.  The inputs are expected to be
 //! TOML settings files, in the same format as user data, or the JSON equivalent.  The inputs are
 //! pulled and applied to the API server in a single transaction.
-
-use crate::uri_resolver::{StdinUri, FileUri, HttpUri, UriResolver};
+use crate::apply::error::ResolverFailureSnafu;
 use crate::rando;
-use futures::future::{join, ready, TryFutureExt};
+use futures::future::{join, ready};
 use futures::stream::{self, StreamExt};
 use reqwest::Url;
 use serde::de::{Deserialize, IntoDeserializer};
-use snafu::{futures::try_future::TryFutureExt as SnafuTryFutureExt, OptionExt, ResultExt};
+use snafu::{OptionExt, ResultExt};
 use std::convert::TryFrom;
 use std::path::Path;
-use tokio::io::AsyncReadExt;
-
 
 /// Reads settings in TOML or JSON format from files at the requested URIs (or from stdin, if given
 /// "-"), then commits them in a single transaction and applies them to the system.
@@ -69,35 +66,68 @@ where
     Ok(())
 }
 
-/// Retrieves the given source location and returns the result in a String.
-pub async fn get(input: &str) -> Result<String> {
-    let resolver = select_resolver(input)?;
-    resolver.resolve().await
+/// Holds the raw input string and the URL (if it parses).
+pub struct SettingsInput {
+    pub input: String,
+    pub parsed_url: Option<Url>,
+}
+impl SettingsInput {
+    pub(crate) fn new(input: impl Into<String>) -> Self {
+        let input = input.into();
+        let parsed_url = Url::parse(&input).ok();
+        SettingsInput { input, parsed_url }
+    }
 }
 
-/// Choose which UriResolver applies to `input` (stdin, file://, http(s)://).
-fn select_resolver(input: &str) -> Result<Box<dyn UriResolver>> {
-    // 1) "-" → stdin
-    if let Ok(r) = StdinUri::try_from(input) {
+/// Retrieves the given source location and returns the result in a String.
+async fn get<S>(input_source: S) -> Result<String>
+where
+    S: AsRef<str>,
+{
+    let settings = SettingsInput::new(input_source.as_ref());
+    let resolver = select_resolver(&settings)?;
+    resolver.resolve().await.context(ResolverFailureSnafu)
+}
+
+/// Choose which UriResolver applies to `input` (stdin, file://, http(s)://, s3://, secretsmanager://, and ssm://).
+fn select_resolver(input: &SettingsInput) -> Result<Box<dyn crate::uri_resolver::UriResolver>> {
+    use crate::uri_resolver;
+
+    // stdin ("-")
+    if let Ok(r) = uri_resolver::StdinUri::try_from(input) {
         return Ok(Box::new(r));
     }
 
-    // 2) parse as a URL
-    let url = Url::parse(input).context(error::UriSnafu { input_source: input.to_string() })?;
-
-    // 3) file://
-    if let Ok(r) = FileUri::try_from(url.clone()) {
+    // file://
+    if let Ok(r) = uri_resolver::FileUri::try_from(input) {
         return Ok(Box::new(r));
     }
 
-    // 4) http(s)://
-    if let Ok(r) = HttpUri::try_from(url.clone()) {
+    // http(s)://
+    if let Ok(r) = uri_resolver::HttpUri::try_from(input) {
         return Ok(Box::new(r));
     }
 
+    // s3://
+    #[cfg(feature = "tls")]
+    if let Ok(r) = uri_resolver::S3Uri::try_from(input) {
+        return Ok(Box::new(r));
+    }
+
+    // secretsmanager://
+    #[cfg(feature = "tls")]
+    if let Ok(r) = uri_resolver::SecretsManagerUri::try_from(input) {
+        return Ok(Box::new(r));
+    }
+
+    // ssm://
+    #[cfg(feature = "tls")]
+    if let Ok(r) = uri_resolver::SsmUri::try_from(input) {
+        return Ok(Box::new(r));
+    }
 
     error::NoResolverSnafu {
-        input_source: input.to_string(),
+        input_source: input.input.clone(),
     }
     .fail()
 }
@@ -135,11 +165,11 @@ fn format_change(input: &str, input_source: &str) -> Result<String> {
     serde_json::to_string(&json_inner).context(error::JsonSerializeSnafu { input_source })
 }
 
-pub(crate) mod error {
+mod error {
     use snafu::Snafu;
 
     #[derive(Debug, Snafu)]
-    #[snafu(visibility(pub(crate)))]
+    #[snafu(visibility(pub(super)))]
     pub enum Error {
         #[snafu(display("Failed to commit combined settings to '{}': {}", uri, source))]
         CommitApply {
@@ -147,15 +177,6 @@ pub(crate) mod error {
             #[snafu(source(from(crate::Error, Box::new)))]
             source: Box<crate::Error>,
         },
-
-        #[snafu(display("Failed to read given file '{}': {}", input_source, source))]
-        FileRead {
-            input_source: String,
-            source: std::io::Error,
-        },
-
-        #[snafu(display("Given invalid file URI '{}'", input_source))]
-        FileUri { input_source: String },
 
         #[snafu(display("No URI resolver found for '{}'", input_source))]
         NoResolver { input_source: String },
@@ -214,15 +235,6 @@ pub(crate) mod error {
             source: reqwest::Error,
         },
 
-        #[snafu(display("Given invalid file URI '{}'", input_source))]
-        InvalidFileUri { input_source: String },
-
-        #[snafu(display("Given HTTP(S) URI '{}'", input_source))]
-        InvalidHTTPUri { input_source: String },
-
-        #[snafu(display("Failed to read standard input: {}", source))]
-        StdinRead { source: std::io::Error },
-
         #[snafu(display(
             "Failed to translate TOML from '{}' to JSON for API: {}",
             input_source,
@@ -230,7 +242,8 @@ pub(crate) mod error {
         ))]
         TomlToJson {
             input_source: String,
-            source: toml::de::Error,
+            #[snafu(source(from(toml::de::Error, Box::new)))]
+            source: Box<toml::de::Error>,
         },
 
         #[snafu(display("Given invalid URI '{}': {}", input_source, source))]
@@ -238,7 +251,49 @@ pub(crate) mod error {
             input_source: String,
             source: url::ParseError,
         },
+
+        #[snafu(display("Resolver failed: {}", source))]
+        ResolverFailure {
+            #[snafu(source(from(crate::uri_resolver::ResolverError, Box::new)))]
+            source: Box<crate::uri_resolver::ResolverError>,
+        },
     }
 }
 pub use error::Error;
 pub type Result<T> = std::result::Result<T, error::Error>;
+
+#[cfg(test)]
+mod resolver_selection_tests {
+    use super::select_resolver;
+    use crate::apply::SettingsInput;
+    use std::any::{Any, TypeId};
+    use test_case::test_case;
+
+    // Non-TLS resolvers (always available)
+    #[test_case("-",                   TypeId::of::<crate::uri_resolver::StdinUri>();  "stdin")]
+    #[test_case("base64:SGVsbG8=",     TypeId::of::<crate::uri_resolver::Base64Uri>(); "base64")]
+    #[test_case("file:///tmp/folder",  TypeId::of::<crate::uri_resolver::FileUri>();   "file")]
+    #[test_case("http://amazon.com",   TypeId::of::<crate::uri_resolver::HttpUri>();   "http")]
+    fn resolver_selection(input: &str, expected: std::any::TypeId) {
+        let settings = SettingsInput::new(input);
+        let resolver = select_resolver(&settings).expect("should have a resolver for this scheme");
+        let any = resolver.as_ref() as &dyn Any;
+        assert_eq!(any.type_id(), expected);
+    }
+
+    // TLS-dependent resolvers
+    #[cfg(feature = "tls")]
+    #[test_case("https://amazon.com",                                               TypeId::of::<crate::tls_resolvers::HttpsUri>();                 "https")]
+    #[test_case("s3://mybucket/path",                                               TypeId::of::<crate::uri_resolver::S3Uri>();                     "s3")]
+    #[test_case("secretsmanager://sec",                                             TypeId::of::<crate::uri_resolver::SecretsManagerUri>();         "secrets")]
+    #[test_case("ssm://param",                                                      TypeId::of::<crate::uri_resolver::SsmUri>();                    "ssmUri")]
+    #[test_case("arn:aws:ssm:<region>:<account_id>:parameter/<name>",               TypeId::of::<crate::uri_resolver::SsmArn>();                    "ssmArn")]
+    #[test_case("arn:aws:secretsmanager:<region>:<account-id>:secret:<secret-id>",  TypeId::of::<crate::uri_resolver::SecretsManagerArn>();         "secretsmanagerArn")]
+    #[cfg(feature = "tls")]
+    fn resolver_selection_tls(input: &str, expected: std::any::TypeId) {
+        let settings = SettingsInput::new(input);
+        let resolver = select_resolver(&settings).expect("should have a resolver for this scheme");
+        let any = resolver.as_ref() as &dyn Any;
+        assert_eq!(any.type_id(), expected);
+    }
+}
