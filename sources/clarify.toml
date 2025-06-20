@@ -26,6 +26,13 @@ license-files = [
     { path = "LICENSE-MIT", hash = 0xfeb1e4a7 },
 ]
 
+[clarify.aws-sdk-s3]
+expression = "Apache-2.0"
+license-files = [
+    { path = "LICENSE", hash = 0x1b71bb24 }
+]
+skip-files = [ "tests/blns/LICENSE" ] # we do not vend this as it's just used in s3's tests
+
 [clarify.backtrace-sys]
 # backtrace-sys is MIT/Apache-2.0, libbacktrace is BSD-3-Clause
 expression = "(MIT OR Apache-2.0) AND BSD-3-Clause"

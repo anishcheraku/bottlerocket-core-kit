@@ -11,10 +11,13 @@ exclude = ["README.md"]
 
 [features]
 default = ["tls"]
-tls = ["dep:rustls", "dep:aws-lc-rs", "reqwest/rustls-tls-native-roots"]
+tls = ["dep:rustls", "dep:aws-lc-rs", "dep:aws-config", "dep:aws-smithy-types", "reqwest/rustls-tls-native-roots"]
 fips = ["tls", "aws-lc-rs/fips", "rustls/fips"]
 
 [dependencies]
+async-trait = "0.1"
+aws-smithy-types = { workspace = true, optional = true }
+aws-config = { workspace = true, optional = true }
 aws-lc-rs = { workspace = true, optional = true, features = ["bindgen"] }
 base64.workspace = true
 constants.workspace = true
@@ -32,7 +35,7 @@ models.workspace = true
 nix.workspace = true
 olpc-cjson.workspace = true
 rand = { workspace = true, features = ["default"] }
-reqwest.workspace = true
+reqwest.workspace = true 
 retry-read.workspace = true
 rustls = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"] }

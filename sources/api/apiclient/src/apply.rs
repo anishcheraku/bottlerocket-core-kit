@@ -2,14 +2,17 @@
 //! TOML settings files, in the same format as user data, or the JSON equivalent.  The inputs are
 //! pulled and applied to the API server in a single transaction.
 
+use crate::uri_resolver::{StdinUri, FileUri, HttpUri, UriResolver};
 use crate::rando;
 use futures::future::{join, ready, TryFutureExt};
 use futures::stream::{self, StreamExt};
 use reqwest::Url;
 use serde::de::{Deserialize, IntoDeserializer};
 use snafu::{futures::try_future::TryFutureExt as SnafuTryFutureExt, OptionExt, ResultExt};
+use std::convert::TryFrom;
 use std::path::Path;
 use tokio::io::AsyncReadExt;
+
 
 /// Reads settings in TOML or JSON format from files at the requested URIs (or from stdin, if given
 /// "-"), then commits them in a single transaction and applies them to the system.
@@ -67,46 +70,36 @@ where
 }
 
 /// Retrieves the given source location and returns the result in a String.
-async fn get<S>(input_source: S) -> Result<String>
-where
-    S: Into<String>,
-{
-    let input_source = input_source.into();
+pub async fn get(input: &str) -> Result<String> {
+    let resolver = select_resolver(input)?;
+    resolver.resolve().await
+}
 
-    // Read from stdin if "-" was given.
-    if input_source == "-" {
-        let mut output = String::new();
-        tokio::io::stdin()
-            .read_to_string(&mut output)
-            .context(error::StdinReadSnafu)
-            .await?;
-        return Ok(output);
+/// Choose which UriResolver applies to `input` (stdin, file://, http(s)://).
+fn select_resolver(input: &str) -> Result<Box<dyn UriResolver>> {
+    // 1) "-" → stdin
+    if let Ok(r) = StdinUri::try_from(input) {
+        return Ok(Box::new(r));
     }
 
-    // Otherwise, the input should be a URI; parse it to know what kind.
-    // Until reqwest handles file:// URIs: https://github.com/seanmonstar/reqwest/issues/178
-    let uri = Url::parse(&input_source).context(error::UriSnafu {
-        input_source: &input_source,
-    })?;
-    if uri.scheme() == "file" {
-        // Turn the URI to a file path, and return a future that reads it.
-        let path = uri.to_file_path().ok().context(error::FileUriSnafu {
-            input_source: &input_source,
-        })?;
-        tokio::fs::read_to_string(path)
-            .context(error::FileReadSnafu { input_source })
-            .await
-    } else {
-        // Return a future that contains the text of the (non-file) URI.
-        reqwest::get(uri)
-            .and_then(|response| ready(response.error_for_status()))
-            .and_then(|response| response.text())
-            .context(error::ReqwestSnafu {
-                uri: input_source,
-                method: "GET",
-            })
-            .await
+    // 2) parse as a URL
+    let url = Url::parse(input).context(error::UriSnafu { input_source: input.to_string() })?;
+
+    // 3) file://
+    if let Ok(r) = FileUri::try_from(url.clone()) {
+        return Ok(Box::new(r));
     }
+
+    // 4) http(s)://
+    if let Ok(r) = HttpUri::try_from(url.clone()) {
+        return Ok(Box::new(r));
+    }
+
+
+    error::NoResolverSnafu {
+        input_source: input.to_string(),
+    }
+    .fail()
 }
 
 /// Takes a string of TOML or JSON settings data and reserializes
@@ -142,11 +135,11 @@ fn format_change(input: &str, input_source: &str) -> Result<String> {
     serde_json::to_string(&json_inner).context(error::JsonSerializeSnafu { input_source })
 }
 
-mod error {
+pub(crate) mod error {
     use snafu::Snafu;
 
     #[derive(Debug, Snafu)]
-    #[snafu(visibility(pub(super)))]
+    #[snafu(visibility(pub(crate)))]
     pub enum Error {
         #[snafu(display("Failed to commit combined settings to '{}': {}", uri, source))]
         CommitApply {
@@ -163,6 +156,9 @@ mod error {
 
         #[snafu(display("Given invalid file URI '{}'", input_source))]
         FileUri { input_source: String },
+
+        #[snafu(display("No URI resolver found for '{}'", input_source))]
+        NoResolver { input_source: String },
 
         #[snafu(display(
             "Input '{}' is not valid TOML or JSON.  (TOML error: {})  (JSON error: {})",
@@ -217,6 +213,12 @@ mod error {
             uri: String,
             source: reqwest::Error,
         },
+
+        #[snafu(display("Given invalid file URI '{}'", input_source))]
+        InvalidFileUri { input_source: String },
+
+        #[snafu(display("Given HTTP(S) URI '{}'", input_source))]
+        InvalidHTTPUri { input_source: String },
 
         #[snafu(display("Failed to read standard input: {}", source))]
         StdinRead { source: std::io::Error },
