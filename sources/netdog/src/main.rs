@@ -1,7 +1,7 @@
 /*!
 # Introduction
 
-netdog is a small helper program for systemd-networkd, to apply network settings received from DHCP.  
+netdog is a small helper program for systemd-networkd, to apply network settings received from DHCP.
 It generates `/etc/resolv.conf`, generates and sets the hostname, and persists the current IP to a
 file.
 
@@ -35,17 +35,9 @@ mod cli;
 mod dns;
 mod interface_id;
 mod net_config;
-mod vlan_id;
-
-#[cfg(feature = "wicked")]
-mod lease;
-#[cfg(feature = "wicked")]
-mod wicked;
-
-#[cfg(not(feature = "wicked"))]
 mod networkd;
-#[cfg(not(feature = "wicked"))]
 mod networkd_status;
+mod vlan_id;
 
 use argh::FromArgs;
 use std::process;
@@ -59,21 +51,14 @@ static DEFAULT_NET_CONFIG_FILE: &str = "/var/lib/bottlerocket/net.toml";
 static OVERRIDE_NET_CONFIG_FILE: &str = "/var/lib/netdog/net.toml";
 static PRIMARY_SYSCTL_CONF: &str = "/etc/sysctl.d/90-primary_interface.conf";
 static SYSCTL_MARKER_FILE: &str = "/run/netdog/primary_sysctls_set";
-#[cfg(feature = "wicked")]
-static LEASE_DIR: &str = "/run/wicked";
 static SYS_CLASS_NET: &str = "/sys/class/net";
 static SYSTEMD_SYSCTL: &str = "/usr/lib/systemd/systemd-sysctl";
 static NETDOG_RESOLV_CONF: &str = "/run/netdog/resolv.conf";
 
-#[cfg(feature = "wicked")]
-static REAL_RESOLV_CONF: &str = "/etc/resolv.conf";
-
 // This is the path to systemd-resolved's generated simple resolv.conf; see
 // https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/#known-issues for
 // the reasoning behind using this path.
-#[cfg(not(feature = "wicked"))]
 static REAL_RESOLV_CONF: &str = "/run/systemd/resolve/resolv.conf";
-#[cfg(not(feature = "wicked"))]
 static NETWORKCTL: &str = "/usr/bin/networkctl";
 
 /// Stores user-supplied arguments.
@@ -86,32 +71,22 @@ struct Args {
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand)]
 enum SubCommand {
-    #[cfg(feature = "wicked")]
-    Install(cli::InstallArgs),
-    #[cfg(feature = "wicked")]
-    Remove(cli::RemoveArgs),
     NodeIp(cli::NodeIpArgs),
     GenerateHostname(cli::GenerateHostnameArgs),
     GenerateNetConfig(cli::GenerateNetConfigArgs),
     SetHostname(cli::SetHostnameArgs),
     WriteResolvConf(cli::WriteResolvConfArgs),
-    #[cfg(not(feature = "wicked"))]
     WriteNetworkStatus(cli::WriteNetworkStatusArgs),
 }
 
 async fn run() -> cli::Result<()> {
     let args: Args = argh::from_env();
     match args.subcommand {
-        #[cfg(feature = "wicked")]
-        SubCommand::Install(args) => cli::install::run(args)?,
-        #[cfg(feature = "wicked")]
-        SubCommand::Remove(args) => cli::remove::run(args)?,
         SubCommand::NodeIp(_) => cli::node_ip::run()?,
         SubCommand::GenerateHostname(_) => cli::generate_hostname::run().await?,
         SubCommand::GenerateNetConfig(_) => cli::generate_net_config::run()?,
         SubCommand::SetHostname(args) => cli::set_hostname::run(args)?,
         SubCommand::WriteResolvConf(_) => cli::write_resolv_conf::run()?,
-        #[cfg(not(feature = "wicked"))]
         SubCommand::WriteNetworkStatus(_) => cli::write_network_status::run()?,
     }
     Ok(())

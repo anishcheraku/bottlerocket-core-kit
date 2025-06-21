@@ -1,25 +1,13 @@
 use super::{error, primary_interface_name, Result};
+use crate::cli::{fetch_net_config, Command};
 use crate::dns::DnsSettings;
-use argh::FromArgs;
-use snafu::ResultExt;
-
-#[cfg(feature = "wicked")]
-use crate::lease::{dhcp_lease_path, LeaseInfo};
-
-#[cfg(not(feature = "wicked"))]
-use crate::cli::Command;
-#[cfg(not(feature = "wicked"))]
-use snafu::ensure;
-#[cfg(not(feature = "wicked"))]
-static SYSTEMCTL: &str = "/usr/bin/systemctl";
-#[cfg(not(feature = "wicked"))]
-use crate::cli::fetch_net_config;
-#[cfg(not(feature = "wicked"))]
 use crate::networkd::config::NETWORKD_CONFIG_DIR;
-#[cfg(not(feature = "wicked"))]
+use argh::FromArgs;
+use snafu::{ensure, ResultExt};
 use std::{fs, path::Path};
-#[cfg(not(feature = "wicked"))]
 use systemd_derive::{SystemdUnit, SystemdUnitSection};
+
+static SYSTEMCTL: &str = "/usr/bin/systemctl";
 
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand, name = "write-resolv-conf")]
@@ -27,7 +15,6 @@ use systemd_derive::{SystemdUnit, SystemdUnitSection};
 pub(crate) struct WriteResolvConfArgs {}
 
 /// A struct representing an interface drop-in that overrides DNS-via-DHCP settings
-#[cfg(not(feature = "wicked"))]
 #[derive(Debug, SystemdUnit)]
 struct InterfaceDNSDropIn {
     network: Option<NetworkSection>,
@@ -36,7 +23,6 @@ struct InterfaceDNSDropIn {
     ipv6_accept_ra: Option<IPv6AcceptRASection>,
 }
 
-#[cfg(not(feature = "wicked"))]
 #[derive(Debug, SystemdUnitSection)]
 #[systemd(section = "Network")]
 struct NetworkSection {
@@ -44,7 +30,6 @@ struct NetworkSection {
     dns_default_route: Option<bool>,
 }
 
-#[cfg(not(feature = "wicked"))]
 #[derive(Debug, SystemdUnitSection)]
 #[systemd(section = "DHCPv4")]
 struct Dhcp4Section {
@@ -54,7 +39,6 @@ struct Dhcp4Section {
     use_domains: Option<bool>,
 }
 
-#[cfg(not(feature = "wicked"))]
 #[derive(Debug, SystemdUnitSection)]
 #[systemd(section = "DHCPv6")]
 struct Dhcp6Section {
@@ -64,7 +48,6 @@ struct Dhcp6Section {
     use_domains: Option<bool>,
 }
 
-#[cfg(not(feature = "wicked"))]
 #[derive(Debug, SystemdUnitSection)]
 #[systemd(section = "IPv6AcceptRA")]
 struct IPv6AcceptRASection {
@@ -74,15 +57,13 @@ struct IPv6AcceptRASection {
     use_domains: Option<bool>,
 }
 
-#[cfg(not(feature = "wicked"))]
 impl InterfaceDNSDropIn {
     /// Given API DNS settings create an appropriate drop-in for a network interface.
     fn new(settings: &DnsSettings, is_primary: bool) -> Self {
         // Default to not using DNS values from DHCP, and do not use the interface's DNS route to
         // resolve domains not matching other config.  If the interface is the primary interface,
-        // use DNS API settings to direct the appropriate interface configuration.  This matches
-        // existing wicked behavior by ensuring DNS configuration is sourced from settings and the
-        // primary interface only.
+        // use DNS API settings to direct the appropriate interface configuration. This ensures
+        // DNS configuration is sourced from settings and the primary interface only.
         let mut should_use_dns_from_dhcp = Some(false);
         let mut should_use_domains_from_dhcp = Some(false);
         let mut should_be_dns_default_route = Some(false);
@@ -117,7 +98,6 @@ impl InterfaceDNSDropIn {
 // corresponding values in the DHCP lease.  If we don't, then we want to use the values from DHCP.
 // Toggle this functionality via a networkd interface drop-in.  Also write the global settings from
 // the API as a systemd-resolved drop-in.
-#[cfg(not(feature = "wicked"))]
 fn handle_dns_settings(primary_interface: String) -> Result<()> {
     let dns_settings = DnsSettings::from_config().context(error::GetDnsSettingsSnafu)?;
 
@@ -173,27 +153,6 @@ fn handle_dns_settings(primary_interface: String) -> Result<()> {
             stderr: String::from_utf8_lossy(&restart_resolved.stderr)
         }
     );
-
-    Ok(())
-}
-
-// Use DNS API settings if they exist, supplementing any missing settings with settings derived
-// from the primary interface's DHCP lease if it exists.  Static leases don't contain any DNS
-// data, so don't bother looking there.
-#[cfg(feature = "wicked")]
-fn handle_dns_settings(primary_interface: String) -> Result<()> {
-    let primary_lease_path = dhcp_lease_path(primary_interface);
-    let dns_settings = if let Some(primary_lease_path) = primary_lease_path {
-        let lease =
-            LeaseInfo::from_lease(primary_lease_path).context(error::LeaseParseFailedSnafu)?;
-        DnsSettings::from_config_or_lease(Some(&lease)).context(error::GetDnsSettingsSnafu)?
-    } else {
-        DnsSettings::from_config_or_lease(None).context(error::GetDnsSettingsSnafu)?
-    };
-
-    dns_settings
-        .write_resolv_conf()
-        .context(error::ResolvConfWriteFailedSnafu)?;
 
     Ok(())
 }

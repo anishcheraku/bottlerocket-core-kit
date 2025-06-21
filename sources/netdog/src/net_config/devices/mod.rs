@@ -72,7 +72,7 @@ where
         .fail();
     }
 
-    // wicked doesn't support static routes with dhcp
+    // Legacy alert: wicked didn't support static routes with dhcp
     if device.has_dhcp() && device.has_routes() {
         return error::InvalidNetConfigSnafu {
             reason: "static routes are not supported with dhcp",
