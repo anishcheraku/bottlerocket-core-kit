@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-yrtutyr4c95s"
+title = "iputils CVE-2025-472688"
+cve = "CVE-2025-472688"
+severity = "medium"
+description = "A flaw was found in iputils where a specially crafted ICMP reply could trigger an integer overflow"
+
+[[advisory.products]]
+package-name = "iputils"
+patched-version = "20250605"
+patched-epoch = "1"
+
+[updateinfo]
+author = "vighmah"
+issue-date = 2025-06-23T16:55:50Z
+arches = ["x86_64", "aarch64"]
+version = "9.1.0"
