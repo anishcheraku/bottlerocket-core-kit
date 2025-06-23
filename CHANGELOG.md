@@ -1,3 +1,25 @@
+# v9.1.0 (2025-06-23)
+
+## OS Changes
+* Add an option to write settings once during boot ([#548])
+
+### Third Party Package Updates
+- Update `libcrypto` patches ([#546])
+- Update to latest versions of kubernetes packages ([#551])
+- Update `nvidia-container-toolkit` and `libnvidia-container` to 1.17.8 ([#552])
+- Update core system utilities: `kexec-tools`, `open-vm-tools`, and `iputils` ([#553])
+
+## Orchestrator Changes
+### Kubernetes
+* Add support for Kubernetes setting `memory-swap-behaviour` ([#541]) Thanks @teskje
+
+[#541]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/541
+[#546]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/546
+[#548]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/548
+[#551]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/551
+[#552]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/552
+[#553]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/553
+
 # v9.0.0 (2025-06-10)
 
 ## OS Changes
