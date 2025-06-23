@@ -2,7 +2,7 @@
 %global gorepo nvidia-container-toolkit
 %global goimport %{goproject}/%{gorepo}
 
-%global gover 1.17.6
+%global gover 1.17.8
 %global rpmver %{gover}
 
 Name: %{_cross_os}nvidia-container-toolkit
@@ -23,7 +23,6 @@ Source4: nvidia-container-toolkit-tmpfiles-ecs.conf
 Source5: nvidia-container-toolkit-tmpfiles-k8s.conf
 Source6: nvidia-container-toolkit-config-k8s
 Source7: generate-cdi-specs.service
-Patch0001: 0001-ldcache-fix-parsing-for-aarch64.patch
 
 BuildRequires: %{_cross_os}glibc-devel
 Requires: %{_cross_os}libnvidia-container
