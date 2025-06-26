@@ -1,0 +1,5 @@
+[required-extensions]
+container-runtime = "v1"
+std = { version = "v1" }
++++
+SELECTED_SNAPSHOTTER="{{#if settings.container-runtime.snapshotter}}{{settings.container-runtime.snapshotter}}{{else}}overlayfs{{/if}}"

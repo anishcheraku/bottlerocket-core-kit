@@ -17,6 +17,7 @@ Source96: release-repart-local.conf
 Source97: release-sysctl.conf
 Source98: release-systemd-system.conf
 Source99: release-ca-certificates-tmpfiles.conf
+Source100: release-snapshotter-tmpfiles.conf
 
 Source200: motd.template
 Source201: proxy-env
@@ -28,6 +29,7 @@ Source206: aws-config
 Source207: aws-credentials
 Source208: modules-load.template
 Source209: log4j-hotpatch-enabled
+Source210: selected-snapshotter-template
 
 # Core targets, services, and slices.
 Source1001: multi-user.target
@@ -73,6 +75,7 @@ Source1064: deprecation-warning@.timer
 Source1065: check-kernel-integrity.service
 Source1066: check-fips-modules.service
 Source1067: fips-modprobe@.service
+Source1068: configure-snapshotter.service
 
 # Mounts that require build-time edits.
 Source1080: var-lib-kernel-devel-lower.mount.in
@@ -161,6 +164,7 @@ install -d %{buildroot}%{_cross_tmpfilesdir}
 install -p -m 0644 %{S:93} %{buildroot}%{_cross_tmpfilesdir}/release.conf
 install -p -m 0644 %{S:99} %{buildroot}%{_cross_tmpfilesdir}/release-ca-certificates.conf
 install -p -m 0644 %{S:94} %{buildroot}%{_cross_tmpfilesdir}/release-fips.conf
+install -p -m 0644 %{S:100} %{buildroot}%{_cross_tmpfilesdir}/release-snapshotter.conf
 
 install -d %{buildroot}%{_cross_libdir}/systemd/networkd.conf.d
 install -p -m 0644 %{S:95} %{buildroot}%{_cross_libdir}/systemd/networkd.conf.d/80-release.conf
@@ -197,7 +201,7 @@ install -p -m 0644 \
   %{S:1040} %{S:1041} %{S:1042} %{S:1043} %{S:1044} \
   %{S:1045} %{S:1046} %{S:1047} %{S:1048} %{S:1049} \
   %{S:1060} %{S:1061} %{S:1062} %{S:1063} %{S:1064} \
-  %{S:1065} %{S:1066} %{S:1067} \
+  %{S:1065} %{S:1066} %{S:1067} %{S:1068} \
   %{buildroot}%{_cross_unitdir}
 
 install -d %{buildroot}%{_cross_unitdir}/systemd-tmpfiles-setup.service.d
@@ -256,6 +260,7 @@ install -p -m 0644 %{S:206} %{buildroot}%{_cross_templatedir}/aws-config
 install -p -m 0644 %{S:207} %{buildroot}%{_cross_templatedir}/aws-credentials
 install -p -m 0644 %{S:208} %{buildroot}%{_cross_templatedir}/modules-load
 install -p -m 0644 %{S:209} %{buildroot}%{_cross_templatedir}/log4j-hotpatch-enabled
+install -p -m 0644 %{S:210} %{buildroot}%{_cross_templatedir}/selected-snapshotter
 
 install -d %{buildroot}%{_cross_unitdir}/systemd-udev-trigger.service.d/
 install -p -m 0644 %{S:1105} %{buildroot}%{_cross_unitdir}/systemd-udev-trigger.service.d/00-selinux.conf
@@ -342,6 +347,9 @@ ln -s preconfigured.target %{buildroot}%{_cross_unitdir}/default.target
 %{_cross_templatedir}/log4j-hotpatch-enabled
 %{_cross_udevrulesdir}/61-mount-cdrom.rules
 %{_cross_datadir}/logdog.d/logdog.common.conf
+%{_cross_unitdir}/configure-snapshotter.service
+%{_cross_templatedir}/selected-snapshotter
+%{_cross_tmpfilesdir}/release-snapshotter.conf
 
 %files fips
 %{_cross_bootconfigdir}/10-fips.conf
