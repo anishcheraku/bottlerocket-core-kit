@@ -1,0 +1,55 @@
+From dd3763194ff68b597bc8079ab21ffa60489e0c0b Mon Sep 17 00:00:00 2001
+From: Gavin Inglis <giinglis@amazon.com>
+Date: Tue, 22 Jul 2025 23:49:53 +0000
+Subject: [PATCH] config: change Plugins type from toml.Tree to interface{}
+
+In order to bring 2.0 config parsing parity to containerd-1.7 in terms
+of merge behavior, the type of Plugins must be made a generic
+interface{} and unmarshalling adjust accordingly. This tree structure
+resulted in higher level nodes being affected by changes to children and
+leaves and reset to their defaults.
+
+Signed-off-by: Gavin Inglis <giinglis@amazon.com>
+---
+ services/server/config/config.go | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/services/server/config/config.go b/services/server/config/config.go
+index e3fac1d82..1c663d99a 100644
+--- a/services/server/config/config.go
++++ b/services/server/config/config.go
+@@ -18,6 +18,7 @@ package config
+ 
+ import (
+ 	"fmt"
++	"io"
+ 	"path/filepath"
+ 	"strings"
+ 
+@@ -58,7 +59,7 @@ type Config struct {
+ 	// required plugin doesn't exist or fails to be initialized or started.
+ 	RequiredPlugins []string `toml:"required_plugins"`
+ 	// Plugins provides plugin specific configuration for the initialization of a plugin
+-	Plugins map[string]toml.Tree `toml:"plugins"`
++	Plugins map[string]interface{} `toml:"plugins"`
+ 	// OOMScore adjust the containerd's oom score
+ 	OOMScore int `toml:"oom_score"`
+ 	// Cgroup specifies cgroup information for the containerd daemon process
+@@ -187,7 +188,13 @@ func (c *Config) Decode(p *plugin.Registration) (interface{}, error) {
+ 	if !ok {
+ 		return p.Config, nil
+ 	}
+-	if err := data.Unmarshal(p.Config); err != nil {
++	r, w := io.Pipe()
++	go func() {
++		err := toml.NewEncoder(w).Encode(data)
++		w.CloseWithError(err)
++	}()
++
++	if err := toml.NewDecoder(r).Decode(p.Config); err != nil {
+ 		return nil, err
+ 	}
+ 	return p.Config, nil
+-- 
+2.47.1
+

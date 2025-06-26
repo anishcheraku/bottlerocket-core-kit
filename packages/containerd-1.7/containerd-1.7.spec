@@ -23,6 +23,7 @@ Source3: containerd-config-toml_basic
 Source4: containerd-config-toml_k8s_nvidia_containerd_sock
 Source5: containerd-tmpfiles.conf
 Source6: containerd-cri-base-json
+Source7: snapshotter-toml
 
 # Mount for writing containerd configuration
 Source100: etc-containerd.mount
@@ -39,6 +40,10 @@ Source1000: clarify.toml
 # Backport of upstream patches for igzip support.
 Patch1001: 1001-Use-Intel-ISA-L-s-igzip-if-available.patch
 Patch1002: 1002-Skip-exec.LookPath-if-a-specific-gzip-implementation.patch
+# Patch to modify type of Plugins for config merge behavior.
+Patch1003: 1003-config-change-Plugins-type-from-toml.Tree-to-interfa.patch
+# Backport of upstream patch for config merge behavior.
+Patch1004: 1004-Allow-sections-of-Plugins-to-be-merged-and-not-overw.patch
 
 BuildRequires: git
 BuildRequires: %{_cross_os}glibc-devel
@@ -141,7 +146,7 @@ install -p -m 0644 %{S:1} %{S:100} %{S:110} %{buildroot}%{_cross_unitdir}
 
 install -d %{buildroot}%{_cross_templatedir}
 install -d %{buildroot}%{_cross_factorydir}%{_cross_sysconfdir}/containerd
-install -p -m 0644 %{S:2} %{S:3} %{S:4} %{S:6} %{buildroot}%{_cross_templatedir}
+install -p -m 0644 %{S:2} %{S:3} %{S:4} %{S:6} %{S:7} %{buildroot}%{_cross_templatedir}
 
 install -d %{buildroot}%{_cross_tmpfilesdir}
 install -p -m 0644 %{S:5} %{buildroot}%{_cross_tmpfilesdir}/containerd.conf
@@ -162,6 +167,7 @@ install -p -m 0644 %{S:201} %{buildroot}%{_cross_unitdir}/containerd.service.d/0
 %dir %{_cross_factorydir}%{_cross_sysconfdir}/containerd
 %{_cross_templatedir}/containerd-config-toml*
 %{_cross_templatedir}/containerd-cri-base-json
+%{_cross_templatedir}/snapshotter-toml
 %{_cross_tmpfilesdir}/containerd.conf
 
 %files bin

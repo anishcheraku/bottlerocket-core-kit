@@ -1,0 +1,31 @@
+From a21e379b69916558c1771b086a4a17b0a58f7cc1 Mon Sep 17 00:00:00 2001
+From: Ray Burgemeestre <rayb@nvidia.com>
+Date: Thu, 21 Mar 2024 12:00:24 +0100
+Subject: [PATCH] Allow sections of Plugins to be merged, and not overwritten
+ as entire sections.
+
+See for rationale the Pull Request description. Added unit test to
+demonstrate the difference of this change.
+
+Signed-off-by: Ray Burgemeestre <rayb@nvidia.com>
+Signed-off-by: Gavin Inglis <giinglis@amazon.com>
+---
+ services/server/config/config.go      |  4 --
+ services/server/config/config_test.go | 73 +++++++++++++++++++++
+ 2 files changed, 73 insertions(+), 4 deletions(-)
+
+diff --git a/services/server/config/config.go b/services/server/config/config.go
+index c77f165e4..24687b873 100644
+--- a/services/server/config/config.go
++++ b/services/server/config/config.go
+@@ -412,10 +412,6 @@ func mergeConfig(to, from *Config) error {
+ 	}
+ 
+ 	// Replace entire sections instead of merging map's values.
+-	for k, v := range from.Plugins {
+-		to.Plugins[k] = v
+-	}
+-
+ 	for k, v := range from.StreamProcessors {
+ 		to.StreamProcessors[k] = v
+ 	}

@@ -23,6 +23,7 @@ Source3: containerd-config-toml_basic
 Source4: containerd-config-toml_k8s_nvidia_containerd_sock
 Source5: containerd-tmpfiles.conf
 Source6: containerd-cri-base-json
+Source7: snapshotter-toml
 
 # Mount for writing containerd configuration
 Source100: etc-containerd.mount
@@ -136,7 +137,7 @@ install -p -m 0644 %{S:1} %{S:100} %{S:110} %{buildroot}%{_cross_unitdir}
 
 install -d %{buildroot}%{_cross_templatedir}
 install -d %{buildroot}%{_cross_factorydir}%{_cross_sysconfdir}/containerd
-install -p -m 0644 %{S:2} %{S:3} %{S:4} %{S:6} %{buildroot}%{_cross_templatedir}
+install -p -m 0644 %{S:2} %{S:3} %{S:4} %{S:6} %{S:7} %{buildroot}%{_cross_templatedir}
 
 install -d %{buildroot}%{_cross_tmpfilesdir}
 install -p -m 0644 %{S:5} %{buildroot}%{_cross_tmpfilesdir}/containerd.conf
@@ -157,6 +158,7 @@ install -p -m 0644 %{S:201} %{buildroot}%{_cross_unitdir}/containerd.service.d/0
 %dir %{_cross_factorydir}%{_cross_sysconfdir}/containerd
 %{_cross_templatedir}/containerd-config-toml*
 %{_cross_templatedir}/containerd-cri-base-json
+%{_cross_templatedir}/snapshotter-toml
 %{_cross_tmpfilesdir}/containerd.conf
 
 %files bin
