@@ -50,6 +50,7 @@ cidr.workspace = true
 # Workaround to enable a feature during integration tests.
 schnauzer = { workspace = true, features = ["testfakes"] }
 test-case.workspace = true
+tempfile.workspace = true
 
 [build-dependencies]
 generate-readme.workspace = true

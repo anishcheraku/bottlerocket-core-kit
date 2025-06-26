@@ -4595,6 +4595,7 @@ dependencies = [
  "settings-extension-oci-defaults",
  "simplelog",
  "snafu",
+ "tempfile",
  "test-case",
  "tokio",
  "toml",
