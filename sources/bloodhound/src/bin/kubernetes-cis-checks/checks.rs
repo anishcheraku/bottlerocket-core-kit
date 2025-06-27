@@ -12,6 +12,7 @@ const KUBELET_SERVICE_FILE: &str = "/etc/systemd/system/kubelet.service.d/exec-s
 const KUBELET_KUBECONFIG_FILE: &str = "/etc/kubernetes/kubelet/kubeconfig";
 const KUBELET_CLIENT_CA_FILE: &str = "/etc/kubernetes/pki/ca.crt";
 const KUBELET_CONF_FILE: &str = "/etc/kubernetes/kubelet/config";
+pub const KUBEPROXY_CONF_FILE: &str = "/etc/kubernetes/kube-proxy/kube-proxy.conf";
 
 // =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
 
@@ -19,13 +20,13 @@ pub struct K8S04010100Checker {}
 
 impl Checker for K8S04010100Checker {
     fn execute(&self) -> CheckerResult {
-        let no_x_xw_xw = S_IXUSR | S_IXGRP | S_IWGRP | S_IXOTH | S_IWOTH;
-        check_file_not_mode(KUBELET_SERVICE_FILE, no_x_xw_xw)
+        let no_x_xwr_xwr = S_IXUSR | S_IRWXG | S_IRWXO;
+        check_file_not_mode(KUBELET_SERVICE_FILE, no_x_xwr_xwr)
     }
 
     fn metadata(&self) -> CheckerMetadata {
         CheckerMetadata {
-            title: "Ensure that the kubelet service file permissions are set to 644 or more restrictive".to_string(),
+            title: "Ensure that the kubelet service file permissions are set to 600 or more restrictive".to_string(),
             id: "4.1.1".to_string(),
             level: 1,
             name: "k8s04010100".to_string(),
@@ -60,13 +61,13 @@ pub struct K8S04010500Checker {}
 
 impl Checker for K8S04010500Checker {
     fn execute(&self) -> CheckerResult {
-        let no_x_xw_xw = S_IXUSR | S_IXGRP | S_IWGRP | S_IXOTH | S_IWOTH;
-        check_file_not_mode(KUBELET_KUBECONFIG_FILE, no_x_xw_xw)
+        let no_x_xwr_xwr = S_IXUSR | S_IRWXG | S_IRWXO;
+        check_file_not_mode(KUBELET_KUBECONFIG_FILE, no_x_xwr_xwr)
     }
 
     fn metadata(&self) -> CheckerMetadata {
         CheckerMetadata {
-            title: "Ensure that the --kubeconfig kubelet.conf file permissions are set to 644 or more restrictive".to_string(),
+            title: "Ensure that the --kubeconfig kubelet.conf file permissions are set to 600 or more restrictive".to_string(),
             id: "4.1.5".to_string(),
             level: 1,
             name: "k8s04010500".to_string(),
@@ -102,13 +103,13 @@ pub struct K8S04010700Checker {}
 
 impl Checker for K8S04010700Checker {
     fn execute(&self) -> CheckerResult {
-        let no_x_xwr_xwr = S_IXUSR | S_IRWXG | S_IRWXO;
-        check_file_not_mode(KUBELET_CLIENT_CA_FILE, no_x_xwr_xwr)
+        let no_x_xw_xw = S_IXUSR | S_IXGRP | S_IWGRP | S_IXOTH | S_IWOTH;
+        check_file_not_mode(KUBELET_CLIENT_CA_FILE, no_x_xw_xw)
     }
 
     fn metadata(&self) -> CheckerMetadata {
         CheckerMetadata {
-            title: "Ensure that the certificate authorities file permissions are set to 600 or more restrictive".to_string(),
+            title: "Ensure that the certificate authorities file permissions are set to 644 or more restrictive".to_string(),
             id: "4.1.7".to_string(),
             level: 1,
             name: "k8s04010700".to_string(),
@@ -370,7 +371,7 @@ impl Checker for K8S04020400Checker {
 
     fn metadata(&self) -> CheckerMetadata {
         CheckerMetadata {
-            title: "Verify that the --read-only-port argument is set to 0".to_string(),
+            title: "Verify that if defined, readOnlyPort is set to 0".to_string(),
             id: "4.2.4".to_string(),
             level: 1,
             name: "k8s04020400".to_string(),
@@ -718,6 +719,132 @@ impl Checker for K8S04021300Checker {
             id: "4.2.13".to_string(),
             level: 1,
             name: "k8s04021300".to_string(),
+            mode: Mode::Automatic,
+        }
+    }
+}
+
+// =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
+
+pub struct K8S04021400Checker {}
+
+impl Checker for K8S04021400Checker {
+    fn execute(&self) -> CheckerResult {
+        #[derive(Deserialize)]
+        struct KubeletConfig {
+            #[serde(rename = "seccompDefault")]
+            seccomp_default: bool,
+        }
+
+        let mut result = CheckerResult::default();
+
+        if let Ok(kubelet_file) = File::open(KUBELET_CONF_FILE) {
+            if let Ok(config) = serde_yaml::from_reader::<_, KubeletConfig>(kubelet_file) {
+                if !config.seccomp_default {
+                    result.error = "Kubelet seccompDefault is not set to true".to_string();
+                    result.status = CheckStatus::FAIL;
+                } else {
+                    result.status = CheckStatus::PASS;
+                }
+            } else {
+                // If the setting is not present then seccompDefault is false by default
+                result.error =
+                    "Kubelet seccompDefault is not configured or set to true".to_string();
+                result.status = CheckStatus::FAIL;
+            }
+        } else {
+            result.error = format!("unable to read '{}'", KUBELET_CONF_FILE);
+        }
+
+        result
+    }
+
+    fn metadata(&self) -> CheckerMetadata {
+        CheckerMetadata {
+            title: "Ensure that the --seccomp-default parameter is set to true".to_string(),
+            id: "4.2.14".to_string(),
+            level: 1,
+            name: "k8s04021400".to_string(),
+            mode: Mode::Automatic,
+        }
+    }
+}
+// =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
+
+pub struct K8S04030100Checker {}
+impl Checker for K8S04030100Checker {
+    fn execute(&self) -> CheckerResult {
+        #[derive(Deserialize)]
+        struct KubeProxyConfig {
+            #[serde(rename = "metricsBindAddress")]
+            metrics_bind_address: String,
+        }
+        let mut result = CheckerResult::default();
+
+        if let Ok(kubelet_file) = File::open(KUBEPROXY_CONF_FILE) {
+            if let Ok(config) = serde_yaml::from_reader::<_, KubeProxyConfig>(kubelet_file) {
+                if config.metrics_bind_address.contains("0.0.0.0")
+                    || config.metrics_bind_address.contains("[::]")
+                {
+                    result.error =
+                        "Kubelet metricsBindAddress binds to more than localhost".to_string();
+                    result.status = CheckStatus::FAIL;
+                } else {
+                    result.status = CheckStatus::PASS;
+                }
+            } else {
+                // If the setting is not present it defaults to 127.0.0.1:10249 which is localhost only
+                result.status = CheckStatus::PASS;
+            }
+        } else {
+            result.error = format!("unable to read '{}'", KUBEPROXY_CONF_FILE);
+        }
+        result
+    }
+    fn metadata(&self) -> CheckerMetadata {
+        CheckerMetadata {
+            title: "Ensure that the kube-proxy metrics service is bound to localhost".to_string(),
+            id: "4.3.1".to_string(),
+            level: 1,
+            name: "k8s04030100".to_string(),
+            mode: Mode::Automatic,
+        }
+    }
+}
+
+// =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
+
+pub struct K8S04010300Checker {}
+impl Checker for K8S04010300Checker {
+    fn execute(&self) -> CheckerResult {
+        let no_x_xwr_xwr = S_IXUSR | S_IRWXG | S_IRWXO;
+        check_file_not_mode(KUBEPROXY_CONF_FILE, no_x_xwr_xwr)
+    }
+    fn metadata(&self) -> CheckerMetadata {
+        CheckerMetadata {
+            title: "If proxy kubeconfig file exists ensure permissions are set to 600 or more restrictive".to_string(),
+            id: "4.1.3".to_string(),
+            level: 1,
+            name: "k8s04010300".to_string(),
+            mode: Mode::Automatic,
+        }
+    }
+}
+
+// =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
+
+pub struct K8S04010400Checker {}
+impl Checker for K8S04010400Checker {
+    fn execute(&self) -> CheckerResult {
+        ensure_file_owner_and_group_root(KUBEPROXY_CONF_FILE)
+    }
+    fn metadata(&self) -> CheckerMetadata {
+        CheckerMetadata {
+            title: "If proxy kubeconfig file exists ensure ownership is set to root:root"
+                .to_string(),
+            id: "4.1.4".to_string(),
+            level: 1,
+            name: "k8s04010400".to_string(),
             mode: Mode::Automatic,
         }
     }
