@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-a48wncul1rh1"
+title = "open-vm-tools CVE-2025-22247"
+cve = "CVE-2025-22247"
+severity = "moderate"
+description = "An insecure file handling vulnerability was found in open-vm-tools where a non-administrative user can tamper with local files, which could lead to triggering insecure file operations within that VM."
+
+[[advisory.products]]
+package-name = "open-vm-tools"
+patched-version = "13.0.0"
+patched-epoch = "0"
+
+[updateinfo]
+author = "jepiyush"
+issue-date = 2025-06-23T16:55:50Z
+arches = ["aarch64", "x86_64"]
+version = "9.1.0"
