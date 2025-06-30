@@ -1,9 +1,10 @@
 //! This module allows application of settings from URIs or stdin.  The inputs are expected to be
 //! TOML settings files, in the same format as user data, or the JSON equivalent.  The inputs are
 //! pulled and applied to the API server in a single transaction.
-
-use aws_sdk_s3::Client;
-use crate::uri_resolver::{StdinUri, FileUri, HttpUri, S3Uri, UriResolver};
+//! use aws_smithy_runtime_api::client::result::SdkError;
+use aws_sdk_secretsmanager::operation::get_secret_value::GetSecretValueError;
+use aws_sdk_secretsmanager::config::http::HttpResponse as SdkHttpResponse;
+use crate::uri_resolver::{StdinUri, FileUri, HttpUri, S3Uri, UriResolver, SecretsManagerUri};
 use crate::rando;
 use futures::future::{join, ready, TryFutureExt};
 use futures::stream::{self, StreamExt};
@@ -83,11 +84,16 @@ fn select_resolver(input: &str) -> Result<Box<dyn UriResolver>> {
         return Ok(Box::new(r));
     }
 
+    // 6) secretsmanager://
+    if let Ok(r) = SecretsManagerUri::try_from(input) {
+        return Ok(Box::new(r));
+    }
+
     // 2) parse as a URL
     let url = Url::parse(input).context(error::UriSnafu { input_source: input.to_string() })?;
 
     // 3) file://
-    if let Ok(r) = FileUri::try_from(url.clone()) {
+    if let Ok(r) = FileUri::try_from(&url) {
         return Ok(Box::new(r));
     }
 
@@ -97,11 +103,11 @@ fn select_resolver(input: &str) -> Result<Box<dyn UriResolver>> {
     }
 
     // 5) s3://
-    if let Ok(r) = S3Uri::try_from(url) {
+    if let Ok(r) = S3Uri::try_from(url.clone()) {
         return Ok(Box::new(r));
     }
 
-    NoResolverSnafu {
+    error::NoResolverSnafu {
         input_source: input.to_string(),
     }
     .fail()
@@ -141,10 +147,12 @@ fn format_change(input: &str, input_source: &str) -> Result<String> {
 }
 
 pub(crate) mod error {
+    use aws_sdk_secretsmanager::operation::get_secret_value::GetSecretValueError;
     use snafu::Snafu;
 
     #[derive(Debug, Snafu)]
     #[snafu(visibility(pub(crate)))]
+
     pub enum Error {
         #[snafu(display("Failed to commit combined settings to '{}': {}", uri, source))]
         CommitApply {
@@ -233,6 +241,18 @@ pub(crate) mod error {
 
         #[snafu(display("Invalid S3 URI scheme for '{}', expected s3://", input_source))]
         S3UriScheme { input_source: String },
+
+        #[snafu(display("Invalid Secrets Manager URI scheme for '{}', expected secretsmanager://", input_source))]
+        SecretsManagerUri { input_source: String },
+
+        #[snafu(display("Failed to fetch secret '{}' from Secrets Manager: {}", secret_id, source))]
+        SecretsManagerGet {
+            secret_id: String,
+            source: aws_sdk_secretsmanager::error::SdkError<GetSecretValueError>,
+        },
+
+        #[snafu(display("Secrets Manager secret '{}' did not return a string value", secret_id))]
+        SecretsManagerStringMissing { secret_id: String },
 
         #[snafu(display(
             "Failed to translate TOML from '{}' to JSON for API: {}",
