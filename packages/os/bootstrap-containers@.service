@@ -13,6 +13,7 @@ ConditionPathExists=!/run/bootstrap-containers/%i.ran
 
 [Service]
 Type=oneshot
+EnvironmentFile=/etc/network/proxy.env
 EnvironmentFile=/etc/bootstrap-containers/%i.env
 # Create a sentinel file to mark that we've run
 ExecStart=/usr/bin/touch /run/bootstrap-containers/%i.ran
