@@ -16,15 +16,16 @@ fips = ["tls", "aws-lc-rs/fips", "rustls/fips"]
 
 [dependencies]
 async-trait.workspace = true
-aws-smithy-types.workspace = true
 aws-config.workspace = true
 aws-lc-rs = { workspace = true, optional = true, features = ["bindgen"] }
 aws-sdk-s3.workspace = true
 aws-sdk-secretsmanager.workspace = true
+aws-sdk-ssm.workspace = true
 base64.workspace = true
 constants.workspace = true
 datastore.workspace = true
 futures.workspace = true
+futures-util.workspace = true
 futures-channel.workspace = true
 http.workspace = true
 httparse.workspace = true
@@ -36,7 +37,7 @@ log.workspace = true
 models.workspace = true
 nix.workspace = true
 rand = { workspace = true, features = ["default"] }
-reqwest.workspace = true 
+reqwest.workspace = true
 retry-read.workspace = true
 rustls = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"] }
@@ -44,11 +45,14 @@ serde_json.workspace = true
 signal-hook.workspace = true
 simplelog.workspace = true
 snafu = { workspace = true, features = ["futures"] }
+test-case.workspace = true
 tokio = { workspace = true, features = ["fs", "io-std", "io-util", "macros", "rt-multi-thread", "time"] }
 tokio-tungstenite = { workspace = true, features = ["connect"] }
 toml.workspace = true
 unindent.workspace = true
 url.workspace = true
+aws-smithy-runtime-api.workspace = true
+tempfile.workspace = true
 
 [build-dependencies]
 generate-readme.workspace = true
