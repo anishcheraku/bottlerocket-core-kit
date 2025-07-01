@@ -4,7 +4,8 @@
 //! use aws_smithy_runtime_api::client::result::SdkError;
 use aws_sdk_secretsmanager::operation::get_secret_value::GetSecretValueError;
 use aws_sdk_secretsmanager::config::http::HttpResponse as SdkHttpResponse;
-use crate::uri_resolver::{StdinUri, FileUri, HttpUri, S3Uri, UriResolver, SecretsManagerUri};
+use aws_sdk_ssm::operation::get_parameter::GetParameterError;
+use crate::uri_resolver::{StdinUri, FileUri, HttpUri, S3Uri, UriResolver, SecretsManagerUri, SsmUri};
 use crate::rando;
 use futures::future::{join, ready, TryFutureExt};
 use futures::stream::{self, StreamExt};
@@ -84,11 +85,6 @@ fn select_resolver(input: &str) -> Result<Box<dyn UriResolver>> {
         return Ok(Box::new(r));
     }
 
-    // 6) secretsmanager://
-    if let Ok(r) = SecretsManagerUri::try_from(input) {
-        return Ok(Box::new(r));
-    }
-
     // 2) parse as a URL
     let url = Url::parse(input).context(error::UriSnafu { input_source: input.to_string() })?;
 
@@ -104,6 +100,16 @@ fn select_resolver(input: &str) -> Result<Box<dyn UriResolver>> {
 
     // 5) s3://
     if let Ok(r) = S3Uri::try_from(url.clone()) {
+        return Ok(Box::new(r));
+    }
+
+    // 6) secretsmanager://
+    if let Ok(r) = SecretsManagerUri::try_from(input) {
+        return Ok(Box::new(r));
+    }
+
+     // 6) ssm://
+    if let Ok(r) = SsmUri::try_from(input) {
         return Ok(Box::new(r));
     }
 
@@ -148,6 +154,7 @@ fn format_change(input: &str, input_source: &str) -> Result<String> {
 
 pub(crate) mod error {
     use aws_sdk_secretsmanager::operation::get_secret_value::GetSecretValueError;
+    use aws_sdk_ssm::operation::get_parameter::GetParameterError;
     use snafu::Snafu;
 
     #[derive(Debug, Snafu)]
@@ -245,6 +252,9 @@ pub(crate) mod error {
         #[snafu(display("Invalid Secrets Manager URI scheme for '{}', expected secretsmanager://", input_source))]
         SecretsManagerUri { input_source: String },
 
+        #[snafu(display("Invalid SSM URI scheme for '{}', expected ssm://", input_source))]
+        SsmUri { input_source: String },
+
         #[snafu(display("Failed to fetch secret '{}' from Secrets Manager: {}", secret_id, source))]
         SecretsManagerGet {
             secret_id: String,
@@ -253,6 +263,15 @@ pub(crate) mod error {
 
         #[snafu(display("Secrets Manager secret '{}' did not return a string value", secret_id))]
         SecretsManagerStringMissing { secret_id: String },
+
+        #[snafu(display("Failed to fetch parameter '{}' from SSM: {}", parameter_name, source))]
+        SsmGetParameter {
+            parameter_name: String,
+            source: aws_sdk_ssm::error::SdkError<GetParameterError>,
+        },
+        
+        #[snafu(display("SSM parameter '{}' did not return a string value", parameter_name))]
+        SsmParameterMissing { parameter_name: String },
 
         #[snafu(display(
             "Failed to translate TOML from '{}' to JSON for API: {}",
