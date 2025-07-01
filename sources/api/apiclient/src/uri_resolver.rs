@@ -1,7 +1,8 @@
 // src/uri_resolver.rs
 
 use async_trait::async_trait;
-use aws_sdk_secretsmanager as sm; 
+use aws_sdk_secretsmanager as sm;
+use aws_sdk_ssm as ssm; 
 use aws_config;
 use snafu::{ensure, ResultExt, OptionExt};
 use std::convert::TryFrom;
@@ -11,7 +12,7 @@ use tokio::io::AsyncReadExt;
 use reqwest::Url;
 use crate::apply::{Error, Result};
 use crate::apply::error::{
-    FileReadSnafu, FileUriSnafu, ReqwestSnafu, StdinReadSnafu, S3UriMissingBucketSnafu, InvalidFileUriSnafu, InvalidHTTPUriSnafu, S3UriSchemeSnafu, SecretsManagerUriSnafu, SecretsManagerGetSnafu, SecretsManagerStringMissingSnafu,
+    FileReadSnafu, FileUriSnafu, ReqwestSnafu, StdinReadSnafu, S3UriMissingBucketSnafu, InvalidFileUriSnafu, InvalidHTTPUriSnafu, S3UriSchemeSnafu, SecretsManagerUriSnafu, SecretsManagerGetSnafu, SecretsManagerStringMissingSnafu, SsmUriSnafu, SsmGetParameterSnafu, SsmParameterMissingSnafu,
 };
 
 /// Anything that can fetch itself as a UTF-8 `String`.
@@ -135,7 +136,6 @@ impl TryFrom<Url> for S3Uri {
     type Error = Error;
 
     fn try_from(url: Url) -> std::result::Result<Self, Self::Error> {
-        log::error!("tryfromS3");
         ensure!(
             url.scheme() == "s3",
             S3UriSchemeSnafu { input_source: url.to_string() }
@@ -167,18 +167,22 @@ pub struct SecretsManagerUri {
 
 impl TryFrom<&str> for SecretsManagerUri {
     type Error = Error;
-
     fn try_from(s: &str) -> std::result::Result<Self, Self::Error> {
-        const PREFIX: &str = "secretsmanager://";
-        if let Some(id) = s.strip_prefix(PREFIX) {
-            if id.is_empty() {
-                return Err(Error::SecretsManagerUri { input_source: s.to_string() });
-            }
-            return Ok(SecretsManagerUri { secret_id: id.to_string() });
-        }
-        Err(Error::SecretsManagerUri { input_source: s.to_string() })
+        // must start with "secretsmanager://"
+        ensure!(
+            s.starts_with("secretsmanager://"),
+            SecretsManagerUriSnafu { input_source: s.to_string() }
+        );
+        // strip the prefix and ensure there's actually an ID
+        let id = &s["secretsmanager://".len()..];
+        ensure!(
+            !id.is_empty(),
+            SecretsManagerUriSnafu { input_source: s.to_string() }
+        );
+        Ok(SecretsManagerUri { secret_id: id.to_string() })
     }
 }
+
 
 #[async_trait]
 impl UriResolver for SecretsManagerUri {
@@ -202,6 +206,59 @@ impl UriResolver for SecretsManagerUri {
         resp.secret_string()
             .map(str::to_string)
             .context(SecretsManagerStringMissingSnafu { secret_id: self.secret_id.clone() })
+    }
+}
+
+/// `ssm://<parameter_name>`
+pub struct SsmUri {
+    parameter_name: String,
+}
+
+impl TryFrom<&str> for SsmUri {
+    type Error = Error;
+
+    fn try_from(s: &str) -> std::result::Result<Self, Self::Error> {
+        // must start with "ssm://"
+        ensure!(
+            s.starts_with("ssm://"),
+            SsmUriSnafu { input_source: s.to_string() }
+        );
+
+        // strip the prefix and ensure there's actually a name
+        let name = &s["ssm://".len()..];
+        ensure!(
+            !name.is_empty(),
+            SsmUriSnafu { input_source: s.to_string() }
+        );
+
+        Ok(SsmUri { parameter_name: name.to_string() })
+    }
+}
+
+
+#[async_trait]
+impl UriResolver for SsmUri {
+    async fn resolve(&self) -> Result<String> {
+        // use default region chain
+        let config = aws_config::load_from_env().await;
+        let client = ssm::Client::new(&config);
+
+        // fetch the parameter, with decryption
+        let resp = client
+            .get_parameter()
+            .name(self.parameter_name.clone())
+            .with_decryption(true)
+            .send()
+            .await
+            .context(SsmGetParameterSnafu { parameter_name: self.parameter_name.clone() })?;
+
+        // extract the string value
+        let value = resp
+            .parameter
+            .and_then(|p| p.value().map(|v| v.to_string()))
+            .context(SsmParameterMissingSnafu { parameter_name: self.parameter_name.clone() })?;
+
+        Ok(value)
     }
 }
 
