@@ -51,6 +51,9 @@ deny = [{ name = "structopt" }, { name = "clap", wrappers = ["cargo-readme"] }]
 skip = [
     # this can be removed once settings sdk is updated to base64 0.22.1
     { name = "base64", version = "=0.21.7" },
+
+    # `aws-sigv4 v1.2.6` depends on both `crypto-bigint v0.5.5` and `crypto-bigint v0.4.9`
+    { name = "crypto-bigint", version = "=0.4.9" },
 ]
 
 skip-tree = [
