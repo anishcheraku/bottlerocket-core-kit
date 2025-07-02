@@ -115,7 +115,7 @@ members = [
   "packages/soci-snapshotter",
   "packages/static-pods",
   "packages/strace",
-  "packages/systemd",
+  "packages/systemd-252",
   "packages/tpm2-tools",
   "packages/util-linux",
   "packages/wicked",

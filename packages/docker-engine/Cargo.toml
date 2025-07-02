@@ -18,4 +18,4 @@ sha512 = "573f738df9fa1655c56ba5836fcfd0691521b81c4807e09156dd2813b172219b283b7f
 [build-dependencies]
 glibc = { path = "../glibc" }
 libseccomp = { path = "../libseccomp" }
-systemd = { path = "../systemd" }
+systemd-252 = { path = "../systemd-252" }
