@@ -54,19 +54,15 @@ export LD_VERSION="-X github.com/awslabs/soci-snapshotter/version.Version=v%{gov
 export LD_REVISION="-X github.com/awslabs/soci-snapshotter/version.Revision=%{gitrev}"
 
 go build -C cmd -ldflags="${GOLDFLAGS} ${LD_VERSION} ${LD_REVISION}" -o "../out/soci-snapshotter-grpc" ./soci-snapshotter-grpc
-go build -C cmd -ldflags="${GOLDFLAGS} ${LD_VERSION} ${LD_REVISION}" -o "../out/soci" ./soci
 
 gofips build -C cmd -ldflags="${GOLDFLAGS} ${LD_VERSION} ${LD_REVISION}" -o "../out/fips/soci-snapshotter-grpc" ./soci-snapshotter-grpc
-gofips build -C cmd -ldflags="${GOLDFLAGS} ${LD_VERSION} ${LD_REVISION}" -o "../out/fips/soci" ./soci
 
 %install
 install -d %{buildroot}%{_cross_bindir}
 install -d %{buildroot}%{_cross_fips_bindir}
 install -d %{buildroot}%{_cross_unitdir}
 install -p -m 0755 out/soci-snapshotter-grpc %{buildroot}%{_cross_bindir}
-install -p -m 0755 out/soci %{buildroot}%{_cross_bindir}
 install -p -m 0755 out/fips/soci-snapshotter-grpc %{buildroot}%{_cross_fips_bindir}
-install -p -m 0755 out/fips/soci %{buildroot}%{_cross_fips_bindir}
 install -D -p -m 0644 %{S:101} %{buildroot}%{_cross_unitdir}
 install -D -p -m 0644 %{S:102} %{buildroot}%{_cross_unitdir}
 
@@ -81,10 +77,8 @@ install -D -p -m 0644 %{S:102} %{buildroot}%{_cross_unitdir}
 
 %files bin
 %{_cross_bindir}/soci-snapshotter-grpc
-%{_cross_bindir}/soci
 
 %files fips-bin
 %{_cross_fips_bindir}/soci-snapshotter-grpc
-%{_cross_fips_bindir}/soci
 
 %changelog
