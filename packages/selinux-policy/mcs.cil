@@ -50,12 +50,13 @@
           (or (eq t2 all_s)
               (eq t2 unconstrained_o)))))
 
-; Restrict file writes unless one of these conditions is met:
+; Restrict file writes (and mounts) unless one of these conditions is
+; met:
 ; * the source dominates the target
 ; * the source context is for a privileged subject (e.g. `control_t`)
 ; * the target context is for an unconstrained object
 
-(mlsconstrain (files (mutate))
+(mlsconstrain (files (mutate mount))
   (or (dom h1 h2)
       (or (eq t1 privileged_s)
           (eq t2 unconstrained_o))))
