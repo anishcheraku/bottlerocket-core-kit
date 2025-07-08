@@ -100,6 +100,7 @@ Source1102: systemd-networkd-service-env.conf
 Source1103: systemd-logind-inhibit-maxdelay.conf
 Source1104: aws-config.conf
 Source1105: wait-for-selinux-policy.conf
+Source1106: systemd-resolved-service-private-tmp.conf
 
 # network link rules
 Source1200: 80-release.link
@@ -230,6 +231,9 @@ install -d %{buildroot}%{_cross_unitdir}/systemd-resolved.service.d
 install -p -m 0644 %{S:1101} \
   %{buildroot}%{_cross_unitdir}/systemd-resolved.service.d/00-env.conf
 
+install -p -m 0644 %{S:1106} \
+  %{buildroot}%{_cross_unitdir}/systemd-resolved.service.d/10-private-tmp.conf
+
 install -d %{buildroot}%{_cross_unitdir}/systemd-networkd.service.d
 install -p -m 0644 %{S:1102} \
   %{buildroot}%{_cross_unitdir}/systemd-networkd.service.d/00-env.conf
@@ -346,6 +350,7 @@ ln -s preconfigured.target %{buildroot}%{_cross_unitdir}/default.target
 %{_cross_unitdir}/service.d/00-aws-config.conf
 %dir %{_cross_unitdir}/systemd-resolved.service.d
 %{_cross_unitdir}/systemd-resolved.service.d/00-env.conf
+%{_cross_unitdir}/systemd-resolved.service.d/10-private-tmp.conf
 %dir %{_cross_unitdir}/systemd-networkd.service.d
 %{_cross_unitdir}/systemd-networkd.service.d/00-env.conf
 %dir %{_cross_unitdir}/systemd-tmpfiles-setup.service.d
