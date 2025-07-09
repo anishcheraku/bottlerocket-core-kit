@@ -1,0 +1,25 @@
+From ade8d073f25fd5bbf2ceb2077dec0dd442672144 Mon Sep 17 00:00:00 2001
+From: Piyush Jena <jepiyush@amazon.com>
+Date: Tue, 8 Jul 2025 22:12:47 +0000
+Subject: [PATCH] meson: create pkgconfig files in default path
+
+Signed-off-by: Piyush Jena <jepiyush@amazon.com>
+---
+ meson.build | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/meson.build b/meson.build
+index 4b16d6a..3b59d5e 100644
+--- a/meson.build
++++ b/meson.build
+@@ -501,7 +501,6 @@ endif
+ pkg.generate(
+   name : 'kmod',
+   description : 'Tools to deal with kernel modules',
+-  install_dir : datadir / 'pkgconfig',
+   unescaped_variables : _kmod_unescaped_variables,
+   variables : _kmod_variables,
+ )
+-- 
+2.47.1
+
