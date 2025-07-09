@@ -13,6 +13,8 @@ URL: https://github.com/awslabs/soci-snapshotter
 Source0: https://github.com/awslabs/soci-snapshotter/archive/v%{gover}/soci-snapshotter-%{gover}.tar.gz
 Source1: bundled-soci-snapshotter-%{gover}.tar.gz
 Source2: bundled-cmd.tar.gz
+Source3: soci-config-toml
+Source100: etc-soci-snapshotter.mount.in
 Source101: soci-snapshotter.service
 Source102: soci-snapshotter.socket
 Source1000: clarify.toml
@@ -63,8 +65,15 @@ install -d %{buildroot}%{_cross_fips_bindir}
 install -d %{buildroot}%{_cross_unitdir}
 install -p -m 0755 out/soci-snapshotter-grpc %{buildroot}%{_cross_bindir}
 install -p -m 0755 out/fips/soci-snapshotter-grpc %{buildroot}%{_cross_fips_bindir}
+
+SOCIMOUNTPATH=$(systemd-escape --path /etc/soci-snapshotter)
+install -p -m 0644 %{S:100} %{buildroot}%{_cross_unitdir}/${SOCIMOUNTPATH}.mount
+
 install -D -p -m 0644 %{S:101} %{buildroot}%{_cross_unitdir}
 install -D -p -m 0644 %{S:102} %{buildroot}%{_cross_unitdir}
+
+install -d %{buildroot}%{_cross_templatedir}
+install -p -m 0644 %{S:3} %{buildroot}%{_cross_templatedir}/soci-config-toml
 
 %cross_scan_attribution --clarify %{S:1000} go-vendor vendor
 
@@ -72,8 +81,10 @@ install -D -p -m 0644 %{S:102} %{buildroot}%{_cross_unitdir}
 %license LICENSE NOTICE.md
 %{_cross_unitdir}/soci-snapshotter.service
 %{_cross_unitdir}/soci-snapshotter.socket
+%{_cross_unitdir}/etc-soci\x2dsnapshotter.mount
 %{_cross_attribution_vendor_dir}
 %{_cross_attribution_file}
+%{_cross_templatedir}/soci-config-toml
 
 %files bin
 %{_cross_bindir}/soci-snapshotter-grpc

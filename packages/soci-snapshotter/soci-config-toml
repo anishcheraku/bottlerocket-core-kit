@@ -1,0 +1,70 @@
+[required-extensions]
+container-registry = "v1"
+container-runtime-plugins = "v1"
+std = { version = "v1", helpers = ["default", "join_array"]}
++++
+[cri_keychain]
+# Make SOCI snapshotter act as a proxy ImageService
+# and cache credentials from requests to pull images.
+enable_keychain = true
+# This tells the SOCI snapshotter where containerd's ImageService is located.
+# The SOCI snapshotter will forward requests here after caching credentials.
+image_service_path="/run/containerd/containerd.sock"
+
+# Use the containerd content store such that SOCI artifacts are maintained through
+# containerd's garbage collector
+[content_store]
+type="containerd"
+
+{{#if settings.container-registry.mirrors}}
+{{#each settings.container-registry.mirrors}}
+[plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{registry}}"]
+endpoint = [{{join_array ", " endpoint }}]
+{{/each}}
+{{/if}}
+
+{{#if settings.container-registry.credentials}}
+{{#each settings.container-registry.credentials}}
+{{#if (eq registry "docker.io" )}}
+[registry.configs."registry-1.docker.io".auth]
+{{else}}
+[registry.configs."{{registry}}".auth]
+{{/if}}
+{{#if username}}
+username = "{{{username}}}"
+{{/if}}
+{{#if password}}
+password = "{{{password}}}"
+{{/if}}
+{{#if auth}}
+auth = "{{{auth}}}"
+{{/if}}
+{{#if identitytoken}}
+identitytoken = "{{{identitytoken}}}"
+{{/if}}
+{{/each}}
+{{/if}}
+
+[pull_modes.soci_v1]
+enable = false
+[pull_modes.soci_v2]
+enable = false
+
+[pull_modes.parallel_pull_unpack]
+enable = true
+{{#if settings.container-runtime-plugins.soci-snapshotter.parallel-pull-unpack}}
+{{#with settings.container-runtime-plugins.soci-snapshotter.parallel-pull-unpack}}
+max_concurrent_downloads = {{default -1 max-concurrent-downloads}}
+max_concurrent_downloads_per_image = {{default 3 max-concurrent-downloads-per-image}}
+{{#if concurrent-download-chunk-size}}
+{{#if (eq concurrent-download-chunk-size "unlimited" )}}
+concurrent_download_chunk_size = ""
+{{else}}
+concurrent_download_chunk_size = "{{default "" concurrent-download-chunk-size}}"
+{{/if}}
+{{/if}}
+max_concurrent_unpacks = {{default -1 max-concurrent-unpacks}}
+max_concurrent_unpacks_per_image = {{default 1 max-concurrent-unpacks-per-image}}
+discard_unpacked_layers = {{default false discard-unpacked-layers}}
+{{/with}}
+{{/if}}
