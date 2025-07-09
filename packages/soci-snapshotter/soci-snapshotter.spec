@@ -22,6 +22,7 @@ Source1000: clarify.toml
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libz-devel
 Requires: %{name}(binaries)
+Requires: %{name}(optimized-gunzip)
 
 %description
 %{summary}.
@@ -42,6 +43,30 @@ Requires: (%{_cross_os}image-feature(fips) and %{name})
 Conflicts: (%{_cross_os}image-feature(no-fips) or %{name}-bin)
 
 %description fips-bin
+%{summary}.
+
+%package pigz
+Summary: Prefer pigz for gzip decompression
+Requires: %{_cross_os}pigz
+Requires: %{name}
+Provides: %{name}(optimized-gunzip) = 1:
+Conflicts: %{name}-igzip
+
+%description pigz
+%{summary}.
+
+%package igzip
+Summary: Prefer igzip for gzip decompression
+Requires: %{_cross_os}igzip
+Requires: %{name}
+Conflicts: %{name}-pigz
+%if "%{_cross_arch}" == "x86_64"
+Provides: %{name}(optimized-gunzip) = 2:
+%else
+Provides: %{name}(optimized-gunzip) = 0:
+%endif
+
+%description igzip
 %{summary}.
 
 %prep
@@ -77,6 +102,12 @@ install -p -m 0644 %{S:3} %{buildroot}%{_cross_templatedir}/soci-config-toml
 
 %cross_scan_attribution --clarify %{S:1000} go-vendor vendor
 
+%post igzip -p <lua>
+posix.symlink("%{_cross_bindir}/igzip", "%{_cross_bindir}/soci-gunzip")
+
+%post pigz -p <lua>
+posix.symlink("%{_cross_bindir}/unpigz", "%{_cross_bindir}/soci-gunzip")
+
 %files
 %license LICENSE NOTICE.md
 %{_cross_unitdir}/soci-snapshotter.service
@@ -91,5 +122,11 @@ install -p -m 0644 %{S:3} %{buildroot}%{_cross_templatedir}/soci-config-toml
 
 %files fips-bin
 %{_cross_fips_bindir}/soci-snapshotter-grpc
+
+%files pigz
+# No files provided by pigz but required for packaging.
+
+%files igzip
+# No files provided by igzip but required for packaging.
 
 %changelog

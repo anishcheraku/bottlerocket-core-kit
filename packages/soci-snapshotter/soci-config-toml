@@ -68,3 +68,8 @@ max_concurrent_unpacks_per_image = {{default 1 max-concurrent-unpacks-per-image}
 discard_unpacked_layers = {{default false discard-unpacked-layers}}
 {{/with}}
 {{/if}}
+
+# Use a symlink to configure soci to use either igzip or unpigz depending on which was packaged.
+[pull_modes.parallel_pull_unpack.decompress_streams."gzip"]
+path = "/usr/bin/soci-gunzip"
+args = ["-d", "-c"]
