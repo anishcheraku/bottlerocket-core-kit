@@ -4,7 +4,7 @@ PartOf=soci-snapshotter.service
 Documentation=https://github.com/awslabs/soci-snapshotter
 
 [Socket]
-ListenStream=/run/soci-snapshotter-grpc/soci-snapshotter-grpc.sock
+ListenStream=/run/soci-snapshotter/soci-snapshotter.sock
 SocketMode=0660
 
 [Install]
