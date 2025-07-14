@@ -3,6 +3,7 @@ Description=containerd container runtime
 Documentation=https://containerd.io
 After=network-online.target configured.target
 Wants=network-online.target configured.target
+Requires=configure-snapshotter.service
 
 [Service]
 Slice=runtime.slice
