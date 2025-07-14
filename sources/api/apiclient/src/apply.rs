@@ -1,21 +1,15 @@
 //! This module allows application of settings from URIs or stdin.  The inputs are expected to be
 //! TOML settings files, in the same format as user data, or the JSON equivalent.  The inputs are
 //! pulled and applied to the API server in a single transaction.
-//! use aws_smithy_runtime_api::client::result::SdkError;
-use aws_sdk_secretsmanager::operation::get_secret_value::GetSecretValueError;
-use aws_sdk_secretsmanager::config::http::HttpResponse as SdkHttpResponse;
-use aws_sdk_ssm::operation::get_parameter::GetParameterError;
-use crate::uri_resolver::{StdinUri, FileUri, HttpUri, S3Uri, UriResolver, SecretsManagerUri, SsmUri};
+use crate::apply::error::ResolverFailureSnafu;
 use crate::rando;
-use futures::future::{join, ready, TryFutureExt};
+use futures::future::{join, ready};
 use futures::stream::{self, StreamExt};
 use reqwest::Url;
 use serde::de::{Deserialize, IntoDeserializer};
-use snafu::{futures::try_future::TryFutureExt as SnafuTryFutureExt, OptionExt, ResultExt};
+use snafu::{OptionExt, ResultExt};
 use std::convert::TryFrom;
 use std::path::Path;
-use tokio::io::AsyncReadExt;
-
 
 /// Reads settings in TOML or JSON format from files at the requested URIs (or from stdin, if given
 /// "-"), then commits them in a single transaction and applies them to the system.
@@ -72,49 +66,65 @@ where
     Ok(())
 }
 
-/// Retrieves the given source location and returns the result in a String.
-pub async fn get(input: &str) -> Result<String> {
-    let resolver = select_resolver(input)?;
-    resolver.resolve().await
+/// Holds the raw input string and (if it parses) the URL.
+pub struct SettingsInput {
+    pub input: String,
+    pub parsed_url: Option<Url>,
+}
+impl SettingsInput {
+    pub(crate) fn new(input: impl Into<String>) -> Self {
+        let input = input.into();
+        let parsed_url = Url::parse(&input).ok();
+        SettingsInput { input, parsed_url }
+    }
 }
 
-/// Choose which UriResolver applies to `input` (stdin, file://, http(s):// or s3://).
-fn select_resolver(input: &str) -> Result<Box<dyn UriResolver>> {
-    // 1) "-" → stdin
-    if let Ok(r) = StdinUri::try_from(input) {
+/// Retrieves the given source location and returns the result in a String.
+async fn get<S>(input_source: S) -> Result<String>
+where
+    S: AsRef<str>,
+{
+    let settings = SettingsInput::new(input_source.as_ref());
+    let resolver = select_resolver(&settings)?;
+    resolver.resolve().await.context(ResolverFailureSnafu)
+}
+
+/// Choose which UriResolver applies to `input` (stdin, file://, http(s)://, s3://, secretsmanager://, and ssm://).
+fn select_resolver(input: &SettingsInput) -> Result<Box<dyn crate::uri_resolver::UriResolver>> {
+    use crate::uri_resolver;
+
+    // stdin ("-")
+    if let Ok(r) = uri_resolver::StdinUri::try_from(input) {
         return Ok(Box::new(r));
     }
 
-    // 2) parse as a URL
-    let url = Url::parse(input).context(error::UriSnafu { input_source: input.to_string() })?;
-
-    // 3) file://
-    if let Ok(r) = FileUri::try_from(&url) {
+    // file://
+    if let Ok(r) = uri_resolver::FileUri::try_from(input) {
         return Ok(Box::new(r));
     }
 
-    // 4) http(s)://
-    if let Ok(r) = HttpUri::try_from(url.clone()) {
+    // http(s)://
+    if let Ok(r) = uri_resolver::HttpUri::try_from(input) {
         return Ok(Box::new(r));
     }
 
-    // 5) s3://
-    if let Ok(r) = S3Uri::try_from(url.clone()) {
+    // s3://
+    if let Ok(r) = uri_resolver::S3Uri::try_from(input) {
         return Ok(Box::new(r));
     }
 
-    // 6) secretsmanager://
-    if let Ok(r) = SecretsManagerUri::try_from(input) {
+    // secretsmanager://
+    if let Ok(r) = uri_resolver::SecretsManagerUri::try_from(input) {
         return Ok(Box::new(r));
     }
 
-     // 6) ssm://
-    if let Ok(r) = SsmUri::try_from(input) {
+    // ssm://
+    if let Ok(r) = uri_resolver::SsmUri::try_from(input) {
         return Ok(Box::new(r));
     }
 
     error::NoResolverSnafu {
-        input_source: input.to_string(),
+        input_source: input.input.clone(),
     }
     .fail()
 }
@@ -153,8 +163,6 @@ fn format_change(input: &str, input_source: &str) -> Result<String> {
 }
 
 pub(crate) mod error {
-    use aws_sdk_secretsmanager::operation::get_secret_value::GetSecretValueError;
-    use aws_sdk_ssm::operation::get_parameter::GetParameterError;
     use snafu::Snafu;
 
     #[derive(Debug, Snafu)]
@@ -167,15 +175,6 @@ pub(crate) mod error {
             #[snafu(source(from(crate::Error, Box::new)))]
             source: Box<crate::Error>,
         },
-
-        #[snafu(display("Failed to read given file '{}': {}", input_source, source))]
-        FileRead {
-            input_source: String,
-            source: std::io::Error,
-        },
-
-        #[snafu(display("Given invalid file URI '{}'", input_source))]
-        FileUri { input_source: String },
 
         #[snafu(display("No URI resolver found for '{}'", input_source))]
         NoResolver { input_source: String },
@@ -234,44 +233,8 @@ pub(crate) mod error {
             source: reqwest::Error,
         },
 
-        #[snafu(display("Invalid S3 URI '{}': missing bucket name", input_source))]
-        S3UriMissingBucket { input_source: String },
-
         #[snafu(display("Given invalid file URI '{}'", input_source))]
         InvalidFileUri { input_source: String },
-
-        #[snafu(display("Given HTTP(S) URI '{}'", input_source))]
-        InvalidHTTPUri { input_source: String },
-
-        #[snafu(display("Failed to read standard input: {}", source))]
-        StdinRead { source: std::io::Error },
-
-        #[snafu(display("Invalid S3 URI scheme for '{}', expected s3://", input_source))]
-        S3UriScheme { input_source: String },
-
-        #[snafu(display("Invalid Secrets Manager URI scheme for '{}', expected secretsmanager://", input_source))]
-        SecretsManagerUri { input_source: String },
-
-        #[snafu(display("Invalid SSM URI scheme for '{}', expected ssm://", input_source))]
-        SsmUri { input_source: String },
-
-        #[snafu(display("Failed to fetch secret '{}' from Secrets Manager: {}", secret_id, source))]
-        SecretsManagerGet {
-            secret_id: String,
-            source: aws_sdk_secretsmanager::error::SdkError<GetSecretValueError>,
-        },
-
-        #[snafu(display("Secrets Manager secret '{}' did not return a string value", secret_id))]
-        SecretsManagerStringMissing { secret_id: String },
-
-        #[snafu(display("Failed to fetch parameter '{}' from SSM: {}", parameter_name, source))]
-        SsmGetParameter {
-            parameter_name: String,
-            source: aws_sdk_ssm::error::SdkError<GetParameterError>,
-        },
-        
-        #[snafu(display("SSM parameter '{}' did not return a string value", parameter_name))]
-        SsmParameterMissing { parameter_name: String },
 
         #[snafu(display(
             "Failed to translate TOML from '{}' to JSON for API: {}",
@@ -288,7 +251,13 @@ pub(crate) mod error {
             input_source: String,
             source: url::ParseError,
         },
+
+        #[snafu(display("Resolver failed: {}", source))]
+        ResolverFailure { source: crate::uri_resolver::ResolverError },
+
     }
+
 }
 pub use error::Error;
 pub type Result<T> = std::result::Result<T, error::Error>;
+
