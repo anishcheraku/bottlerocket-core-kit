@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://mirrors.edge.kernel.org/pub/linux/utils/fs/xfs/xfsprogs/"
 
 [[package.metadata.build-package.external-files]]
-url = "http://kernel.org/pub/linux/utils/fs/xfs/xfsprogs/xfsprogs-6.14.0.tar.xz"
-sha512 = "249a64fb5a92ceb9e58b75a270a90773cfe2c90e863d3f9853c14b3eb0f414bf55b8b67c220a1d7386894ef9295622e224977bd3c6600c9dcba826cb4a634f49"
+url = "http://kernel.org/pub/linux/utils/fs/xfs/xfsprogs/xfsprogs-6.15.0.tar.xz"
+sha512 = "975c9c7fe476b02da50da74eb599f804f2b27a638a74b807e1f69d93d0d150d19bf6d5036601b96febe557a6c51065d8cf22eef5fda92a6d7f084ac1d7647496"
 
 [[package.metadata.build-package.external-files]]
-url = "http://kernel.org/pub/linux/utils/fs/xfs/xfsprogs/xfsprogs-6.14.0.tar.sign"
-sha512 = "a4fdfaa62a6e404ec709c7b86aa01c37c74de8738d26dc8821add535c61bf31101031e0a5e2962f8bc23957d6183ec8c21d0a114361d7b46e0ecc52337be19b3"
+url = "http://kernel.org/pub/linux/utils/fs/xfs/xfsprogs/xfsprogs-6.15.0.tar.sign"
+sha512 = "02c6744de4663a03012c1f07fa6d26244cae3a8c1a1910a72cd7fcde7ba36fb3a8aee8314736bb88943356b6c82cf53712ee0714455351907322cbe033b15d1b"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
