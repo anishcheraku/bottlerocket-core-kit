@@ -297,6 +297,7 @@ pub fn allowed_bind_dirs(variant: &str) -> BindDirs {
     if variant.contains("k8s") {
         allowed_exact.insert("/var/lib/kubelet");
         allowed_exact.insert("/var/log/pods");
+        allowed_exact.insert("/var/lib/soci-snapshotter");
     }
     if variant.contains("ecs") {
         allowed_exact.insert("/var/lib/docker");
