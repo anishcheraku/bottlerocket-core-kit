@@ -251,7 +251,7 @@
 (allow api_s private_t (files (mutate)))
 (allow clock_s measure_t (files (mutate)))
 (allow network_s lease_t (files (mutate)))
-(allow runtime_s cache_t (files (mutate)))
+(allow trusted_s cache_t (files (mutate)))
 
 ; Other components should not be permitted to modify these files,
 ; or to manage mounts for these directories.
