@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-hbnyaarqfmwl"
+title = "nvidia-container-toolkit CVE-2025-23266"
+cve = "CVE-2025-23266"
+severity = "high"
+description = "NVIDIA Container Toolkit for all platforms contains a vulnerability in some hooks used to initialize the container, which could execute arbitrary code with elevated permissions. This might lead to escalation of privileges, data tampering, information disclosure, and denial of service."
+
+[[advisory.products]]
+package-name = "nvidia-container-toolkit"
+patched-version = "1.17.8"
+patched-epoch = "1"
+
+[updateinfo]
+author = "rpkelly"
+issue-date = 2025-07-15T19:03:09Z
+arches = ["x86_64", "aarch64"]
+version = "9.1.0"
