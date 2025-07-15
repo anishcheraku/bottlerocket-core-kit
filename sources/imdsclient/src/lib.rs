@@ -129,9 +129,8 @@ impl ImdsClient {
     /// Gets the list of CIDR blocks for a given network interface `mac` address.
     pub async fn fetch_cidr_blocks_for_mac(&mut self, mac: &str) -> Result<Option<Vec<String>>> {
         // Infer the cluster DNS based on our CIDR blocks.
-        let mac_cidr_blocks_target = format!(
-            "meta-data/network/interfaces/macs/{mac}/vpc-ipv4-cidr-blocks"
-        );
+        let mac_cidr_blocks_target =
+            format!("meta-data/network/interfaces/macs/{mac}/vpc-ipv4-cidr-blocks");
         let cidr_blocks = self
             .fetch_string(&mac_cidr_blocks_target)
             .await?

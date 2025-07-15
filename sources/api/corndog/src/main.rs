@@ -320,9 +320,10 @@ fn parse_args(args: env::Args) -> Args {
                 let log_level_str = iter
                     .next()
                     .unwrap_or_else(|| usage_msg("Did not give argument to --log-level"));
-                log_level = Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
-                    usage_msg(format!("Invalid log level '{log_level_str}'"))
-                }));
+                log_level =
+                    Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
+                        usage_msg(format!("Invalid log level '{log_level_str}'"))
+                    }));
             }
 
             "--config-path" => {
@@ -584,11 +585,7 @@ mod test {
         for line in config.lines() {
             // Split the line into key and value
             let parts: Vec<&str> = line.splitn(2, " = ").collect();
-            assert_eq!(
-                parts.len(),
-                2,
-                "Line should contain key-value pair: {line}"
-            );
+            assert_eq!(parts.len(), 2, "Line should contain key-value pair: {line}");
 
             // Verify key portion starts with dash and contains no additional dashes
             let key = parts[0];

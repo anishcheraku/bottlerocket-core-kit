@@ -253,8 +253,7 @@ where
         "\n# Just for reference; service is enabled or disabled by host-containers service"
     )
     .context(error::EnvFileBuildFailedSnafu { name })?;
-    writeln!(output, "# CTR_ENABLED={enabled}")
-        .context(error::EnvFileBuildFailedSnafu { name })?;
+    writeln!(output, "# CTR_ENABLED={enabled}").context(error::EnvFileBuildFailedSnafu { name })?;
 
     fs::write(&path, output).context(error::EnvFileWriteFailedSnafu { path })?;
 
@@ -298,9 +297,10 @@ fn parse_args(args: env::Args) -> Args {
                 let log_level_str = iter
                     .next()
                     .unwrap_or_else(|| usage_msg("Did not give argument to --log-level"));
-                log_level = Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
-                    usage_msg(format!("Invalid log level '{log_level_str}'"))
-                }));
+                log_level =
+                    Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
+                        usage_msg(format!("Invalid log level '{log_level_str}'"))
+                    }));
             }
 
             "--config-path" => {

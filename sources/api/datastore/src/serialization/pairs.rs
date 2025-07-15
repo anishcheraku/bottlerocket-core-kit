@@ -312,9 +312,7 @@ fn key_append_or_create(old_prefix: &Option<Key>, key: &Key) -> Result<Key> {
     if let Some(old_prefix) = old_prefix {
         old_prefix.append_key(key).map_err(|e| {
             error::InvalidKeySnafu {
-                msg: format!(
-                    "appending '{key}' to '{old_prefix}' is invalid as Key: {e}"
-                ),
+                msg: format!("appending '{key}' to '{old_prefix}' is invalid as Key: {e}"),
             }
             .into_error(NoSource)
         })

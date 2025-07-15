@@ -314,10 +314,8 @@ fn parse_args(args: env::Args) -> (Args, Subcommand) {
                 let log_level_str = iter
                     .next()
                     .unwrap_or_else(|| usage_msg("Did not give argument to --log-level"));
-                global_args.log_level =
-                    LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
-                        usage_msg(format!("Invalid log level '{log_level_str}'"))
-                    });
+                global_args.log_level = LevelFilter::from_str(&log_level_str)
+                    .unwrap_or_else(|_| usage_msg(format!("Invalid log level '{log_level_str}'")));
             }
 
             "-v" | "--verbose" => global_args.log_level = LevelFilter::Debug,
@@ -531,10 +529,8 @@ fn parse_set_args(args: Vec<String>) -> Subcommand {
                     .next()
                     .unwrap_or_else(|| usage_msg("Did not give argument to -j | --json"));
 
-                let input_val: serde_json::Value =
-                    serde_json::from_str(&raw_json).unwrap_or_else(|e| {
-                        usage_msg(format!("Couldn't parse given JSON input: {e}"))
-                    });
+                let input_val: serde_json::Value = serde_json::from_str(&raw_json)
+                    .unwrap_or_else(|e| usage_msg(format!("Couldn't parse given JSON input: {e}")));
 
                 let mut input_map = match input_val {
                     serde_json::Value::Object(map) => map,

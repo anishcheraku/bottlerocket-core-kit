@@ -1177,9 +1177,9 @@ pub fn ecs_metadata_service_limits(
         (Value::Null, Value::Number(burst)) => {
             format!("{DEFAULT_ECS_METADATA_SERVICE_RPS},{burst}")
         }
-        (Value::Null, Value::Null) => format!(
-            "{DEFAULT_ECS_METADATA_SERVICE_RPS},{DEFAULT_ECS_METADATA_SERVICE_BURST}"
-        ),
+        (Value::Null, Value::Null) => {
+            format!("{DEFAULT_ECS_METADATA_SERVICE_RPS},{DEFAULT_ECS_METADATA_SERVICE_BURST}")
+        }
         (rps, burst) => {
             return Err(RenderError::from(
                 error::TemplateHelperError::InvalidMetadataServiceLimits {

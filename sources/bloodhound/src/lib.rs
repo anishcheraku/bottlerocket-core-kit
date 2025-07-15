@@ -172,9 +172,7 @@ pub fn check_file_not_mode(file_path: &str, mode: u32) -> CheckerResult {
             let file_mode = metadata.permissions().mode() & 0o777;
 
             if (file_mode & mode) > 0 {
-                result.error = format!(
-                    "file {file_path} has extra permissions: 0x{file_mode:o}"
-                );
+                result.error = format!("file {file_path} has extra permissions: 0x{file_mode:o}");
                 result.status = CheckStatus::FAIL;
             } else {
                 result.status = CheckStatus::PASS;

@@ -657,9 +657,7 @@ mod tests {
     const FAKE_TEST_DIR: &str = "testdir";
 
     fn network_path(name: String) -> PathBuf {
-        test_data()
-            .join("network")
-            .join(format!("{name}.network"))
+        test_data().join("network").join(format!("{name}.network"))
     }
 
     fn network_from_interface(iface: NetworkDInterface) -> NetworkConfig {
