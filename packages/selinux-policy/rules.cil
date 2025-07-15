@@ -221,6 +221,12 @@
 (allow api_s secret_t (files (mutate mount)))
 (allow runtime_s secret_t (files (mutate mount)))
 
+; Trusted components can modify secrets stored in /etc config files.
+(allow trusted_s etc_secret_t (files (mutate)))
+
+; Untrusted components cannot modify secrets stored in /etc config files.
+(neverallow untrusted_s etc_secret_t (files (mutate)))
+
 ; Subjects that control the OS can write to and manage mounts for
 ; "sensitive" files and directories on /local.
 (allow control_s sensitive_o (files (mutate mount)))
