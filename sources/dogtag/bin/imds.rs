@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
         .await
         .context(error::ImdsSnafu)?
         .context(error::NoHostnameSnafu)?;
-    println!("{}", hostname);
+    println!("{hostname}");
     Ok(())
 }
 

@@ -63,7 +63,7 @@ where
 {
     let val = val.as_ref();
     let output = serde_json::to_string(val).context(error::JsonSerializeSnafu { output: val })?;
-    println!("{}", output);
+    println!("{output}");
     Ok(())
 }
 
@@ -134,8 +134,7 @@ fn write_primary_interface_sysctl(interface: String) -> Result<()> {
 
         fs::write(SYSCTL_MARKER_FILE, "").unwrap_or_else(|e| {
             eprintln!(
-                "Failed to create marker file {}, netdog may attempt to set sysctls again: {}",
-                SYSCTL_MARKER_FILE, e
+                "Failed to create marker file {SYSCTL_MARKER_FILE}, netdog may attempt to set sysctls again: {e}"
             )
         });
     };
@@ -154,10 +153,10 @@ where
     // ensures failure to set the variable for any reason will be logged, but not cause the sysctl
     // service to fail
     // Enable loose mode for reverse path filter
-    let ipv4_rp_filter = format!("-net.ipv4.conf.{}.rp_filter = 2", interface);
+    let ipv4_rp_filter = format!("-net.ipv4.conf.{interface}.rp_filter = 2");
 
     let mut output = String::new();
-    writeln!(output, "{}", ipv4_rp_filter).context(error::SysctlConfBuildSnafu)?;
+    writeln!(output, "{ipv4_rp_filter}").context(error::SysctlConfBuildSnafu)?;
 
     #[cfg(not(feature = "wicked"))]
     // systemd-networkd implements its own RA client, and expects the kernel implementation to be
@@ -165,13 +164,13 @@ where
     // required for most non-systemd-networkd systems. Guard against this by explicitly disabling
     // all of the sysctls that default to enabled when "accept_ra" is enabled.
     for ipv6_sysctl in [
-        format!("-net.ipv6.conf.{}.accept_ra = 0", interface),
-        format!("-net.ipv6.conf.{}.accept_ra_defrtr = 0", interface),
-        format!("-net.ipv6.conf.{}.accept_ra_pinfo = 0", interface),
-        format!("-net.ipv6.conf.{}.accept_ra_rtr_pref = 0", interface),
-        format!("-net.ipv6.conf.{}.accept_ra_mtu = 0", interface),
+        format!("-net.ipv6.conf.{interface}.accept_ra = 0"),
+        format!("-net.ipv6.conf.{interface}.accept_ra_defrtr = 0"),
+        format!("-net.ipv6.conf.{interface}.accept_ra_pinfo = 0"),
+        format!("-net.ipv6.conf.{interface}.accept_ra_rtr_pref = 0"),
+        format!("-net.ipv6.conf.{interface}.accept_ra_mtu = 0"),
     ] {
-        writeln!(output, "{}", ipv6_sysctl).context(error::SysctlConfBuildSnafu)?;
+        writeln!(output, "{ipv6_sysctl}").context(error::SysctlConfBuildSnafu)?;
     }
 
     fs::write(path, output).context(error::SysctlConfWriteSnafu { path })?;

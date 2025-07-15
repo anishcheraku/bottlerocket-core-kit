@@ -18,7 +18,7 @@ fn main() {
         "fips01010000" => Box::new(FIPS01010000Checker {}),
         "fips01020000" => Box::new(FIPS01020000Checker {}),
         &_ => {
-            eprintln!("Command {} is not supported.", cmd_name);
+            eprintln!("Command {cmd_name} is not supported.");
             return;
         }
     };
@@ -28,9 +28,9 @@ fn main() {
 
     if get_metadata {
         let metadata = checker.metadata();
-        println!("{}", metadata);
+        println!("{metadata}");
     } else {
         let result = checker.execute();
-        println!("{}", result);
+        println!("{result}");
     }
 }

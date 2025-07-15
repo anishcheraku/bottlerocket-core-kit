@@ -419,7 +419,7 @@ impl fmt::Display for State {
         }
         writeln!(f, "Active:  Set {}", self.active())?;
         match self.next() {
-            Some(next) => write!(f, "Next:    Set {}", next),
+            Some(next) => write!(f, "Next:    Set {next}"),
             None => write!(f, "Next:    None"),
         }
     }

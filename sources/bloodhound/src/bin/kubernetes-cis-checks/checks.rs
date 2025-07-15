@@ -216,7 +216,7 @@ impl Checker for K8S04020100Checker {
                 result.error = "unable to parse kubelet config".to_string()
             }
         } else {
-            result.error = format!("unable to read '{}'", KUBELET_CONF_FILE);
+            result.error = format!("unable to read '{KUBELET_CONF_FILE}'");
         }
 
         result
@@ -263,7 +263,7 @@ impl Checker for K8S04020200Checker {
                 result.error = "unable to parse kubelet config".to_string()
             }
         } else {
-            result.error = format!("unable to read '{}'", KUBELET_CONF_FILE);
+            result.error = format!("unable to read '{KUBELET_CONF_FILE}'");
         }
 
         result
@@ -319,7 +319,7 @@ impl Checker for K8S04020300Checker {
                 result.error = "unable to parse kubelet config".to_string()
             }
         } else {
-            result.error = format!("unable to read '{}'", KUBELET_CONF_FILE);
+            result.error = format!("unable to read '{KUBELET_CONF_FILE}'");
         }
 
         result
@@ -362,7 +362,7 @@ impl Checker for K8S04020400Checker {
                 result.error = "unable to parse kubelet config".to_string()
             }
         } else {
-            result.error = format!("unable to read '{}'", KUBELET_CONF_FILE);
+            result.error = format!("unable to read '{KUBELET_CONF_FILE}'");
         }
 
         result
@@ -406,7 +406,7 @@ impl Checker for K8S04020500Checker {
                 result.status = CheckStatus::PASS;
             }
         } else {
-            result.error = format!("unable to read '{}'", KUBELET_CONF_FILE);
+            result.error = format!("unable to read '{KUBELET_CONF_FILE}'");
         }
 
         result
@@ -451,7 +451,7 @@ impl Checker for K8S04020600Checker {
                 result.status = CheckStatus::PASS;
             }
         } else {
-            result.error = format!("unable to read '{}'", KUBELET_CONF_FILE);
+            result.error = format!("unable to read '{KUBELET_CONF_FILE}'");
         }
 
         result
@@ -501,7 +501,7 @@ impl Checker for K8S04020900Checker {
                 result.status = CheckStatus::PASS;
             }
         } else {
-            result.error = format!("unable to read '{}'", KUBELET_CONF_FILE);
+            result.error = format!("unable to read '{KUBELET_CONF_FILE}'");
         }
 
         result
@@ -548,7 +548,7 @@ impl Checker for K8S04021000Checker {
                 result.status = CheckStatus::FAIL;
             }
         } else {
-            result.error = format!("unable to read '{}'", KUBELET_CONF_FILE);
+            result.error = format!("unable to read '{KUBELET_CONF_FILE}'");
         }
 
         result
@@ -598,7 +598,7 @@ impl Checker for K8S04021100Checker {
                 result.status = CheckStatus::PASS;
             }
         } else {
-            result.error = format!("unable to read '{}'", KUBELET_CONF_FILE);
+            result.error = format!("unable to read '{KUBELET_CONF_FILE}'");
         }
 
         result
@@ -660,7 +660,7 @@ impl Checker for K8S04021200Checker {
                 result.error = "unable to parse kubelet config".to_string()
             }
         } else {
-            result.error = format!("unable to read '{}'", KUBELET_CONF_FILE);
+            result.error = format!("unable to read '{KUBELET_CONF_FILE}'");
         }
 
         result
@@ -706,7 +706,7 @@ impl Checker for K8S04021300Checker {
                 result.status = CheckStatus::FAIL;
             }
         } else {
-            result.error = format!("unable to read '{}'", KUBELET_CONF_FILE);
+            result.error = format!("unable to read '{KUBELET_CONF_FILE}'");
         }
 
         result

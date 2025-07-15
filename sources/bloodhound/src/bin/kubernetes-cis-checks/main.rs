@@ -64,7 +64,7 @@ fn main() {
         "k8s04021200" => Box::new(K8S04021200Checker {}),
         "k8s04021300" => Box::new(K8S04021300Checker {}),
         &_ => {
-            eprintln!("Command {} is not supported.", cmd_name);
+            eprintln!("Command {cmd_name} is not supported.");
             return;
         }
     };
@@ -74,9 +74,9 @@ fn main() {
 
     if get_metadata {
         let metadata = checker.metadata();
-        println!("{}", metadata);
+        println!("{metadata}");
     } else {
         let result = checker.execute();
-        println!("{}", result);
+        println!("{result}");
     }
 }

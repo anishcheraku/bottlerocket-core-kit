@@ -130,7 +130,7 @@ fn handle_dns_settings(primary_interface: String) -> Result<()> {
 
             // Remove the colons since the ID might be a MAC address
             let name = interface.to_string().replace(':', "");
-            let dropin_dir_name = format!("10-{}.network.d", name);
+            let dropin_dir_name = format!("10-{name}.network.d");
             let dropin_dir_path = Path::new(NETWORKD_CONFIG_DIR).join(&dropin_dir_name);
             fs::create_dir_all(&dropin_dir_path).context(error::DropInDirCreateSnafu {
                 path: &dropin_dir_path,

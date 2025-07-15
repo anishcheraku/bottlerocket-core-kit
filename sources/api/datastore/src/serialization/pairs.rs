@@ -37,7 +37,7 @@ where
     let prefix = prefix.as_ref();
     let prefix_key = Key::new(KeyType::Data, prefix).map_err(|e| {
         error::InvalidKeySnafu {
-            msg: format!("Prefix '{}' not valid as Key: {}", prefix, e),
+            msg: format!("Prefix '{prefix}' not valid as Key: {e}"),
         }
         .into_error(NoSource)
     })?;
@@ -206,7 +206,7 @@ impl<'a> ser::Serializer for Serializer<'a> {
                 trace!("Had no prefix, starting with struct name: {}", name);
                 let key = Key::from_segments(KeyType::Data, &[&name]).map_err(|e| {
                     error::InvalidKeySnafu {
-                        msg: format!("struct '{}' not valid as Key: {}", name, e),
+                        msg: format!("struct '{name}' not valid as Key: {e}"),
                     }
                     .into_error(NoSource)
                 })?;
@@ -313,8 +313,7 @@ fn key_append_or_create(old_prefix: &Option<Key>, key: &Key) -> Result<Key> {
         old_prefix.append_key(key).map_err(|e| {
             error::InvalidKeySnafu {
                 msg: format!(
-                    "appending '{}' to '{}' is invalid as Key: {}",
-                    key, old_prefix, e
+                    "appending '{key}' to '{old_prefix}' is invalid as Key: {e}"
                 ),
             }
             .into_error(NoSource)
@@ -401,7 +400,7 @@ impl ser::SerializeStruct for Serializer<'_> {
     {
         let key = Key::from_segments(KeyType::Data, &[&key_str]).map_err(|e| {
             error::InvalidKeySnafu {
-                msg: format!("struct field '{}' not valid as Key: {}", key_str, e),
+                msg: format!("struct field '{key_str}' not valid as Key: {e}"),
             }
             .into_error(NoSource)
         })?;

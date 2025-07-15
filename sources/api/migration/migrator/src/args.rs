@@ -13,15 +13,14 @@ use std::str::FromStr;
 fn usage() -> ! {
     let program_name = env::args().next().unwrap_or_else(|| "program".to_string());
     eprintln!(
-        r"Usage: {}
+        r"Usage: {program_name}
             --datastore-path PATH
             --migration-directory PATH
             --root-path PATH
             --metadata-directory PATH
             (--migrate-to-version x.y | --migrate-to-version-from-os-release)
             [ --no-color ]
-            [ --log-level trace|debug|info|warn|error ]",
-        program_name
+            [ --log-level trace|debug|info|warn|error ]"
     );
     process::exit(2);
 }
@@ -65,16 +64,14 @@ impl Args {
                     // On first boot, the data store won't exist yet, because storewolf runs after.
                     if !Path::new(&path_str).exists() {
                         eprintln!(
-                            "Data store does not exist at given path, exiting ({})",
-                            path_str
+                            "Data store does not exist at given path, exiting ({path_str})"
                         );
                         process::exit(0);
                     }
 
                     let canonical = fs::canonicalize(path_str).unwrap_or_else(|e| {
                         usage_msg(format!(
-                            "Could not canonicalize given data store path: {}",
-                            e
+                            "Could not canonicalize given data store path: {e}"
                         ))
                     });
                     trace!("Canonicalized data store path: {}", canonical.display());
@@ -86,7 +83,7 @@ impl Args {
                         .next()
                         .unwrap_or_else(|| usage_msg("Did not give argument to --log-level"));
                     log_level = Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
-                        usage_msg(format!("Invalid log level '{}'", log_level_str))
+                        usage_msg(format!("Invalid log level '{log_level_str}'"))
                     }));
                 }
 
@@ -104,14 +101,14 @@ impl Args {
                     });
                     trace!("Given --migrate-to-version: {}", version_str);
                     let version = Version::from_str(&version_str).unwrap_or_else(|e| {
-                        usage_msg(format!("Invalid argument to --migrate-to-version: {}", e))
+                        usage_msg(format!("Invalid argument to --migrate-to-version: {e}"))
                     });
                     migrate_to_version = Some(version)
                 }
 
                 "--migrate-to-version-from-os-release" => {
                     let br = BottlerocketRelease::new().unwrap_or_else(|e| {
-                        usage_msg(format!("Unable to get version from os-release: {}", e))
+                        usage_msg(format!("Unable to get version from os-release: {e}"))
                     });
                     migrate_to_version = Some(br.version_id)
                 }
@@ -131,7 +128,7 @@ impl Args {
                     trace!("Given --metadata-directory: {}", path_str);
                     metadata_path = Some(PathBuf::from(path_str));
                 }
-                _ => usage_msg(format!("Unable to parse input '{}'", arg)),
+                _ => usage_msg(format!("Unable to parse input '{arg}'")),
             }
         }
 

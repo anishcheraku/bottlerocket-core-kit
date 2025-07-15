@@ -45,7 +45,7 @@ where
     // Send the settings changes to the server in the same transaction.  (They're quick local
     // requests, so don't add the complexity of making them run concurrently.)
     for (input_source, json) in changes {
-        let uri = format!("/settings?tx={}", transaction);
+        let uri = format!("/settings?tx={transaction}");
         let method = "PATCH";
         let (_status, _body) = crate::raw_request(&socket_path, &uri, method, Some(json))
             .await
@@ -57,7 +57,7 @@ where
     }
 
     // Commit the transaction and apply it to the system.
-    let uri = format!("/tx/commit_and_apply?tx={}", transaction);
+    let uri = format!("/tx/commit_and_apply?tx={transaction}");
     let method = "POST";
     let (_status, _body) = crate::raw_request(&socket_path, &uri, method, None)
         .await

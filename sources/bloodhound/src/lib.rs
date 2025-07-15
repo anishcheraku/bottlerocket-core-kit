@@ -173,8 +173,7 @@ pub fn check_file_not_mode(file_path: &str, mode: u32) -> CheckerResult {
 
             if (file_mode & mode) > 0 {
                 result.error = format!(
-                    "file {} has extra permissions: 0x{:o}",
-                    file_path, file_mode
+                    "file {file_path} has extra permissions: 0x{file_mode:o}"
                 );
                 result.status = CheckStatus::FAIL;
             } else {
@@ -184,7 +183,7 @@ pub fn check_file_not_mode(file_path: &str, mode: u32) -> CheckerResult {
             result.error = "unable to get file metadata information".to_string();
         }
     } else {
-        result.error = format!("unable to inspect '{}'", file_path);
+        result.error = format!("unable to inspect '{file_path}'");
     }
 
     result

@@ -185,12 +185,11 @@ struct Args {
 fn usage() {
     let program_name = env::args().next().unwrap_or_else(|| "program".to_string());
     eprintln!(
-        r"Usage: {}
+        r"Usage: {program_name}
             [ --config-path PATH ]
             [ --log-level trace|debug|info|warn|error ]
 
-    Socket path defaults to {}",
-        program_name, DEFAULT_CONFIG_PATH,
+    Socket path defaults to {DEFAULT_CONFIG_PATH}",
     );
 }
 
@@ -208,7 +207,7 @@ fn parse_args(args: env::Args) -> Result<Args> {
                 })?;
                 log_level = Some(LevelFilter::from_str(&log_level_str).map_err(|_| {
                     error::Error::Usage {
-                        message: format!("Invalid log level '{}'", log_level_str),
+                        message: format!("Invalid log level '{log_level_str}'"),
                     }
                 })?);
             }
@@ -244,12 +243,12 @@ fn main() {
     if let Err(e) = run() {
         match e {
             error::Error::Usage { .. } => {
-                eprintln!("{}", e);
+                eprintln!("{e}");
                 usage();
                 process::exit(2);
             }
             _ => {
-                eprintln!("{}", e);
+                eprintln!("{e}");
                 process::exit(1);
             }
         }

@@ -55,7 +55,7 @@ fn main() -> ExitCode {
     match run(args) {
         Ok(exit_code) => exit_code,
         Err(e) => {
-            eprintln!("{:?}", e);
+            eprintln!("{e:?}");
             e.exit_code()
         }
     }
@@ -89,7 +89,7 @@ fn run(args: Args) -> Result<ExitCode> {
         // Clear the log, mount and unmount the XFS file system
         // before xfs_repair
         if repair_exit_code == XfsRepairResponseCode::DirtyLogs && repair {
-            println!("Replaying log for {}", target);
+            println!("Replaying log for {target}");
 
             // Using random directory (/tmp/repair_mntxxxx) instead of a targeted directory (/tmp/repair_mnt)
             let mnt_dir = tempfile::Builder::new()

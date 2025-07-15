@@ -15,10 +15,10 @@ where
 
     let mut query: Vec<String> = vec![format!("type={}", report_type)];
     if let Some(query_format) = format {
-        query.push(format!("format={}", query_format));
+        query.push(format!("format={query_format}"));
     }
     if let Some(query_level) = level {
-        query.push(format!("level={}", query_level));
+        query.push(format!("level={query_level}"));
     }
 
     let uri = format!("/report/cis?{}", query.join("&"));
@@ -39,7 +39,7 @@ where
 
     let mut query = Vec::new();
     if let Some(query_format) = format {
-        query.push(format!("format={}", query_format));
+        query.push(format!("format={query_format}"));
     }
 
     let uri = format!("/report/fips?{}", query.join("&"));

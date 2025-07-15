@@ -250,7 +250,7 @@ mod build_connector {
         // If the proxy's URI doesn't have a scheme, assume HTTP for the scheme and let the proxy
         // server forward HTTPS connections and start a tunnel.
         if proxy_uri.scheme().is_none() {
-            proxy_uri = format!("http://{}", https_proxy)
+            proxy_uri = format!("http://{https_proxy}")
                 .parse::<Uri>()
                 .expect("Unable to parse proxy URI as HTTPS");
         }
@@ -1124,8 +1124,7 @@ mod timeout_middleware {
                 .unwrap_err();
             assert!(
                 resp.is_timeout(),
-                "expected resp.is_timeout() to be true but it was false, resp == {:?}",
-                resp
+                "expected resp.is_timeout() to be true but it was false, resp == {resp:?}"
             );
             let message = DisplayErrorContext(&resp).to_string();
             let expected =
@@ -1255,7 +1254,7 @@ mod test {
             .call(HttpRequest::get("https://socket-hangup.com").unwrap())
             .await
             .expect_err("socket hangup");
-        assert!(err.is_io(), "unexpected error type: {:?}", err);
+        assert!(err.is_io(), "unexpected error type: {err:?}");
     }
 
     // ---- machinery to make a Hyper connector that responds with an IO Error

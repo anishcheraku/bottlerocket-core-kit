@@ -199,7 +199,7 @@ where
         .ok()
         .context(error::CorruptionSnafu {
             path: path.as_ref(),
-            msg: format!("invalid UTF-8 in encoded segment '{}'", segment),
+            msg: format!("invalid UTF-8 in encoded segment '{segment}'"),
         })
 }
 
@@ -430,7 +430,7 @@ impl DataStore for FilesystemDataStore {
         for key_path in key_paths {
             let data_key = key_path.data_key;
             let meta_key = key_path.metadata_key.context(error::InternalSnafu {
-                msg: format!("Found meta key path with no dot: {}", data_key),
+                msg: format!("Found meta key path with no dot: {data_key}"),
             })?;
 
             // If the user requested specific metadata, move to the next key unless it matches.

@@ -50,7 +50,7 @@ struct Args {
 fn usage() -> ! {
     let program_name = env::args().next().unwrap_or_else(|| "program".to_string());
     eprintln!(
-        r"Usage: {}
+        r"Usage: {program_name}
             Subcommands:
                 refresh     Query update repository, store the list of available updates,
                             and check if chosen version is available
@@ -60,9 +60,8 @@ fn usage() -> ! {
                 deactivate  Reverts update activation by marking current active partition for boot
 
             Global options:
-                    [ --config-path PATH ]    configuration file (default {})
+                    [ --config-path PATH ]    configuration file (default {DEFAULT_CONFIG_FILE})
                     [ --log-level trace|debug|info|warn|error ]  (default info)",
-        program_name, DEFAULT_CONFIG_FILE,
     );
     process::exit(2);
 }
@@ -87,7 +86,7 @@ fn parse_args(args: std::env::Args) -> Args {
                     .next()
                     .unwrap_or_else(|| usage_msg("Did not give argument to --log-level"));
                 log_level = Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
-                    usage_msg(format!("Invalid log level '{}'", log_level_str))
+                    usage_msg(format!("Invalid log level '{log_level_str}'"))
                 }));
             }
 
@@ -375,7 +374,7 @@ fn match_error_to_exit_status(err: Error) -> i32 {
 // for long-running update-related actions, and tokio's threaded runtime doesn't play well.
 fn main() {
     if let Err(e) = run() {
-        eprintln!("{}", e);
+        eprintln!("{e}");
         std::process::exit(match_error_to_exit_status(e));
     }
 }

@@ -25,7 +25,7 @@ pub enum CheckStatus {
 
 impl fmt::Display for CheckStatus {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 
@@ -37,7 +37,7 @@ pub enum Mode {
 
 impl fmt::Display for Mode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 
@@ -57,7 +57,7 @@ pub struct CheckerMetadata {
 impl fmt::Display for CheckerMetadata {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let output = serde_json::to_string(&self).unwrap_or_default();
-        write!(f, "{}", output)
+        write!(f, "{output}")
     }
 }
 
@@ -71,7 +71,7 @@ pub struct CheckerResult {
 impl fmt::Display for CheckerResult {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let output = serde_json::to_string(&self).unwrap_or_default();
-        write!(f, "{}", output)
+        write!(f, "{output}")
     }
 }
 
@@ -151,7 +151,7 @@ impl ReportResults {
             skipped: 0,
             failed: 0,
             status: CheckStatus::SKIP,
-            timestamp: format!("{:?}", current_time),
+            timestamp: format!("{current_time:?}"),
             metadata,
             results: BTreeMap::new(),
         }

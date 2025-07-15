@@ -55,7 +55,7 @@ pub(crate) fn stop<S>(
     info!(
         "Closing exec connection{}",
         if let Some(message) = &message {
-            format!("; message: {:?}", message)
+            format!("; message: {message:?}")
         } else {
             "".to_string()
         }

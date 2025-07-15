@@ -222,9 +222,9 @@ async fn assert_directory_structure_with_failed_migration(
     to: &Version,
 ) -> PathBuf {
     let paths = list_dir_entries(dir).await;
-    let from_ver = format!("v{}", from);
-    let from_ver_unique_prefix = format!("v{}_", from);
-    let to_ver_unique_prefix = format!("v{}_", to);
+    let from_ver = format!("v{from}");
+    let from_ver_unique_prefix = format!("v{from}_");
+    let to_ver_unique_prefix = format!("v{to}_");
 
     assert_eq!(paths.len(), 8);
     assert_dir_entry_exists(&paths, "current");
@@ -253,8 +253,7 @@ async fn assert_directory_structure_with_failed_migration(
 
     assert_eq!(
         left_behind_count, 2,
-        "expected 2 directories to be left behind after migration failure, but found {}",
-        left_behind_count
+        "expected 2 directories to be left behind after migration failure, but found {left_behind_count}"
     );
 
     let symlink = paths
@@ -290,8 +289,7 @@ fn assert_dir_entry_exists(dir_entries: &[PathBuf], exact_name: &str) {
         dir_entries
             .iter()
             .any(|entry| entry.file_name().unwrap().to_str().unwrap() == exact_name),
-        "'{}' not found",
-        exact_name
+        "'{exact_name}' not found"
     );
 }
 
@@ -303,8 +301,7 @@ fn assert_dir_starting_with_exists(dir_entries: &[PathBuf], starts_with: &str) {
             .to_str()
             .unwrap()
             .starts_with(starts_with)),
-        "entry starting with '{}' not found",
-        starts_with
+        "entry starting with '{starts_with}' not found"
     );
 }
 
@@ -361,15 +358,15 @@ async fn migrate_forward() {
     let lines: Vec<&str> = contents.split('\n').collect();
     assert_eq!(lines.len(), 4);
     let first_line = *lines.first().unwrap();
-    let want = format!("{}: --forward", FIRST_MIGRATION);
+    let want = format!("{FIRST_MIGRATION}: --forward");
     let got: String = first_line.chars().take(want.len()).collect();
     assert_eq!(got, want);
     let second_line = *lines.get(1).unwrap();
-    let want = format!("{}: --forward", SECOND_MIGRATION);
+    let want = format!("{SECOND_MIGRATION}: --forward");
     let got: String = second_line.chars().take(want.len()).collect();
     assert_eq!(got, want);
     let third_line = *lines.get(2).unwrap();
-    let want = format!("{}: --forward", THIRD_MIGRATION);
+    let want = format!("{THIRD_MIGRATION}: --forward");
     let got: String = third_line.chars().take(want.len()).collect();
     assert_eq!(got, want);
 
@@ -413,15 +410,15 @@ async fn migrate_backward() {
     let lines: Vec<&str> = contents.split('\n').collect();
     assert_eq!(lines.len(), 4);
     let first_line = *lines.first().unwrap();
-    let want = format!("{}: --backward", THIRD_MIGRATION);
+    let want = format!("{THIRD_MIGRATION}: --backward");
     let got: String = first_line.chars().take(want.len()).collect();
     assert_eq!(got, want);
     let second_line = *lines.get(1).unwrap();
-    let want = format!("{}: --backward", SECOND_MIGRATION);
+    let want = format!("{SECOND_MIGRATION}: --backward");
     let got: String = second_line.chars().take(want.len()).collect();
     assert_eq!(got, want);
     let second_line = *lines.get(2).unwrap();
-    let want = format!("{}: --backward", FIRST_MIGRATION);
+    let want = format!("{FIRST_MIGRATION}: --backward");
     let got: String = second_line.chars().take(want.len()).collect();
     assert_eq!(got, want);
 
@@ -466,15 +463,15 @@ async fn migrate_forward_with_failed_migration() {
     let lines: Vec<&str> = contents.split('\n').collect();
     assert_eq!(lines.len(), 4);
     let first_line = *lines.first().unwrap();
-    let want = format!("{}: --forward", FIRST_MIGRATION);
+    let want = format!("{FIRST_MIGRATION}: --forward");
     let got: String = first_line.chars().take(want.len()).collect();
     assert_eq!(got, want);
     let second_line = *lines.get(1).unwrap();
-    let want = format!("{}: --forward", SECOND_MIGRATION);
+    let want = format!("{SECOND_MIGRATION}: --forward");
     let got: String = second_line.chars().take(want.len()).collect();
     assert_eq!(got, want);
     let third_line = *lines.get(2).unwrap();
-    let want = format!("{}: --forward", FAILING_MIGRATION);
+    let want = format!("{FAILING_MIGRATION}: --forward");
     let got: String = third_line.chars().take(want.len()).collect();
     assert_eq!(got, want);
 
@@ -519,15 +516,15 @@ async fn migrate_backward_with_failed_migration() {
     let lines: Vec<&str> = contents.split('\n').collect();
     assert_eq!(lines.len(), 4);
     let first_line = *lines.first().unwrap();
-    let want = format!("{}: --backward", THIRD_MIGRATION);
+    let want = format!("{THIRD_MIGRATION}: --backward");
     let got: String = first_line.chars().take(want.len()).collect();
     assert_eq!(got, want);
     let second_line = *lines.get(1).unwrap();
-    let want = format!("{}: --backward", SECOND_MIGRATION);
+    let want = format!("{SECOND_MIGRATION}: --backward");
     let got: String = second_line.chars().take(want.len()).collect();
     assert_eq!(got, want);
     let second_line = *lines.get(2).unwrap();
-    let want = format!("{}: --backward", FAILING_MIGRATION);
+    let want = format!("{FAILING_MIGRATION}: --backward");
     let got: String = second_line.chars().take(want.len()).collect();
     assert_eq!(got, want);
 

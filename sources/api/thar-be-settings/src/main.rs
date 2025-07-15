@@ -91,7 +91,7 @@ fn parse_args(args: env::Args) -> Args {
                     .next()
                     .unwrap_or_else(|| usage_msg("Did not give argument to --log-level"));
                 log_level = Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
-                    usage_msg(format!("Invalid log level '{}'", log_level_str))
+                    usage_msg(format!("Invalid log level '{log_level_str}'"))
                 }));
             }
 
@@ -218,7 +218,7 @@ fn main() {
             Ok(ForkResult::Child) => {} // continue
             Ok(ForkResult::Parent { .. }) => process::exit(0),
             Err(e) => {
-                eprintln!("Failed to fork child: {}", e);
+                eprintln!("Failed to fork child: {e}");
                 process::exit(1);
             }
         }
@@ -226,7 +226,7 @@ fn main() {
 
     let rt = Runtime::new().expect("Failed to create tokio runtime");
     if let Err(e) = rt.block_on(async { run(args).await }) {
-        eprintln!("{}", e);
+        eprintln!("{e}");
         process::exit(1);
     }
 }

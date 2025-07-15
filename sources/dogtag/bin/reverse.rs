@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
         .map_err(|e| error::Error::Lookup {
             source: Box::new(e),
         })?;
-    println!("{}", hostname);
+    println!("{hostname}");
     Ok(())
 }
 

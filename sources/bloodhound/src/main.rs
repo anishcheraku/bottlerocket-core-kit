@@ -142,14 +142,14 @@ fn main() {
     // Discover all checkers in checks directory
     let check_dir = PathBuf::from(args.check_dir);
     if !check_dir.is_dir() {
-        eprintln!("Checker path {:?} is not a directory!", check_dir);
+        eprintln!("Checker path {check_dir:?} is not a directory!");
         std::process::exit(CHECKER_DISCOVERY_ERROR);
     }
 
     // Look through the directory and find any checkers, then filter out checks based on input
     let checkers = find_checkers(&check_dir, args.level);
     if checkers.is_empty() {
-        eprintln!("No checkers found in {:?}!", check_dir);
+        eprintln!("No checkers found in {check_dir:?}!");
         std::process::exit(CHECKER_DISCOVERY_ERROR);
     }
 
@@ -175,7 +175,7 @@ fn main() {
 
     // Write appropriate output results report
     let mut output_dest = get_output(&args.output).unwrap_or_else(|err| {
-        eprintln!("Error writing to output destination {}!", err);
+        eprintln!("Error writing to output destination {err}!");
         std::process::exit(REPORT_OUTPUT_ERROR);
     });
 
@@ -185,7 +185,7 @@ fn main() {
     };
 
     if let Err(err) = reporter.write(&report, &mut *output_dest) {
-        eprintln!("Error writing report output: {}", err);
+        eprintln!("Error writing report output: {err}");
         std::process::exit(REPORT_OUTPUT_ERROR);
     }
 

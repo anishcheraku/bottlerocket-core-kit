@@ -403,7 +403,7 @@ pub fn join_map(
         };
 
         // Do the actual key/value join.
-        pairs.push(format!("{}{}{}", key, join_key, val));
+        pairs.push(format!("{key}{join_key}{val}"));
     }
 
     // Join all pairs with the given string.

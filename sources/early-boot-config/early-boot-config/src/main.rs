@@ -78,7 +78,7 @@ fn parse_args(args: env::Args) -> Args {
                     .next()
                     .unwrap_or_else(|| usage_msg("Did not give argument to --log-level"));
                 log_level = Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
-                    usage_msg(format!("Invalid log level '{}'", log_level_str))
+                    usage_msg(format!("Invalid log level '{log_level_str}'"))
                 }));
             }
 
@@ -249,7 +249,7 @@ async fn run() -> Result<()> {
 #[tokio::main]
 async fn main() {
     if let Err(e) = run().await {
-        eprintln!("{}", e);
+        eprintln!("{e}");
         process::exit(1);
     }
 }

@@ -55,7 +55,7 @@ mod error {
 /// settings.  We know the system won't be functional without a commit,
 /// but we can live without logging what was committed.
 async fn check_pending_settings<S: AsRef<str>>(socket_path: S, transaction: &str) {
-    let uri = format!("{}?tx={}", API_PENDING_URI_BASE, transaction);
+    let uri = format!("{API_PENDING_URI_BASE}?tx={transaction}");
 
     debug!("GET-ing {} to determine if there are pending settings", uri);
     let get_result = apiclient::raw_request(socket_path.as_ref(), &uri, "GET", None).await;
@@ -90,7 +90,7 @@ async fn check_pending_settings<S: AsRef<str>>(socket_path: S, transaction: &str
 
 /// Commits pending settings to live.
 async fn commit_pending_settings<S: AsRef<str>>(socket_path: S, transaction: &str) -> Result<()> {
-    let uri = format!("{}?tx={}", API_COMMIT_URI_BASE, transaction);
+    let uri = format!("{API_COMMIT_URI_BASE}?tx={transaction}");
     debug!("POST-ing to {} to move pending settings to live", uri);
 
     if let Err(e) = apiclient::raw_request(socket_path.as_ref(), &uri, "POST", None).await {
@@ -174,7 +174,7 @@ fn parse_args(args: env::Args) -> Args {
                     .next()
                     .unwrap_or_else(|| usage_msg("Did not give argument to --log-level"));
                 log_level = Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
-                    usage_msg(format!("Invalid log level '{}'", log_level_str))
+                    usage_msg(format!("Invalid log level '{log_level_str}'"))
                 }));
             }
 
@@ -218,7 +218,7 @@ async fn run() -> Result<()> {
 #[tokio::main]
 async fn main() {
     if let Err(e) = run().await {
-        eprintln!("{}", e);
+        eprintln!("{e}");
         process::exit(1);
     }
 }

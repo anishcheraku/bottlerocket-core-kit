@@ -274,6 +274,6 @@ impl From<Error> for actix_web::HttpResponse {
         // Include the error message in the response.  The Bottlerocket API is only
         // exposed locally, and only on the host filesystem and to authorized containers,
         // so we're not worried about exposing error details.
-        HttpResponseBuilder::new(e.status_code()).body(format!("{}", e))
+        HttpResponseBuilder::new(e.status_code()).body(format!("{e}"))
     }
 }

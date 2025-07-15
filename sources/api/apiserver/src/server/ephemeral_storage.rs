@@ -44,7 +44,7 @@ pub fn initialize(fs: Option<Filesystem>, disks: Option<Vec<String>>) -> Result<
                     known_disks_hash.contains(disk),
                     error::InvalidParameterSnafu {
                         parameter: "disks",
-                        reason: format!("unknown disk {:?}", disk),
+                        reason: format!("unknown disk {disk:?}"),
                     }
                 )
             }
@@ -86,7 +86,7 @@ pub fn initialize(fs: Option<Filesystem>, disks: Option<Vec<String>>) -> Result<
                 mdadm_create(RAID_DEVICE_NAME, disks.iter().map(|x| x.as_str()).collect())?;
             }
             // Once it is built, it will be available in `/dev/md/`
-            format!("{}{}", RAID_DEVICE_DIR, RAID_DEVICE_NAME)
+            format!("{RAID_DEVICE_DIR}{RAID_DEVICE_NAME}")
         }
     };
 
@@ -115,7 +115,7 @@ pub fn bind(variant: &str, dirs: Vec<String>) -> Result<()> {
         }
         // If there is only one device, use that
         1 => ephemeral_devices()?.first().expect("non-empty").clone(),
-        _ => format!("{}{}", RAID_DEVICE_DIR, RAID_DEVICE_NAME),
+        _ => format!("{RAID_DEVICE_DIR}{RAID_DEVICE_NAME}"),
     };
 
     // Normalize input by trimming trailing "/"
@@ -124,7 +124,7 @@ pub fn bind(variant: &str, dirs: Vec<String>) -> Result<()> {
         .map(|dir| dir.trim_end_matches("/").to_string())
         .collect();
 
-    let mount_point = format!("/mnt/{}", EPHEMERAL_MNT);
+    let mount_point = format!("/mnt/{EPHEMERAL_MNT}");
     let mount_point = Path::new(&mount_point);
     let allowed_dirs = allowed_bind_dirs(variant);
     for dir in &dirs {

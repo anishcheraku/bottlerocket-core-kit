@@ -560,7 +560,7 @@ mod tests {
                 !update.update_ready(
                     seed, time + Duration::try_milliseconds(i64::from(duration)).unwrap()
                 ),
-                "update should not be ready, it's the second wave but not at position within wave yet: {}", duration,
+                "update should not be ready, it's the second wave but not at position within wave yet: {duration}",
             );
         }
 
@@ -571,7 +571,7 @@ mod tests {
                     time + Duration::try_milliseconds(200).unwrap()
                         + Duration::try_milliseconds(i64::from(duration)).unwrap()
                 ),
-                "update should be ready now that we're passed the allocated time position within the second wave: {}", duration,
+                "update should be ready now that we're passed the allocated time position within the second wave: {duration}",
             );
         }
 
@@ -615,7 +615,7 @@ mod tests {
                     time + Duration::try_milliseconds(200).unwrap()
                         + Duration::try_milliseconds(i64::from(duration)).unwrap()
                 ),
-                "update should not be ready, it's the third wave but not at position within wave yet: {}", duration,
+                "update should not be ready, it's the third wave but not at position within wave yet: {duration}",
             );
         }
 
@@ -626,7 +626,7 @@ mod tests {
                     time + Duration::try_milliseconds(1024 + 200).unwrap()
                         + Duration::try_milliseconds(i64::from(duration)).unwrap()
                 ),
-                "update should be ready now that we're passed the allocated time position within the third wave: {}", duration,
+                "update should be ready now that we're passed the allocated time position within the third wave: {duration}",
             );
         }
     }

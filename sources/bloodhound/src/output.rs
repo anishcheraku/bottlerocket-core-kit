@@ -53,6 +53,6 @@ impl ReportWriter for JsonReportWriter {
     /// Writes a json formatted report to the provided output destination.
     fn write(&self, report: &ReportResults, output: &mut dyn Write) -> Result<(), Error> {
         let json = serde_json::to_string(&report)?;
-        writeln!(output, "{}", json)
+        writeln!(output, "{json}")
     }
 }

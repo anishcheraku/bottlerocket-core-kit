@@ -165,7 +165,7 @@ mod parse_property_tests {
     #[test]
     fn parse_stdout_exit_0() {
         let got = parse_property(
-            format!("{}=0", EXIT_STATUS_PROPERTY).as_str(),
+            format!("{EXIT_STATUS_PROPERTY}=0").as_str(),
             EXIT_STATUS_PROPERTY,
         )
         .and_then(|exit_code| exit_code.parse::<i32>().ok())
@@ -178,7 +178,7 @@ mod parse_property_tests {
     #[test]
     fn parse_stdout_exit_255() {
         let got = parse_property(
-            format!("{}=255", EXIT_STATUS_PROPERTY).as_str(),
+            format!("{EXIT_STATUS_PROPERTY}=255").as_str(),
             EXIT_STATUS_PROPERTY,
         )
         .and_then(|exit_code| exit_code.parse::<i32>().ok())
@@ -191,7 +191,7 @@ mod parse_property_tests {
     #[test]
     fn parse_stdout_exit_0_with_newline() {
         let got = parse_property(
-            format!("{}=0\n", EXIT_STATUS_PROPERTY).as_str(),
+            format!("{EXIT_STATUS_PROPERTY}=0\n").as_str(),
             EXIT_STATUS_PROPERTY,
         )
         .and_then(|exit_code| exit_code.parse::<i32>().ok())
@@ -204,7 +204,7 @@ mod parse_property_tests {
     #[test]
     fn parse_stdout_exit_255_with_newline() {
         let got = parse_property(
-            format!("{}=255\n", EXIT_STATUS_PROPERTY).as_str(),
+            format!("{EXIT_STATUS_PROPERTY}=255\n").as_str(),
             EXIT_STATUS_PROPERTY,
         )
         .and_then(|exit_code| exit_code.parse::<i32>().ok())
@@ -217,7 +217,7 @@ mod parse_property_tests {
     #[test]
     fn parse_stdout_exit_extra_chars() {
         let got = parse_property(
-            format!("{}=255foo", EXIT_STATUS_PROPERTY).as_str(),
+            format!("{EXIT_STATUS_PROPERTY}=255foo").as_str(),
             EXIT_STATUS_PROPERTY,
         )
         .and_then(|exit_code| exit_code.parse::<i32>().ok());
@@ -228,7 +228,7 @@ mod parse_property_tests {
     #[test]
     fn parse_stdout_malformed() {
         let got = parse_property(
-            format!("{} = 123", EXIT_STATUS_PROPERTY).as_str(),
+            format!("{EXIT_STATUS_PROPERTY} = 123").as_str(),
             EXIT_STATUS_PROPERTY,
         )
         .and_then(|exit_code| exit_code.parse::<i32>().ok());
@@ -255,7 +255,7 @@ mod parse_property_tests {
     #[test]
     fn parse_stdout_property_and_equals_only() {
         let got = parse_property(
-            format!("{}=", EXIT_STATUS_PROPERTY).as_str(),
+            format!("{EXIT_STATUS_PROPERTY}=").as_str(),
             EXIT_STATUS_PROPERTY,
         )
         .and_then(|exit_code| exit_code.parse::<i32>().ok());

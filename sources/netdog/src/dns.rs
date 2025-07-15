@@ -90,7 +90,7 @@ impl DnsSettings {
 
             Ok(dns_config)
         } else {
-            eprintln!("No DNS configuration exists in {}", DNS_CONFIG);
+            eprintln!("No DNS configuration exists in {DNS_CONFIG}");
             Ok(DnsSettings::default())
         }
     }

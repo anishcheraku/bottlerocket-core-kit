@@ -56,7 +56,7 @@ where
 {
     let mut query = Vec::new();
     if let Some(query_format) = format {
-        query.push(format!("format={}", query_format));
+        query.push(format!("format={query_format}"));
     }
 
     let uri = format!("/actions/ephemeral-storage/{}?{}", item, query.join("&"));

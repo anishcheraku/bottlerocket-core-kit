@@ -53,7 +53,7 @@ impl ser::Serializer for &MapKeySerializer {
         let key = Key::from_segments(KeyType::Data, &[value]).map_err(|e| {
             debug!("MapKeySerializer got invalid key name: {}", value);
             error::InvalidKeySnafu {
-                msg: format!("{}", e),
+                msg: format!("{e}"),
             }
             .into_error(NoSource)
         })?;

@@ -141,7 +141,7 @@ fn deserialize_config(config_str: &str) -> Result<Box<dyn Interfaces>> {
         3 => validate_config::<v3::NetConfigV3>(interface_config)?,
         _ => {
             return error::InvalidNetConfigSnafu {
-                reason: format!("Unknown network config version: {}", version),
+                reason: format!("Unknown network config version: {version}"),
             }
             .fail();
         }

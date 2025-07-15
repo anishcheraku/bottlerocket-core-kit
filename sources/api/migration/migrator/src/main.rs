@@ -64,12 +64,12 @@ async fn main() {
     let args = Args::from_env(env::args());
     // SimpleLogger will send errors to stderr and anything less to stdout.
     if let Err(e) = SimpleLogger::init(args.log_level, LogConfig::default()) {
-        eprintln!("{}", e);
+        eprintln!("{e}");
         process::exit(1);
     }
 
     if let Err(e) = run(&args).await {
-        eprintln!("{}", e);
+        eprintln!("{e}");
         process::exit(1);
     }
 }

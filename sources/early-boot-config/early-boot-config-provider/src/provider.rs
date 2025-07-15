@@ -36,13 +36,13 @@ pub fn print_userdata_output(
             Ok(json) => (ExitCode::SUCCESS, json),
             Err(e) => (
                 ExitCode::FAILURE,
-                format!("Failed to serialize user data as JSON: {}", e),
+                format!("Failed to serialize user data as JSON: {e}"),
             ),
         },
         Ok(None) => (ExitCode::SUCCESS, String::new()),
-        Err(e) => (ExitCode::FAILURE, format!("{}", e)),
+        Err(e) => (ExitCode::FAILURE, format!("{e}")),
     };
-    println!("{}", output);
+    println!("{output}");
     exit_code
 }
 

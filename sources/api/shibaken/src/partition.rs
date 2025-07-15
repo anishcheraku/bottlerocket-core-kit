@@ -30,7 +30,7 @@ impl IsPartition {
             .iter()
             .any(|query_partition| Some(query_partition) == instance_partition.as_ref());
 
-        println!("{}", query_result);
+        println!("{query_result}");
         Ok(())
     }
 }

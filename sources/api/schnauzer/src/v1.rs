@@ -70,7 +70,7 @@ where
     if let Some((query_param, query_arg)) = query {
         let query_raw = format!("{}={}", query_param.as_ref(), query_arg.as_ref());
         let query_escaped = utf8_percent_encode(&query_raw, ENCODE_QUERY_CHARS);
-        uri = format!("{}?{}", uri, query_escaped);
+        uri = format!("{uri}?{query_escaped}");
     }
 
     let method = "GET";

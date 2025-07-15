@@ -167,8 +167,8 @@ pub enum SettingsInput {
 impl Display for SettingsInput {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            SettingsInput::KeyPair(value) => write!(f, "{}", value),
-            SettingsInput::Json(value) => write!(f, "{}", value),
+            SettingsInput::KeyPair(value) => write!(f, "{value}"),
+            SettingsInput::Json(value) => write!(f, "{value}"),
         }
     }
 }

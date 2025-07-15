@@ -76,11 +76,11 @@ where
     }
 
     let config_str = fs::read_to_string(config_path).context(error::ConfigReadSnafu {
-        config: format!("{:?}", config_path),
+        config: format!("{config_path:?}"),
     })?;
     let pki: HashMap<Identifier, PemCertificate> =
         toml::from_str(config_str.as_str()).context(error::ConfigDeserializationSnafu {
-            config: format!("{:?}", config_path),
+            config: format!("{config_path:?}"),
         })?;
 
     split_bundles(pki)
@@ -184,7 +184,7 @@ fn pem_to_string(pem: &x509_parser::pem::Pem) -> Result<String> {
 
     // A comment will be added before the PEM formatted string to identify the certificate.
     if let Some(comment) = comment_for_pem(pem)? {
-        writeln!(out, "# {}", comment).context(error::WritePemStringSnafu)?;
+        writeln!(out, "# {comment}").context(error::WritePemStringSnafu)?;
     }
 
     writeln!(out, "{} {}{}", PEM_HEADER, pem.label, PEM_SUFFIX)
@@ -193,7 +193,7 @@ fn pem_to_string(pem: &x509_parser::pem::Pem) -> Result<String> {
     let bytes = encoded.as_bytes();
     for chunk in bytes.chunks(64) {
         let chunk = String::from_utf8_lossy(chunk);
-        writeln!(out, "{}", chunk).context(error::WritePemStringSnafu)?;
+        writeln!(out, "{chunk}").context(error::WritePemStringSnafu)?;
     }
     writeln!(out, "{} {}{}", PEM_FOOTER, pem.label, PEM_SUFFIX)
         .context(error::WritePemStringSnafu)?;

@@ -307,7 +307,7 @@ where
     let data = datastore
         .get_prefix(find_prefix, committed)
         .with_context(|_| error::DataStoreSnafu {
-            op: format!("get_prefix '{}' for {:?}", find_prefix, committed),
+            op: format!("get_prefix '{find_prefix}' for {committed:?}"),
         })?;
     if data.is_empty() {
         return Ok(None);
@@ -535,7 +535,7 @@ fn expand_setting_generator<D: DataStore>(
     let parent_key =
         Key::from_segments(KeyType::Data, &segments[..segments.len().saturating_sub(1)]).context(
             error::DataStoreSnafu {
-                op: format!("Unable to create key from segments: {:?}", segments),
+                op: format!("Unable to create key from segments: {segments:?}"),
             },
         )?;
 
