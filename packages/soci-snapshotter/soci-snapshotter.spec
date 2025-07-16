@@ -14,6 +14,7 @@ Source0: https://github.com/awslabs/soci-snapshotter/archive/v%{gover}/soci-snap
 Source1: bundled-soci-snapshotter-%{gover}.tar.gz
 Source2: bundled-cmd.tar.gz
 Source3: soci-config-toml
+Source4: k8s-snapshotter-conf
 Source100: etc-soci-snapshotter.mount.in
 Source101: soci-snapshotter.service
 Source102: soci-snapshotter.socket
@@ -22,6 +23,7 @@ Source1000: clarify.toml
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libz-devel
 Requires: %{name}(binaries)
+Requires: (%{name}-k8s if %{_cross_os}variant-runtime(k8s))
 Requires: %{name}(optimized-gunzip)
 
 %description
@@ -69,6 +71,13 @@ Provides: %{name}(optimized-gunzip) = 0:
 %description igzip
 %{summary}.
 
+%package k8s
+Summary: Drop-ins to override the kubelet's configuration
+Provides: %{name}(k8s)
+
+%description k8s
+%{summary}.
+
 %prep
 %setup -n %{gorepo}-%{gover} -q
 %setup -T -D -n %{gorepo}-%{gover} -b 1 -q
@@ -99,6 +108,7 @@ install -D -p -m 0644 %{S:102} %{buildroot}%{_cross_unitdir}
 
 install -d %{buildroot}%{_cross_templatedir}
 install -p -m 0644 %{S:3} %{buildroot}%{_cross_templatedir}/soci-config-toml
+install -p -m 0644 %{S:4} %{buildroot}%{_cross_templatedir}/k8s-snapshotter-conf
 
 %cross_scan_attribution --clarify %{S:1000} go-vendor vendor
 
@@ -128,5 +138,8 @@ posix.symlink("%{_cross_bindir}/unpigz", "%{_cross_bindir}/soci-gunzip")
 
 %files igzip
 # No files provided by igzip but required for packaging.
+
+%files k8s
+%{_cross_templatedir}/k8s-snapshotter-conf
 
 %changelog
