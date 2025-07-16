@@ -14,7 +14,7 @@ where
 
     // Fetch all given prefixes into separate Values.
     for prefix in prefixes {
-        let uri = format!("/?prefix={}", prefix);
+        let uri = format!("/?prefix={prefix}");
         let method = "GET";
         let (_status, body) = crate::raw_request(&socket_path, &uri, method, None)
             .await

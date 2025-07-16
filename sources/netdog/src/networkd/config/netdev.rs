@@ -135,7 +135,7 @@ enum NetDevMacAddress {
 impl Display for NetDevMacAddress {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            NetDevMacAddress::MacAddress(m) => write!(f, "{}", m),
+            NetDevMacAddress::MacAddress(m) => write!(f, "{m}"),
             NetDevMacAddress::Nothing => write!(f, "none"),
         }
     }
@@ -162,7 +162,7 @@ impl NetDevConfig {
             },
         )?;
 
-        let filename = format!("{}{}", CONFIG_FILE_PREFIX, device_name);
+        let filename = format!("{CONFIG_FILE_PREFIX}{device_name}");
         let mut path = Path::new(config_dir.as_ref()).join(filename);
         path.set_extension(Self::FILE_EXT);
 
@@ -295,7 +295,7 @@ mod tests {
     const FAKE_TEST_DIR: &str = "testdir";
 
     fn netdev_path(name: String) -> PathBuf {
-        test_data().join("netdev").join(format!("{}.netdev", name))
+        test_data().join("netdev").join(format!("{name}.netdev"))
     }
 
     fn netdev_from_bond(bond: NetworkDBond) -> NetDevConfig {
@@ -349,7 +349,7 @@ mod tests {
 
     #[test]
     fn config_path_name() {
-        let filename = format!("{}foo", CONFIG_FILE_PREFIX);
+        let filename = format!("{CONFIG_FILE_PREFIX}foo");
         let mut expected = Path::new(FAKE_TEST_DIR).join(filename);
         expected.set_extension(NetDevConfig::FILE_EXT);
 

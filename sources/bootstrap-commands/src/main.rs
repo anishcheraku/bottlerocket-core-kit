@@ -135,7 +135,7 @@ where
     }
 
     if mode == "once" {
-        let formatted = format!("settings.bootstrap-commands.{}.mode=off", name);
+        let formatted = format!("settings.bootstrap-commands.{name}.mode=off");
         info!("Turning off bootstrap command '{}'", name);
         run_command("apiclient", ["set", formatted.as_str()])?;
     }
@@ -219,7 +219,7 @@ fn run() -> Result<()> {
 
 fn main() {
     if let Err(e) = run() {
-        eprintln!("{}", e);
+        eprintln!("{e}");
         process::exit(1);
     }
 }

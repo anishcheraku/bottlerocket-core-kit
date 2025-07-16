@@ -129,10 +129,8 @@ impl ImdsClient {
     /// Gets the list of CIDR blocks for a given network interface `mac` address.
     pub async fn fetch_cidr_blocks_for_mac(&mut self, mac: &str) -> Result<Option<Vec<String>>> {
         // Infer the cluster DNS based on our CIDR blocks.
-        let mac_cidr_blocks_target = format!(
-            "meta-data/network/interfaces/macs/{}/vpc-ipv4-cidr-blocks",
-            mac
-        );
+        let mac_cidr_blocks_target =
+            format!("meta-data/network/interfaces/macs/{mac}/vpc-ipv4-cidr-blocks");
         let cidr_blocks = self
             .fetch_string(&mac_cidr_blocks_target)
             .await?
@@ -158,7 +156,7 @@ impl ImdsClient {
             .clone();
 
         // Get the IPv6 addresses associated with the primary network interface.
-        let ipv6_address_target = format!("meta-data/network/interfaces/macs/{}/ipv6s", mac);
+        let ipv6_address_target = format!("meta-data/network/interfaces/macs/{mac}/ipv6s");
 
         let ipv6_address = self
             .fetch_string(&ipv6_address_target)
@@ -447,7 +445,7 @@ async fn fetch_token(
     imds_base_uri: &str,
     retry_timeout: &Duration,
 ) -> Result<Option<String>> {
-    let uri = format!("{}/{}", imds_base_uri, SESSION_TARGET);
+    let uri = format!("{imds_base_uri}/{SESSION_TARGET}");
     timeout(
         *retry_timeout,
         Retry::spawn(retry_strategy(), || async {
@@ -596,7 +594,7 @@ mod test {
         server.expect(
             Expectation::matching(request::method_path(
                 "GET",
-                format!("/{}/{}", schema_version, target),
+                format!("/{schema_version}/{target}"),
             ))
             .times(1)
             .respond_with(
@@ -635,7 +633,7 @@ mod test {
         server.expect(
             Expectation::matching(request::method_path(
                 "GET",
-                format!("/{}/{}", schema_version, target),
+                format!("/{schema_version}/{target}"),
             ))
             .times(1)
             .respond_with(
@@ -671,7 +669,7 @@ mod test {
         server.expect(
             Expectation::matching(request::method_path(
                 "GET",
-                format!("/{}/{}", schema_version, target),
+                format!("/{schema_version}/{target}"),
             ))
             .times(2..)
             .respond_with(
@@ -706,7 +704,7 @@ mod test {
         server.expect(
             Expectation::matching(request::method_path(
                 "GET",
-                format!("/{}/{}", schema_version, target),
+                format!("/{schema_version}/{target}"),
             ))
             .times(2..)
             .respond_with(
@@ -757,7 +755,7 @@ mod test {
         server.expect(
             Expectation::matching(request::method_path(
                 "GET",
-                format!("/{}/{}", PINNED_SCHEMA, end_target),
+                format!("/{PINNED_SCHEMA}/{end_target}"),
             ))
             .times(1)
             .respond_with(
@@ -791,7 +789,7 @@ mod test {
         server.expect(
             Expectation::matching(request::method_path(
                 "GET",
-                format!("/{}/{}", PINNED_SCHEMA, end_target),
+                format!("/{PINNED_SCHEMA}/{end_target}"),
             ))
             .times(1)
             .respond_with(
@@ -824,7 +822,7 @@ mod test {
         server.expect(
             Expectation::matching(request::method_path(
                 "GET",
-                format!("/{}/user-data", PINNED_SCHEMA),
+                format!("/{PINNED_SCHEMA}/user-data"),
             ))
             .times(1)
             .respond_with(
@@ -858,7 +856,7 @@ mod test {
         server.expect(
             Expectation::matching(request::method_path(
                 "GET",
-                format!("/{}/meta-data/local-hostname", PINNED_SCHEMA),
+                format!("/{PINNED_SCHEMA}/meta-data/local-hostname"),
             ))
             .times(1)
             .respond_with(

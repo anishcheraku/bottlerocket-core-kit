@@ -402,7 +402,7 @@ async fn generate_provider_id(
         .context(error::ImdsNoneSnafu { what: "zone" })?;
 
     settings_view_set!(
-        aws_k8s_info.kubernetes.provider_id = format!("aws:///{}/{}", zone, instance_id)
+        aws_k8s_info.kubernetes.provider_id = format!("aws:///{zone}/{instance_id}")
             .try_into()
             .context(error::InvalidUrlSnafu)?
     );
@@ -528,7 +528,7 @@ async fn run() -> Result<()> {
 #[tokio::main]
 async fn main() {
     if let Err(e) = run().await {
-        eprintln!("{}", e);
+        eprintln!("{e}");
         process::exit(1);
     }
 }
@@ -613,7 +613,7 @@ mod test {
     async fn test_hostname_override_source() {
         let server = Server::run();
         let base_uri = format!("http://{}", server.addr());
-        println!("listen on {}", base_uri);
+        println!("listen on {base_uri}");
         let token = "some+token";
         let schema_version = "2021-07-15";
         let target = "meta-data/instance-id";
@@ -631,7 +631,7 @@ mod test {
         server.expect(
             Expectation::matching(request::method_path(
                 "GET",
-                format!("/{}/{}", schema_version, target),
+                format!("/{schema_version}/{target}"),
             ))
             .times(1)
             .respond_with(

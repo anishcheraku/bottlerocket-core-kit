@@ -9,7 +9,7 @@ use std::process;
 #[tokio::main]
 async fn main() {
     if let Err(e) = schnauzer::v2::cli::run().await {
-        eprintln!("{}", e);
+        eprintln!("{e}");
         process::exit(1);
     }
 }

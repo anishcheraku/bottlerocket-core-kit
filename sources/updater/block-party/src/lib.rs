@@ -105,7 +105,7 @@ pub type Result<T> = std::result::Result<T, error::Error>;
 
 /// Get the path in `/sys/dev/block` for a major/minor number.
 fn sys_path(major: u64, minor: u64) -> PathBuf {
-    PathBuf::from("/sys/dev/block").join(format!("{}:{}", major, minor))
+    PathBuf::from("/sys/dev/block").join(format!("{major}:{minor}"))
 }
 
 /// A Linux block device with a major and minor number.

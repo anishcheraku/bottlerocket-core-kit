@@ -136,8 +136,8 @@ where
 
 /// Dumps the memory image in `/proc/vmcore`, which is created when the kernel crashes
 fn capture_dump() -> Result<()> {
-    let kdump_file_path = format!("{}/{}", KDUMP_LOGS_PATH, KDUMP_FILE);
-    let dmesg_file_path = format!("{}/{}", KDUMP_LOGS_PATH, DMESG_DUMP_FILE);
+    let kdump_file_path = format!("{KDUMP_LOGS_PATH}/{KDUMP_FILE}");
+    let dmesg_file_path = format!("{KDUMP_LOGS_PATH}/{DMESG_DUMP_FILE}");
 
     // Delete previous dumps, if they exist
     if Path::new(&kdump_file_path).exists() {
@@ -277,7 +277,7 @@ fn load_crash_kernel() -> Result<()> {
             "--reuse-cmdline",
             "--append",
             kexec_cmd_line.as_ref(),
-            format!("{}/vmlinuz", BOOT_MOUNT_PATH).as_ref(),
+            format!("{BOOT_MOUNT_PATH}/vmlinuz").as_ref(),
         ],
     )?;
 

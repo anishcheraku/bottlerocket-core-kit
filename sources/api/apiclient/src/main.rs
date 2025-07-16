@@ -314,10 +314,8 @@ fn parse_args(args: env::Args) -> (Args, Subcommand) {
                 let log_level_str = iter
                     .next()
                     .unwrap_or_else(|| usage_msg("Did not give argument to --log-level"));
-                global_args.log_level =
-                    LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
-                        usage_msg(format!("Invalid log level '{}'", log_level_str))
-                    });
+                global_args.log_level = LevelFilter::from_str(&log_level_str)
+                    .unwrap_or_else(|_| usage_msg(format!("Invalid log level '{log_level_str}'")));
             }
 
             "-v" | "--verbose" => global_args.log_level = LevelFilter::Debug,
@@ -387,7 +385,7 @@ fn parse_raw_args(args: Vec<String>) -> Subcommand {
                 )
             }
 
-            x => usage_msg(format!("Unknown argument '{}'", x)),
+            x => usage_msg(format!("Unknown argument '{x}'")),
         }
     }
 
@@ -438,7 +436,7 @@ fn parse_exec_args(args: Vec<String>) -> Subcommand {
                 tty = Some(false);
             }
             x if x.starts_with('-') && command.is_empty() => {
-                usage_msg(format!("Unknown argument '{}'", x))
+                usage_msg(format!("Unknown argument '{x}'"))
             }
 
             // Target is the first arg we see.
@@ -468,7 +466,7 @@ fn parse_get_args(args: Vec<String>) -> Subcommand {
 
     for arg in args.into_iter() {
         match &arg {
-            x if x.starts_with('-') => usage_msg(format!("Unknown argument '{}'", x)),
+            x if x.starts_with('-') => usage_msg(format!("Unknown argument '{x}'")),
 
             x if x.starts_with('/') => {
                 if let Some(_existing_val) = uri.replace(arg) {
@@ -531,10 +529,8 @@ fn parse_set_args(args: Vec<String>) -> Subcommand {
                     .next()
                     .unwrap_or_else(|| usage_msg("Did not give argument to -j | --json"));
 
-                let input_val: serde_json::Value =
-                    serde_json::from_str(&raw_json).unwrap_or_else(|e| {
-                        usage_msg(format!("Couldn't parse given JSON input: {}", e))
-                    });
+                let input_val: serde_json::Value = serde_json::from_str(&raw_json)
+                    .unwrap_or_else(|e| usage_msg(format!("Couldn't parse given JSON input: {e}")));
 
                 let mut input_map = match input_val {
                     serde_json::Value::Object(map) => map,
@@ -560,7 +556,7 @@ fn parse_set_args(args: Vec<String>) -> Subcommand {
                 simple.push(x.to_string());
             }
 
-            x => usage_msg(format!("Unknown argument '{}'", x)),
+            x => usage_msg(format!("Unknown argument '{x}'")),
         }
     }
 
@@ -620,7 +616,7 @@ fn parse_update_apply_args(args: Vec<String>) -> UpdateSubcommand {
             "-c" | "--check" => check = true,
             "-r" | "--reboot" => reboot = true,
 
-            x => usage_msg(format!("Unknown argument '{}'", x)),
+            x => usage_msg(format!("Unknown argument '{x}'")),
         }
     }
 
@@ -696,7 +692,7 @@ fn parse_cis_arguments(args: Vec<String>) -> CisReportArgs {
                 )
             }
 
-            x => usage_msg(format!("Unknown argument '{}'", x)),
+            x => usage_msg(format!("Unknown argument '{x}'")),
         }
     }
 
@@ -721,7 +717,7 @@ fn parse_fips_arguments(args: Vec<String>) -> FipsReportArgs {
                 )
             }
 
-            x => usage_msg(format!("Unknown argument '{}'", x)),
+            x => usage_msg(format!("Unknown argument '{x}'")),
         }
     }
 
@@ -790,7 +786,7 @@ fn parse_ephemeral_storage_init_args(args: Vec<String>) -> EphemeralStorageSubco
                     disks = Some(names);
                 }
             }
-            x => usage_msg(format!("Unknown argument '{}'", x)),
+            x => usage_msg(format!("Unknown argument '{x}'")),
         }
     }
     EphemeralStorageSubcommand::Init(EphemeralStorageInitArgs { disks, filesystem })
@@ -811,7 +807,7 @@ fn parse_ephemeral_storage_bind_args(args: Vec<String>) -> EphemeralStorageSubco
                     usage_msg("Did not give argument to --dirs")
                 }
             }
-            x => usage_msg(format!("Unknown argument '{}'", x)),
+            x => usage_msg(format!("Unknown argument '{x}'")),
         }
     }
     EphemeralStorageSubcommand::Bind(EphemeralStorageBindArgs { targets })
@@ -830,7 +826,7 @@ fn parse_ephemeral_storage_list_format_args(args: Vec<String>) -> EphemeralStora
                         .unwrap_or_else(|| usage_msg("Did not give argument to -f | --format")),
                 )
             }
-            x => usage_msg(format!("Unknown argument '{}'", x)),
+            x => usage_msg(format!("Unknown argument '{x}'")),
         }
     }
     EphemeralStorageFormatArgs { format }
@@ -873,10 +869,10 @@ async fn check(args: &Args) -> Result<String> {
         .context(error::UpdateCheckSnafu)?;
 
     match serde_json::from_str::<serde_json::Value>(&output) {
-        Ok(value) => println!("{:#}", value),
+        Ok(value) => println!("{value:#}"),
         Err(e) => {
             warn!("Unable to deserialize response (invalid JSON?): {}", e);
-            println!("{}", output);
+            println!("{output}");
         }
     }
 
@@ -918,10 +914,10 @@ async fn run() -> Result<()> {
             // In raw mode, the user is expecting only the server response on stdout, so we more
             // carefully control other output and only write it to stderr.
             if log_enabled!(log::Level::Debug) {
-                eprintln!("{}", status);
+                eprintln!("{status}");
             }
             if !body.is_empty() {
-                println!("{}", body);
+                println!("{body}");
             }
         }
 
@@ -945,7 +941,7 @@ async fn run() -> Result<()> {
             let value = result.context(error::GetSnafu)?;
             let pretty =
                 serde_json::to_string_pretty(&value).expect("JSON Value already validated as JSON");
-            println!("{}", pretty);
+            println!("{pretty}");
         }
 
         Subcommand::Reboot(_reboot) => {
@@ -1027,7 +1023,7 @@ async fn run() -> Result<()> {
                 .context(error::ReportSnafu)?;
 
                 if !body.is_empty() {
-                    print!("{}", body);
+                    print!("{body}");
                 }
             }
 
@@ -1042,7 +1038,7 @@ async fn run() -> Result<()> {
                 .context(error::ReportSnafu)?;
 
                 if !body.is_empty() {
-                    print!("{}", body);
+                    print!("{body}");
                 }
             }
 
@@ -1052,7 +1048,7 @@ async fn run() -> Result<()> {
                     .context(error::ReportSnafu)?;
 
                 if !body.is_empty() {
-                    print!("{}", body);
+                    print!("{body}");
                 }
             }
         },
@@ -1077,7 +1073,7 @@ async fn run() -> Result<()> {
                     .await
                     .context(error::EphemeralStorageSnafu)?;
                 if !body.is_empty() {
-                    print!("{}", body);
+                    print!("{body}");
                 }
             }
             EphemeralStorageSubcommand::ListDirs(bind_args) => {
@@ -1085,7 +1081,7 @@ async fn run() -> Result<()> {
                     .await
                     .context(error::EphemeralStorageSnafu)?;
                 if !body.is_empty() {
-                    print!("{}", body);
+                    print!("{body}");
                 }
             }
         },
@@ -1100,7 +1096,7 @@ async fn run() -> Result<()> {
 #[tokio::main]
 async fn main() {
     if let Err(e) = run().await {
-        eprintln!("{}", e);
+        eprintln!("{e}");
         process::exit(1);
     }
 }

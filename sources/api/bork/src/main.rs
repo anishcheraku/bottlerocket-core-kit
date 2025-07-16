@@ -8,7 +8,7 @@ fn main() {
     // API model to use more accurate types.
     let output = serde_json::to_string(&val).expect("Unable to serialize val '{}' to JSON");
 
-    println!("{}", output);
+    println!("{output}");
 }
 
 pub fn generate_seed() -> u32 {

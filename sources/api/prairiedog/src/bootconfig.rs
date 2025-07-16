@@ -51,9 +51,9 @@ fn append_boot_config_value_list(values: &[BootConfigValue], output: &mut String
         }
         // If the value itself has double quotes in it, then we wrap the value with single-quotes
         if v.contains('\"') {
-            output.push_str(&format!(" \'{}\'", v));
+            output.push_str(&format!(" \'{v}\'"));
         } else {
-            output.push_str(&format!(" \"{}\"", v));
+            output.push_str(&format!(" \"{v}\""));
         }
     }
 }
@@ -66,7 +66,7 @@ fn serialize_boot_settings_to_boot_config(boot_settings: &BootSettings) -> Resul
     let mut output = String::with_capacity(128);
     if let Some(kernel_param) = &boot_settings.kernel_parameters {
         for (key, values) in kernel_param.iter() {
-            output.push_str(&format!("kernel.{}", key));
+            output.push_str(&format!("kernel.{key}"));
             if !values.is_empty() {
                 output.push_str(" =");
                 append_boot_config_value_list(values, &mut output);
@@ -76,7 +76,7 @@ fn serialize_boot_settings_to_boot_config(boot_settings: &BootSettings) -> Resul
     }
     if let Some(init_param) = &boot_settings.init_parameters {
         for (key, values) in init_param.iter() {
-            output.push_str(&format!("init.{}", key));
+            output.push_str(&format!("init.{key}"));
             if !values.is_empty() {
                 output.push_str(" =");
                 append_boot_config_value_list(values, &mut output);

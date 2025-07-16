@@ -28,7 +28,7 @@ fn main() -> ExitCode {
     match run(args) {
         Ok(exit_code) => exit_code,
         Err(e) => {
-            eprintln!("{}", e);
+            eprintln!("{e}");
             e.exit_code()
         }
     }

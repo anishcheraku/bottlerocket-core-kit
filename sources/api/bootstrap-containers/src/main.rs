@@ -141,7 +141,7 @@ struct MarkBootstrapArgs {
 fn usage() {
     let program_name = env::args().next().unwrap_or_else(|| "program".to_string());
     eprintln!(
-        r"Usage: {} SUBCOMMAND [ ARGUMENTS... ]
+        r"Usage: {program_name} SUBCOMMAND [ ARGUMENTS... ]
 
     Subcommands:
         create-containers
@@ -155,8 +155,7 @@ fn usage() {
         --container-id CONTAINER-ID
         --mode MODE
 
-    Config path defaults to {}",
-        program_name, DEFAULT_CONFIG_PATH,
+    Config path defaults to {DEFAULT_CONFIG_PATH}",
     );
 }
 
@@ -205,7 +204,7 @@ fn parse_args(args: env::Args) -> Result<(Args, Subcommand)> {
         }
         .fail(),
         Some(x) => error::UsageSnafu {
-            message: format!("Unknown subcommand '{}'", x),
+            message: format!("Unknown subcommand '{x}'"),
         }
         .fail(),
     }
@@ -233,7 +232,7 @@ fn parse_mark_bootstrap_args(args: Vec<String>) -> Result<Subcommand> {
 
             x => {
                 return error::UsageSnafu {
-                    message: format!("Unexpected argument '{}'", x),
+                    message: format!("Unexpected argument '{x}'"),
                 }
                 .fail()
             }
@@ -294,7 +293,7 @@ where
     }
 
     // Start/stop the container according to the 'mode' setting
-    let unit_name = format!("bootstrap-containers@{}.service", name);
+    let unit_name = format!("bootstrap-containers@{name}.service");
     let systemd_unit = SystemdUnit::new(&unit_name);
     let host_containerd_unit = SystemdUnit::new("host-containerd.service");
 
@@ -317,7 +316,7 @@ where
                 [
                     "clean-up",
                     "--container-id",
-                    format!("boot.{}", name).as_ref(),
+                    format!("boot.{name}").as_ref(),
                 ],
             )?;
         }
@@ -331,7 +330,7 @@ where
                 [
                     "clean-up",
                     "--container-id",
-                    format!("boot.{}", name).as_ref(),
+                    format!("boot.{name}").as_ref(),
                 ],
             )?;
         }
@@ -353,7 +352,7 @@ where
     let name = name.as_ref();
 
     // Build environment file
-    let env_filename = format!("{}.env", name);
+    let env_filename = format!("{name}.env");
     let env_path = Path::new(ENV_FILE_DIR).join(env_filename);
     let mut output = String::new();
 
@@ -374,7 +373,7 @@ where
     // Build unit's drop-in file, used to override the unit's configurations
     let mut output = String::new();
     let drop_in_dir =
-        Path::new(DROPIN_FILE_DIR).join(format!("bootstrap-containers@{}.service.d", name));
+        Path::new(DROPIN_FILE_DIR).join(format!("bootstrap-containers@{name}.service.d"));
     let drop_in_path = drop_in_dir.join(DROP_IN_FILENAME);
 
     // Override the type of dependency the `configured` target has in the unit
@@ -382,7 +381,7 @@ where
 
     writeln!(output, "[Install]")
         .context(error::WriteConfigurationValueSnafu { value: "[Install]" })?;
-    writeln!(output, "{}=configured.target", dependency)
+    writeln!(output, "{dependency}=configured.target")
         .context(error::WriteConfigurationValueSnafu { value: dependency })?;
     debug!("Writing drop-in file for {}", name);
     fs::create_dir_all(&drop_in_dir).context(error::MkdirSnafu { dir: &drop_in_dir })?;
@@ -530,7 +529,7 @@ fn mark_bootstrap(args: MarkBootstrapArgs) -> Result<()> {
     // finishes. This guarantees that the container is only started in
     // the boot where it was created.
     if mode != "always" {
-        let formatted = format!("settings.bootstrap-containers.{}.mode=off", container_id);
+        let formatted = format!("settings.bootstrap-containers.{container_id}.mode=off");
         info!("Turning off container '{}'", container_id);
         command("apiclient", ["set", formatted.as_str()])?;
     }
@@ -559,12 +558,12 @@ fn main() {
     if let Err(e) = run() {
         match e {
             error::Error::Usage { .. } => {
-                eprintln!("{}", e);
+                eprintln!("{e}");
                 usage();
                 process::exit(1);
             }
             _ => {
-                eprintln!("{}", e);
+                eprintln!("{e}");
                 process::exit(1);
             }
         }

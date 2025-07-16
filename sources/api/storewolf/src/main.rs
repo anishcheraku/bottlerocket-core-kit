@@ -450,7 +450,7 @@ fn populate_default_metadata(
                 let value =
                     datastore::serialize_scalar::<_, ScalarError>(&val).with_context(|_| {
                         error::SerializeScalarSnafu {
-                            given: format!("metadata value '{}'", val),
+                            given: format!("metadata value '{val}'"),
                         }
                     })?;
                 metadata_to_write.insert((md_key, data_key, value));
@@ -512,7 +512,7 @@ struct Args {
 fn usage() -> ! {
     let program_name = env::args().next().unwrap_or_else(|| "program".to_string());
     eprintln!(
-        r"Usage: {}
+        r"Usage: {program_name}
             --data-store-base-path PATH
             --inventory-file-symlink-path PATH
             [ --inventory-file-path PATH (default: /usr/share/bottlerocket/application-inventory.json) ]
@@ -521,8 +521,7 @@ fn usage() -> ! {
 
         If --version is not given, the version will be pulled from /etc/os-release.
         This is used to set up versioned symlinks in the data store base path.
-        ",
-        program_name
+        "
     );
     process::exit(2);
 }
@@ -567,9 +566,10 @@ fn parse_args(args: env::Args) -> Args {
                 let log_level_str = iter
                     .next()
                     .unwrap_or_else(|| usage_msg("Did not give argument to --log-level"));
-                log_level = Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
-                    usage_msg(format!("Invalid log level '{}'", log_level_str))
-                }));
+                log_level =
+                    Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
+                        usage_msg(format!("Invalid log level '{log_level_str}'"))
+                    }));
             }
 
             "--version" => {
@@ -578,7 +578,7 @@ fn parse_args(args: env::Args) -> Args {
                     .unwrap_or_else(|| usage_msg("Did not give argument to --version"));
                 version = Some(
                     Version::from_str(&version_str)
-                        .unwrap_or_else(|e| usage_msg(format!("Invalid version: {}", e))),
+                        .unwrap_or_else(|e| usage_msg(format!("Invalid version: {e}"))),
                 );
             }
 
@@ -637,7 +637,7 @@ fn run() -> Result<()> {
 // https://github.com/shepmaster/snafu/issues/110
 fn main() {
     if let Err(e) = run() {
-        eprintln!("{}", e);
+        eprintln!("{e}");
         process::exit(1);
     }
 }

@@ -93,7 +93,7 @@ fn main() -> ExitCode {
     match run(args) {
         Ok(exit_code) => exit_code,
         Err(e) => {
-            eprintln!("{}", e);
+            eprintln!("{e}");
             e.exit_code()
         }
     }
@@ -116,7 +116,7 @@ fn run(args: Args) -> Result<ExitCode> {
 
     let lazycount_arg;
     if let Some(lazy_counters) = &args.lazy_counters {
-        lazycount_arg = format!("lazycount={}", lazy_counters);
+        lazycount_arg = format!("lazycount={lazy_counters}");
         repair_opts.append(&mut vec!["-c", lazycount_arg.as_str()]);
     }
 
@@ -140,13 +140,13 @@ fn run(args: Args) -> Result<ExitCode> {
     let label_arg_db;
     let label_arg_io;
     if let Some(label) = &args.label {
-        label_arg_db = format!("label {}", label);
+        label_arg_db = format!("label {label}");
         db_opts.append(&mut vec!["-c", label_arg_db.as_str()]);
 
         label_arg_io = match label.as_str() {
-            "--" => format!("label {}", label),
+            "--" => format!("label {label}"),
             _ => {
-                format!("label -s {}", label)
+                format!("label -s {label}")
             }
         };
         io_opts.append(&mut vec!["-c", label_arg_io.as_str()]);
@@ -167,7 +167,7 @@ fn run(args: Args) -> Result<ExitCode> {
 
     let uuid_arg;
     if let Some(uuid) = &args.uuid {
-        uuid_arg = format!("uuid {}", uuid);
+        uuid_arg = format!("uuid {uuid}");
         db_opts.append(&mut vec!["-c", uuid_arg.as_str()]);
     }
 
@@ -211,7 +211,7 @@ fn run(args: Args) -> Result<ExitCode> {
 
         let log_location_arg;
         if let Some(log_location) = &args.log_location {
-            log_location_arg = format!("-l {}", log_location);
+            log_location_arg = format!("-l {log_location}");
             xfs_db_args.push(log_location_arg.as_str());
         }
 
@@ -227,13 +227,13 @@ fn run(args: Args) -> Result<ExitCode> {
 
         let log_location_arg;
         if let Some(log_location) = &args.log_location {
-            log_location_arg = format!("-l {}", log_location);
+            log_location_arg = format!("-l {log_location}");
             repair_args.push(log_location_arg.as_str());
         }
 
         let realtime_device_arg;
         if let Some(realtime_device) = &args.realtime_device {
-            realtime_device_arg = format!("-r {}", realtime_device);
+            realtime_device_arg = format!("-r {realtime_device}");
             repair_args.push(realtime_device_arg.as_str());
         }
 

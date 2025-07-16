@@ -111,7 +111,7 @@ impl BottlerocketSettingsResolver {
         response
             .get(key)
             .context(error::MalformedApiResponseSnafu {
-                reason: format!("Response missing `{}` key.", key),
+                reason: format!("Response missing `{key}` key."),
             })?
             .as_object()
             .cloned()

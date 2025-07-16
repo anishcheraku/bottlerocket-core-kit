@@ -19,8 +19,7 @@ impl<'de> Deserialize<'de> for VlanId {
 
         if id > 4094 {
             return Err(D::Error::custom(format!(
-                "invalid vlan ID '{}': must be between 0-4094",
-                id
+                "invalid vlan ID '{id}': must be between 0-4094"
             )));
         }
 

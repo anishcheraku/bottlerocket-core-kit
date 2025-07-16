@@ -92,7 +92,7 @@ fn run() -> Result<()> {
             // API model to use more accurate types.
             let output =
                 serde_json::to_string(&hugepages_setting).context(error::SerializeJsonSnafu)?;
-            println!("{}", output);
+            println!("{output}");
         }
         _ => usage_msg(format!("Unknown subcommand '{}'", args.subcommand)), // should be unreachable
     }
@@ -285,7 +285,7 @@ fn parse_kernel_setting(setting: &str) -> &str {
 fn usage() -> ! {
     let program_name = env::args().next().unwrap_or_else(|| "program".to_string());
     eprintln!(
-        r"Usage: {} SUBCOMMAND [ ARGUMENTS... ]
+        r"Usage: {program_name} SUBCOMMAND [ ARGUMENTS... ]
 
     Subcommands:
         sysctl
@@ -296,8 +296,7 @@ fn usage() -> ! {
         --config-path PATH
         --log-level trace|debug|info|warn|error
 
-    Config path defaults to {}",
-        program_name, DEFAULT_CONFIG_PATH,
+    Config path defaults to {DEFAULT_CONFIG_PATH}",
     );
     process::exit(2);
 }
@@ -321,9 +320,10 @@ fn parse_args(args: env::Args) -> Args {
                 let log_level_str = iter
                     .next()
                     .unwrap_or_else(|| usage_msg("Did not give argument to --log-level"));
-                log_level = Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
-                    usage_msg(format!("Invalid log level '{}'", log_level_str))
-                }));
+                log_level =
+                    Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
+                        usage_msg(format!("Invalid log level '{log_level_str}'"))
+                    }));
             }
 
             "--config-path" => {
@@ -351,7 +351,7 @@ fn parse_args(args: env::Args) -> Args {
 // https://github.com/shepmaster/snafu/issues/110
 fn main() {
     if let Err(e) = run() {
-        eprintln!("{}", e);
+        eprintln!("{e}");
         process::exit(1);
     }
 }
@@ -585,20 +585,14 @@ mod test {
         for line in config.lines() {
             // Split the line into key and value
             let parts: Vec<&str> = line.splitn(2, " = ").collect();
-            assert_eq!(
-                parts.len(),
-                2,
-                "Line should contain key-value pair: {}",
-                line
-            );
+            assert_eq!(parts.len(), 2, "Line should contain key-value pair: {line}");
 
             // Verify key portion starts with dash and contains no additional dashes
             let key = parts[0];
-            assert!(key.starts_with('-'), "Key should start with dash: {}", key);
+            assert!(key.starts_with('-'), "Key should start with dash: {key}");
             assert!(
                 !key[1..].contains('-'),
-                "Key should not contain additional dashes after prefix: {}",
-                key
+                "Key should not contain additional dashes after prefix: {key}"
             );
         }
     }

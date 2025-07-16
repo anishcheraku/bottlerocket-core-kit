@@ -35,7 +35,7 @@ impl GenerateAdminUserdata {
         // API model to use more accurate types.
         let output = serde_json::to_string(&user_data_base64).context(error::SerializeJsonSnafu)?;
 
-        println!("{}", output);
+        println!("{output}");
 
         Ok(())
     }

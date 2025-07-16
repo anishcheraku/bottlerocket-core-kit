@@ -52,7 +52,7 @@ struct Args {
 fn usage() -> ! {
     let program_name = env::args().next().unwrap_or_else(|| "program".to_string());
     eprintln!(
-        r"Usage: {}
+        r"Usage: {program_name}
             --datastore-path PATH
             [ --socket-path PATH ]
             [ --socket-gid GROUP_ID ]
@@ -60,9 +60,8 @@ fn usage() -> ! {
             [ --no-color ]
             [ --log-level trace|debug|info|warn|error ]
 
-    --socket-path defaults to {}
-    --exec-socket-path (for apiclient exec) defaults to {}",
-        program_name, DEFAULT_BIND_PATH, DEFAULT_EXEC_SOCKET
+    --socket-path defaults to {DEFAULT_BIND_PATH}
+    --exec-socket-path (for apiclient exec) defaults to {DEFAULT_EXEC_SOCKET}"
     );
     process::exit(2);
 }
@@ -95,9 +94,10 @@ fn parse_args(args: env::Args) -> Args {
                 let log_level_str = iter
                     .next()
                     .unwrap_or_else(|| usage_msg("Did not give argument to --log-level"));
-                log_level = Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
-                    usage_msg(format!("Invalid log level '{}'", log_level_str))
-                }));
+                log_level =
+                    Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
+                        usage_msg(format!("Invalid log level '{log_level_str}'"))
+                    }));
             }
 
             "--socket-path" => {
@@ -113,8 +113,7 @@ fn parse_args(args: env::Args) -> Args {
                     .unwrap_or_else(|| usage_msg("Did not give argument to --socket-gid"));
                 let gid = gid_str.parse::<gid_t>().unwrap_or_else(|e| {
                     usage_msg(format!(
-                        "Invalid group ID '{}' given to --socket-gid: {}",
-                        gid_str, e
+                        "Invalid group ID '{gid_str}' given to --socket-gid: {e}"
                     ))
                 });
                 socket_gid = Some(Gid::from_raw(gid));
@@ -185,7 +184,7 @@ async fn run() -> Result<()> {
 #[actix_rt::main]
 async fn main() {
     if let Err(e) = run().await {
-        eprintln!("{}", e);
+        eprintln!("{e}");
         process::exit(1);
     }
 }

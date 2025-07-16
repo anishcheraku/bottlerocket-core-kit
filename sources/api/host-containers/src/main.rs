@@ -129,11 +129,11 @@ where
         config_path.display()
     );
     let config = std::fs::read_to_string(config_path).context(error::ReadConfigSnafu {
-        config_file: format!("{:?}", config_path),
+        config_file: format!("{config_path:?}"),
     })?;
     let config: config::HostContainersConfig =
         toml::from_str(&config).context(error::ConfigTomlSnafu {
-            config_file: format!("{:?}", config_path),
+            config_file: format!("{config_path:?}"),
         })?;
 
     // If host containers aren't defined, return an empty map
@@ -239,11 +239,11 @@ where
     S2: AsRef<str>,
 {
     let name = name.as_ref();
-    let filename = format!("{}.env", name);
+    let filename = format!("{name}.env");
     let path = Path::new(ENV_FILE_DIR).join(filename);
 
     let mut output = String::new();
-    writeln!(output, "CTR_SUPERPOWERED={}", superpowered)
+    writeln!(output, "CTR_SUPERPOWERED={superpowered}")
         .context(error::EnvFileBuildFailedSnafu { name })?;
     writeln!(output, "CTR_SOURCE={}", source.as_ref())
         .context(error::EnvFileBuildFailedSnafu { name })?;
@@ -253,8 +253,7 @@ where
         "\n# Just for reference; service is enabled or disabled by host-containers service"
     )
     .context(error::EnvFileBuildFailedSnafu { name })?;
-    writeln!(output, "# CTR_ENABLED={}", enabled)
-        .context(error::EnvFileBuildFailedSnafu { name })?;
+    writeln!(output, "# CTR_ENABLED={enabled}").context(error::EnvFileBuildFailedSnafu { name })?;
 
     fs::write(&path, output).context(error::EnvFileWriteFailedSnafu { path })?;
 
@@ -271,12 +270,11 @@ struct Args {
 fn usage() -> ! {
     let program_name = env::args().next().unwrap_or_else(|| "program".to_string());
     eprintln!(
-        r"Usage: {}
+        r"Usage: {program_name}
             [ --config-path PATH ]
             [ --log-level trace|debug|info|warn|error ]
 
-    Config path defaults to {}",
-        program_name, CONFIG_FILE,
+    Config path defaults to {CONFIG_FILE}",
     );
     process::exit(2);
 }
@@ -299,9 +297,10 @@ fn parse_args(args: env::Args) -> Args {
                 let log_level_str = iter
                     .next()
                     .unwrap_or_else(|| usage_msg("Did not give argument to --log-level"));
-                log_level = Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
-                    usage_msg(format!("Invalid log level '{}'", log_level_str))
-                }));
+                log_level =
+                    Some(LevelFilter::from_str(&log_level_str).unwrap_or_else(|_| {
+                        usage_msg(format!("Invalid log level '{log_level_str}'"))
+                    }));
             }
 
             "--config-path" => {
@@ -364,7 +363,7 @@ where
     write_env_file(name, source, enabled, superpowered)?;
 
     // Now start/stop the container according to the 'enabled' setting
-    let unit_name = format!("host-containers@{}.service", name);
+    let unit_name = format!("host-containers@{name}.service");
     let systemd_unit = SystemdUnit::new(&unit_name);
     let host_containerd_unit = SystemdUnit::new("host-containerd.service");
 
@@ -425,7 +424,7 @@ fn is_container_affected(settings: &[&str], container_name: &str) -> bool {
     }
 
     let setting_prefix = "settings.host-containers.";
-    let container_prefix = format!("{}{}.", setting_prefix, container_name);
+    let container_prefix = format!("{setting_prefix}{container_name}.");
 
     for setting in settings {
         if setting.starts_with(&container_prefix) {
@@ -485,7 +484,7 @@ fn run() -> Result<()> {
 // https://github.com/shepmaster/snafu/issues/110
 fn main() {
     if let Err(e) = run() {
-        eprintln!("{}", e);
+        eprintln!("{e}");
         process::exit(1);
     }
 }

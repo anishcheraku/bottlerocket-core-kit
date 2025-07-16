@@ -403,7 +403,7 @@ pub fn join_node_taints(
             Value::Array(values) => {
                 for taint_value in values {
                     if let Some(taint_str) = taint_value.as_str() {
-                        pairs.push(format!("{}={}", key, taint_str));
+                        pairs.push(format!("{key}={taint_str}"));
                     } else {
                         return Err(RenderError::from(
                             error::TemplateHelperError::InvalidTemplateValue {
@@ -806,8 +806,7 @@ pub fn replace_ipv4_octet(
     let mut octets = ip.octets();
     if octet_index > 3 {
         return Err(RenderError::new(format!(
-            "Invalid index {} for IP address {}",
-            octet_index, ip_str
+            "Invalid index {octet_index} for IP address {ip_str}"
         )));
     }
 
@@ -1170,18 +1169,17 @@ pub fn ecs_metadata_service_limits(
 
     let output = match (metadata_service_rps, metadata_service_burst) {
         (Value::Number(rps), Value::Number(burst)) => {
-            format!("{},{}", rps, burst)
+            format!("{rps},{burst}")
         }
         (Value::Number(rps), Value::Null) => {
-            format!("{},{}", rps, DEFAULT_ECS_METADATA_SERVICE_BURST)
+            format!("{rps},{DEFAULT_ECS_METADATA_SERVICE_BURST}")
         }
         (Value::Null, Value::Number(burst)) => {
-            format!("{},{}", DEFAULT_ECS_METADATA_SERVICE_RPS, burst)
+            format!("{DEFAULT_ECS_METADATA_SERVICE_RPS},{burst}")
         }
-        (Value::Null, Value::Null) => format!(
-            "{},{}",
-            DEFAULT_ECS_METADATA_SERVICE_RPS, DEFAULT_ECS_METADATA_SERVICE_BURST
-        ),
+        (Value::Null, Value::Null) => {
+            format!("{DEFAULT_ECS_METADATA_SERVICE_RPS},{DEFAULT_ECS_METADATA_SERVICE_BURST}")
+        }
         (rps, burst) => {
             return Err(RenderError::from(
                 error::TemplateHelperError::InvalidMetadataServiceLimits {
@@ -1543,11 +1541,11 @@ fn ecr_registry<S: AsRef<str>>(region: S) -> String {
         Some(partition) => *partition,
     };
     match partition {
-        "aws-cn" => format!("{}.dkr.ecr.{}.amazonaws.com.cn", registry_id, region),
-        "aws-iso" => format!("{}.dkr.ecr.{}.c2s.ic.gov", registry_id, region),
-        "aws-iso-b" => format!("{}.dkr.ecr.{}.sc2s.sgov.gov", registry_id, region),
-        "aws-iso-e" => format!("{}.dkr.ecr.{}.cloud.adc-e.uk", registry_id, region),
-        "aws-iso-f" => format!("{}.dkr.ecr.{}.csp.hci.ic.gov", registry_id, region),
+        "aws-cn" => format!("{registry_id}.dkr.ecr.{region}.amazonaws.com.cn"),
+        "aws-iso" => format!("{registry_id}.dkr.ecr.{region}.c2s.ic.gov"),
+        "aws-iso-b" => format!("{registry_id}.dkr.ecr.{region}.sc2s.sgov.gov"),
+        "aws-iso-e" => format!("{registry_id}.dkr.ecr.{region}.cloud.adc-e.uk"),
+        "aws-iso-f" => format!("{registry_id}.dkr.ecr.{region}.csp.hci.ic.gov"),
         _ => {
             // Only inject the FIPS service endpoint if the variant is in FIPS mode and the
             // region supports FIPS.
@@ -1556,7 +1554,7 @@ fn ecr_registry<S: AsRef<str>>(region: S) -> String {
             } else {
                 ""
             };
-            format!("{}.dkr.ecr{}.{}.amazonaws.com", registry_id, suffix, region)
+            format!("{registry_id}.dkr.ecr{suffix}.{region}.amazonaws.com")
         }
     }
 }
@@ -1574,12 +1572,12 @@ fn tuf_repository<S: AsRef<str>>(region: S) -> String {
         Some(partition) => *partition,
     };
     match partition {
-        "aws-cn" => format!("https://{}.{}.amazonaws.com.cn/latest", endpoint, region),
-        "aws-iso" => format!("https://{}.{}.c2s.ic.gov/latest", endpoint, region),
-        "aws-iso-b" => format!("https://{}.{}.sc2s.sgov.gov/latest", endpoint, region),
-        "aws-iso-e" => format!("https://{}.{}.cloud.adc-e.uk/latest", endpoint, region),
-        "aws-iso-f" => format!("https://{}.{}.csp.hci.ic.gov/latest", endpoint, region),
-        _ => format!("https://{}.{}.amazonaws.com/latest", endpoint, region),
+        "aws-cn" => format!("https://{endpoint}.{region}.amazonaws.com.cn/latest"),
+        "aws-iso" => format!("https://{endpoint}.{region}.c2s.ic.gov/latest"),
+        "aws-iso-b" => format!("https://{endpoint}.{region}.sc2s.sgov.gov/latest"),
+        "aws-iso-e" => format!("https://{endpoint}.{region}.cloud.adc-e.uk/latest"),
+        "aws-iso-f" => format!("https://{endpoint}.{region}.csp.hci.ic.gov/latest"),
+        _ => format!("https://{endpoint}.{region}.amazonaws.com/latest"),
     }
 }
 

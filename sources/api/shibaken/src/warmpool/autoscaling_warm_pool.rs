@@ -25,7 +25,7 @@ impl WarmPoolWait {
         let should_wait_value = config_parse.should_wait;
         let marker_file_path = config_parse.marker_path;
 
-        println!("autoscaling.should-wait value is {}", should_wait_value);
+        println!("autoscaling.should-wait value is {should_wait_value}");
         if should_wait_value {
             wait_until_inservice().await?;
         }
@@ -34,7 +34,7 @@ impl WarmPoolWait {
             log::warn!("Failed to create marker file '{}', warm-pool-wait service may unexpectedly run again: '{}'",
             &marker_file_path, e);
         });
-        println!("Marker file path is {}", marker_file_path);
+        println!("Marker file path is {marker_file_path}");
 
         Ok(())
     }
@@ -53,7 +53,7 @@ async fn wait_until_inservice() -> Result<()> {
 
         if let Some(lifecycle_state) = lifecycle_state {
             if lifecycle_state == "InService" {
-                println!("Lifecycle state is {} ... exiting.", lifecycle_state);
+                println!("Lifecycle state is {lifecycle_state} ... exiting.");
                 return Ok(());
             }
         }

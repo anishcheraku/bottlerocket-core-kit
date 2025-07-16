@@ -15,8 +15,8 @@ where
 
     // Send the settings changes to the server.
     let (uri, settings_data) = match settings {
-        SettingsInput::KeyPair(value) => (format!("/settings/keypair?tx={}", transaction), value),
-        SettingsInput::Json(value) => (format!("/settings?tx={}", transaction), value),
+        SettingsInput::KeyPair(value) => (format!("/settings/keypair?tx={transaction}"), value),
+        SettingsInput::Json(value) => (format!("/settings?tx={transaction}"), value),
     };
     let method = "PATCH";
     let (_status, _body) = crate::raw_request(&socket_path, &uri, method, Some(settings_data))
@@ -24,7 +24,7 @@ where
         .context(error::RequestSnafu { uri, method })?;
 
     // Commit the transaction and apply it to the system.
-    let uri = format!("/tx/commit_and_apply?tx={}", transaction);
+    let uri = format!("/tx/commit_and_apply?tx={transaction}");
     let method = "POST";
     let (_status, _body) = crate::raw_request(&socket_path, &uri, method, None)
         .await

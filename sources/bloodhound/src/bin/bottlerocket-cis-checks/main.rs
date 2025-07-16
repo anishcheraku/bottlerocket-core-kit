@@ -64,7 +64,7 @@ fn main() {
         "br04010101" => Box::new(BR04010101Checker {}),
         "br04010200" => Box::new(BR04010200Checker {}),
         &_ => {
-            eprintln!("Command {} is not supported.", cmd_name);
+            eprintln!("Command {cmd_name} is not supported.");
             return;
         }
     };
@@ -74,9 +74,9 @@ fn main() {
 
     if get_metadata {
         let metadata = checker.metadata();
-        println!("{}", metadata);
+        println!("{metadata}");
     } else {
         let result = checker.execute();
-        println!("{}", result);
+        println!("{result}");
     }
 }

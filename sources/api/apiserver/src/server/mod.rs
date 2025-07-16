@@ -293,7 +293,7 @@ async fn get_settings(
         }
         // When retrieving from /settings, the settings prefix is implied, so we add it if it
         // wasn't given.
-        let with_prefix = format!("settings.{}", prefix);
+        let with_prefix = format!("settings.{prefix}");
         if !prefix.starts_with("settings") {
             prefix = &with_prefix;
         }
@@ -458,7 +458,7 @@ async fn get_os_info(
             return error::EmptyInputSnafu { input: "prefix" }.fail();
         }
         // When retrieving from /os, the "os" prefix is implied, so we add it if it wasn't given.
-        let with_prefix = format!("os.{}", prefix);
+        let with_prefix = format!("os.{prefix}");
         if !prefix.starts_with("os") {
             prefix = &with_prefix;
         }
@@ -551,7 +551,7 @@ async fn get_services(
         }
         // When retrieving from /services, the services prefix is implied, so we add it if it
         // wasn't given.
-        let with_prefix = format!("services.{}", prefix);
+        let with_prefix = format!("services.{prefix}");
         if !prefix.starts_with("services") {
             prefix = &with_prefix;
         }
@@ -581,7 +581,7 @@ async fn get_configuration_files(
         }
         // When retrieving from /configuration-files, the configuration-files prefix is implied, so
         // we add it if it wasn't given.
-        let with_prefix = format!("configuration-files.{}", prefix);
+        let with_prefix = format!("configuration-files.{prefix}");
         if !prefix.starts_with("configuration-files") {
             prefix = &with_prefix;
         }

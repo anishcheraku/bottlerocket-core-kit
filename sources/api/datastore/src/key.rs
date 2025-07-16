@@ -109,7 +109,7 @@ impl Key {
             prefix != self.name,
             error::InvalidKeySnafu {
                 name: "",
-                msg: format!("strip_prefix of '{}' matches key", prefix)
+                msg: format!("strip_prefix of '{prefix}' matches key")
             }
         );
 
@@ -289,7 +289,7 @@ impl Key {
                 } else {
                     return error::InvalidKeySnafu {
                         name,
-                        msg: format!("invalid character in key: '{}'", c),
+                        msg: format!("invalid character in key: '{c}'"),
                     }
                     .fail();
                 }
@@ -332,14 +332,14 @@ impl Key {
                     error::InvalidKeySnafu {
                         // Give an understandable key name in the error, even if it's invalid
                         name: segments.join("."),
-                        msg: format!("Segment '{}' contains invalid character '{}'", segment, chr),
+                        msg: format!("Segment '{segment}' contains invalid character '{chr}'"),
                     }
                 );
             }
 
             if segment.chars().any(|c| c == KEY_SEPARATOR) {
                 // Includes separator; quote the segment.
-                outputs.push(format!("\"{}\"", segment));
+                outputs.push(format!("\"{segment}\""));
             } else {
                 // No special characters, no escaping needed.
                 outputs.push(segment.to_string());

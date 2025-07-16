@@ -282,7 +282,7 @@ mod tests {
     #[test]
     fn test_guid_debug() {
         let guid = PortGuid::from_str("fe80:0000:0000:0000:e09d:7303:003f:3bf8").unwrap();
-        let debug_output = format!("{:?}", guid);
+        let debug_output = format!("{guid:?}");
         assert!(debug_output.contains("0xe09d7303003f3bf8"));
     }
 
@@ -309,8 +309,7 @@ mod tests {
             assert_eq!(
                 port.is_sm_enabled(),
                 expected,
-                "Failed for capability_mask: {}",
-                capability_mask
+                "Failed for capability_mask: {capability_mask}"
             );
         }
     }

@@ -338,12 +338,12 @@ fn find_preferred_driver() -> Result<String> {
 
 /// Print the device type in the environment key format udev expects.
 fn emit_device_type(device_type: &str) {
-    println!("BOTTLEROCKET_DEVICE_TYPE={}", device_type);
+    println!("BOTTLEROCKET_DEVICE_TYPE={device_type}");
 }
 
 /// Print the device name in the environment key format udev expects.
 fn emit_device_name(device_name: &str) {
-    println!("XVD_DEVICE_NAME={}", device_name)
+    println!("XVD_DEVICE_NAME={device_name}")
 }
 
 /// Exit with exit code 1 if the driver name provided doesn't match the preferred driver
@@ -390,7 +390,7 @@ fn write_config_string(config_path: PathBuf, content_string: &str) -> Result<()>
 
     // Write the config to the temporary file
     if !content_string.is_empty() {
-        writeln!(tempfile, "{}", content_string).context(error::WriteTempFileSnafu)?;
+        writeln!(tempfile, "{content_string}").context(error::WriteTempFileSnafu)?;
     }
 
     // Construct the final path and atomically move the temporary file to it
@@ -514,7 +514,7 @@ mod test {
 
         // Verify the content was written correctly
         let read_content = fs::read_to_string(&config_path).unwrap();
-        assert_eq!(read_content, format!("{}\n", test_content));
+        assert_eq!(read_content, format!("{test_content}\n"));
 
         Ok(())
     }
@@ -523,7 +523,7 @@ mod test {
     fn test_write_config_string_no_parent_directory() {
         // Try to write to a path without a parent directory
         let result = write_config_string(PathBuf::from("file.txt"), "content");
-        println!("{:?}", result);
+        println!("{result:?}");
         assert!(matches!(
             result.unwrap_err(),
             error::Error::NoParentDirectory { path: _ }
@@ -570,7 +570,7 @@ mod test {
 
         // Verify the content was overwritten correctly
         let read_content = fs::read_to_string(&config_path).unwrap();
-        assert_eq!(read_content, format!("{}\n", new_content));
+        assert_eq!(read_content, format!("{new_content}\n"));
 
         Ok(())
     }

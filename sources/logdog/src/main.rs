@@ -45,17 +45,16 @@ const TARBALL_DIRNAME: &str = "bottlerocket-logs";
 fn usage() -> ! {
     let program_name = env::args().next().unwrap_or_else(|| "program".to_string());
     eprintln!(
-        r"Usage: {}
+        r"Usage: {program_name}
             [ --output PATH ]       where to write archived logs
 ",
-        program_name,
     );
     process::exit(2);
 }
 
 /// Prints a more specific message before exiting through usage().
 fn usage_msg(msg: &str) -> ! {
-    eprintln!("{}\n", msg);
+    eprintln!("{msg}\n");
     usage();
 }
 
@@ -95,13 +94,12 @@ pub(crate) async fn collect_logs<P: AsRef<Path>>(log_requests: &[&str], outdir: 
 
     for &log_request in log_requests {
         // show the user what command we are running
-        println!("Running: {}", log_request);
+        println!("Running: {log_request}");
         if let Err(e) = handle_log_request(log_request, &outdir).await {
             // ignore the error, but make note of it in the error file.
             writeln!(
                 &mut error_file,
-                "Error running command '{}': '{}'",
-                log_request, e
+                "Error running command '{log_request}': '{e}'"
             )
             .context(error::ErrorWriteSnafu {
                 path: error_path.clone(),
@@ -139,11 +137,11 @@ async fn main() -> ! {
     process::exit(match run(&outpath).await {
         Ok(()) => 0,
         Err(err) => {
-            eprintln!("{}", err);
+            eprintln!("{err}");
             if let Some(var) = env::var_os("RUST_BACKTRACE") {
                 if var != "0" {
                     if let Some(backtrace) = err.backtrace() {
-                        eprintln!("\n{:?}", backtrace);
+                        eprintln!("\n{backtrace:?}");
                     }
                 }
             }

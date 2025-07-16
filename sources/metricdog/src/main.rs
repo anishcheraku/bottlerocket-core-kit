@@ -90,7 +90,7 @@ fn main() -> ! {
         match main_inner(args, Box::new(systemd_check), Box::new(systemd_check)) {
             Ok(()) => 0,
             Err(err) => {
-                eprintln!("{}", err);
+                eprintln!("{err}");
                 1
             }
         },

@@ -69,7 +69,7 @@ where
 
     // Create a request object that tokio-tungstenite understands, pointed at a local WebSocket
     // URI.  This is used to create the WebSocket client.
-    let ws_uri = format!("ws://localhost{}", path);
+    let ws_uri = format!("ws://localhost{path}");
     let ws_request = httparse::Request {
         method: Some("GET"),
         path: Some(&ws_uri),

@@ -60,20 +60,19 @@ impl HostCheck for MockCheck {
 fn create_config_file_contents(metrics_url: &str, services: &[&str], send_metrics: bool) -> String {
     let svcs = services
         .iter()
-        .map(|&s| format!("\"{}\"", s))
+        .map(|&s| format!("\"{s}\""))
         .collect::<Vec<String>>()
         .join(", ");
     format!(
         r#"
-    metrics_url = "{}"
-    send_metrics = {}
-    service_checks = [{}]
+    metrics_url = "{metrics_url}"
+    send_metrics = {send_metrics}
+    service_checks = [{svcs}]
     region = "us-west-2"
     seed = 1234
     version_lock = "v0.1.2"
     ignore_waves = false
-    "#,
-        metrics_url, send_metrics, svcs
+    "#
     )
 }
 

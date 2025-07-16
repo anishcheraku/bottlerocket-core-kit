@@ -294,7 +294,7 @@ impl NetworkConfig {
             }
         };
 
-        let filename = format!("{}{}", CONFIG_FILE_PREFIX, device_name);
+        let filename = format!("{CONFIG_FILE_PREFIX}{device_name}");
         let mut cfg_path = Path::new(config_dir.as_ref()).join(filename);
         cfg_path.set_extension(Self::FILE_EXT);
         Ok(cfg_path)
@@ -657,9 +657,7 @@ mod tests {
     const FAKE_TEST_DIR: &str = "testdir";
 
     fn network_path(name: String) -> PathBuf {
-        test_data()
-            .join("network")
-            .join(format!("{}.network", name))
+        test_data().join("network").join(format!("{name}.network"))
     }
 
     fn network_from_interface(iface: NetworkDInterface) -> NetworkConfig {
@@ -777,7 +775,7 @@ mod tests {
 
     #[test]
     fn config_path_name() {
-        let filename = format!("{}foo", CONFIG_FILE_PREFIX);
+        let filename = format!("{CONFIG_FILE_PREFIX}foo");
         let mut expected = Path::new(FAKE_TEST_DIR).join(filename);
         expected.set_extension(NetworkConfig::FILE_EXT);
 
@@ -788,7 +786,7 @@ mod tests {
 
     #[test]
     fn config_path_mac() {
-        let filename = format!("{}f874a4d53264", CONFIG_FILE_PREFIX);
+        let filename = format!("{CONFIG_FILE_PREFIX}f874a4d53264");
         let mut expected = Path::new(FAKE_TEST_DIR).join(filename);
         expected.set_extension(NetworkConfig::FILE_EXT);
 
@@ -801,7 +799,7 @@ mod tests {
 
     #[test]
     fn config_path_name_before_mac() {
-        let filename = format!("{}foo", CONFIG_FILE_PREFIX);
+        let filename = format!("{CONFIG_FILE_PREFIX}foo");
         let mut expected = Path::new(FAKE_TEST_DIR).join(filename);
         expected.set_extension(NetworkConfig::FILE_EXT);
 
