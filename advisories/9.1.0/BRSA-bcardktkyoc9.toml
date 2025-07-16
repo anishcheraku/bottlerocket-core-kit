@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-bcardktkyoc9"
+title = "nvidia-container-toolkit CVE-2025-23267"
+cve = "CVE-2025-23267"
+severity = "high"
+description = "NVIDIA Container Toolkit for all platforms contains a vulnerability in the update-ldcache hook. This might lead to data tampering and denial of service."
+
+[[advisory.products]]
+package-name = "nvidia-container-toolkit"
+patched-version = "1.17.8"
+patched-epoch = "1"
+
+[updateinfo]
+author = "rpkelly"
+issue-date = 2025-07-15T19:05:11Z
+arches = ["aarch64", "x86_64"]
+version = "9.1.0"
