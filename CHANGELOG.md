@@ -1,3 +1,37 @@
+# v9.2.0 (2025-07-16)
+
+## OS Changes
+* Namespace `systemd` to `systemd-252` ([#537])
+* Pass proxy environment variables to bootstrap-containers ([#564]) - Thanks @abhay-krishna
+* Pass proxy environment variables to the soci-snapshotter service ([#584])
+* Allowlist `soci-snapshotter` paths to ephemeral storage ([#571])
+* Add  `nftables` and `iptables-nft` ([#549])
+* Enable support for SELinux efficient relabling ([#573])
+
+### Third Party Package Updates
+- Update `kmod` ([#562])
+- Update `soci-snapshotter` ([#565])
+- Update `xfsprogs` and `chrony` ([#577])
+
+## Orchestrator Changes
+### Kubernetes
+* Enable DynamicResourceAllocation feature gate on kubelet for k8s-1.33 ([#567])
+
+## Build Changes
+* Update bottlerocket-sdk from 0.62.0 to 0.63.0 ([#587])
+
+[#537]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/537
+[#549]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/549
+[#562]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/562
+[#564]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/564
+[#565]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/565
+[#567]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/567
+[#571]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/571
+[#573]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/573
+[#577]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/577
+[#584]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/584
+[#587]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/587
+
 # v9.1.0 (2025-06-23)
 
 ## OS Changes
