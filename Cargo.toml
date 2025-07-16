@@ -97,6 +97,7 @@ members = [
   "packages/makedumpfile",
   "packages/mdadm",
   "packages/netdog",
+  "packages/nftables",
   "packages/nvidia-container-toolkit",
   "packages/nvidia-k8s-device-plugin",
   "packages/nvme-cli",

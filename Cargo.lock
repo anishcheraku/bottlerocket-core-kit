@@ -161,6 +161,7 @@ dependencies = [
  "makedumpfile",
  "mdadm",
  "netdog",
+ "nftables",
  "nvidia-container-toolkit",
  "nvidia-k8s-device-plugin",
  "nvme-cli",
@@ -863,6 +864,17 @@ name = "netdog"
 version = "0.1.0"
 dependencies = [
  "glibc",
+]
+
+[[package]]
+name = "nftables"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+ "iptables",
+ "libmnl",
+ "libnftnl",
+ "readline",
 ]
 
 [[package]]
