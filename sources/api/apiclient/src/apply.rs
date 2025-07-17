@@ -162,12 +162,11 @@ fn format_change(input: &str, input_source: &str) -> Result<String> {
     serde_json::to_string(&json_inner).context(error::JsonSerializeSnafu { input_source })
 }
 
-pub(crate) mod error {
+mod error {
     use snafu::Snafu;
 
     #[derive(Debug, Snafu)]
-    #[snafu(visibility(pub(crate)))]
-
+    #[snafu(visibility(pub(super)))]
     pub enum Error {
         #[snafu(display("Failed to commit combined settings to '{}': {}", uri, source))]
         CommitApply {
@@ -233,9 +232,6 @@ pub(crate) mod error {
             source: reqwest::Error,
         },
 
-        #[snafu(display("Given invalid file URI '{}'", input_source))]
-        InvalidFileUri { input_source: String },
-
         #[snafu(display(
             "Failed to translate TOML from '{}' to JSON for API: {}",
             input_source,
@@ -243,7 +239,8 @@ pub(crate) mod error {
         ))]
         TomlToJson {
             input_source: String,
-            source: toml::de::Error,
+            #[snafu(source(from(toml::de::Error, Box::new)))]
+            source: Box<toml::de::Error>,
         },
 
         #[snafu(display("Given invalid URI '{}': {}", input_source, source))]
@@ -253,11 +250,34 @@ pub(crate) mod error {
         },
 
         #[snafu(display("Resolver failed: {}", source))]
-        ResolverFailure { source: crate::uri_resolver::ResolverError },
-
+        ResolverFailure {
+            #[snafu(source(from(crate::uri_resolver::ResolverError, Box::new)))]
+            source: Box<crate::uri_resolver::ResolverError>,
+        },
     }
-
 }
 pub use error::Error;
 pub type Result<T> = std::result::Result<T, error::Error>;
 
+#[cfg(test)]
+mod resolver_selection_tests {
+    use super::select_resolver;
+    use crate::apply::SettingsInput;
+    use std::any::{Any, TypeId};
+    use test_case::test_case;
+
+    #[test_case("-",                    TypeId::of::<crate::uri_resolver::StdinUri>();         "stdin")]
+    #[test_case("file:///tmp/foo",      TypeId::of::<crate::uri_resolver::FileUri>();          "file")]
+    #[test_case("http://amazon.com",   TypeId::of::<crate::uri_resolver::HttpUri>();          "http")]
+    #[test_case("https://amazon.com",  TypeId::of::<crate::uri_resolver::HttpUri>();          "https")]
+    #[test_case("s3://mybucket/path",   TypeId::of::<crate::uri_resolver::S3Uri>();            "s3")]
+    #[test_case("secretsmanager://sec", TypeId::of::<crate::uri_resolver::SecretsManagerUri>(); "secrets")]
+    #[test_case("ssm://param",          TypeId::of::<crate::uri_resolver::SsmUri>();           "ssm")]
+
+    fn resolver_selection(input: &str, expected: std::any::TypeId) {
+        let settings = SettingsInput::new(input);
+        let resolver = select_resolver(&settings).expect("should have a resolver for this scheme");
+        let any = resolver.as_ref() as &dyn Any;
+        assert_eq!(any.type_id(), expected);
+    }
+}

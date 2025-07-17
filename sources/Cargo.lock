@@ -414,6 +414,7 @@ dependencies = [
  "signal-hook",
  "simplelog",
  "snafu",
+ "tempfile",
  "test-case",
  "tokio",
  "tokio-tungstenite",
