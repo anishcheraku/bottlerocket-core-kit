@@ -58,6 +58,7 @@
 (filecon "/.*/usr(/fips)?/bin/host-ctr" file runtime_exec)
 (filecon "/.*/usr(/fips)?/bin/runc.*" file runtime_exec)
 (filecon "/.*/usr(/fips)?/bin/shibaken" file api_exec)
+(filecon "/.*/usr(/fips)?/bin/soci-snapshotter.*" file runtime_exec)
 
 ; Label local storage mounts.
 (filecon "/local" any local)
