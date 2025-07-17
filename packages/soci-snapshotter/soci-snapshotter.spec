@@ -25,7 +25,7 @@ Requires: %{name}(binaries)
 %{summary}.
 
 %package bin
-Summary: Remote management agent binaries
+Summary: A remote snapshotter for containerd
 Provides: %{name}(binaries)
 Requires: (%{_cross_os}image-feature(no-fips) and %{name})
 Conflicts: (%{_cross_os}image-feature(fips) or %{name}-fips-bin)
@@ -34,7 +34,7 @@ Conflicts: (%{_cross_os}image-feature(fips) or %{name}-fips-bin)
 %{summary}.
 
 %package fips-bin
-Summary: Remote management agent binaries, FIPS edition
+Summary: A remote snapshotter for containerd, FIPS edition
 Provides: %{name}(binaries)
 Requires: (%{_cross_os}image-feature(fips) and %{name})
 Conflicts: (%{_cross_os}image-feature(no-fips) or %{name}-bin)
