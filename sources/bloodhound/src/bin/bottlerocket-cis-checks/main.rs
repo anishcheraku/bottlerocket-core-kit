@@ -1,6 +1,7 @@
 mod checks;
 
 use bloodhound::results::*;
+use bloodhound::system_access::NativeSystemAccess;
 use checks::*;
 use std::env;
 use std::path::Path;
@@ -71,12 +72,12 @@ fn main() {
 
     // Check if the metadata subcommand is being called
     let get_metadata = env::args().nth(1).unwrap_or_default() == "metadata";
-
+    let sac = NativeSystemAccess {};
     if get_metadata {
         let metadata = checker.metadata();
         println!("{metadata}");
     } else {
-        let result = checker.execute();
+        let result = checker.execute(&sac);
         println!("{result}");
     }
 }

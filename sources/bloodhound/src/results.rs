@@ -1,3 +1,4 @@
+use crate::system_access::SystemAccess;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, fmt};
@@ -85,7 +86,7 @@ impl fmt::Display for CheckerResult {
 /// - Check could not be performed, return error text to stderr and exit 1
 pub trait Checker {
     fn metadata(&self) -> CheckerMetadata;
-    fn execute(&self) -> CheckerResult;
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult;
 }
 
 /// Common checker type for reporting manual check results.
@@ -97,7 +98,7 @@ pub struct ManualChecker {
 }
 
 impl Checker for ManualChecker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, _: &dyn SystemAccess) -> CheckerResult {
         CheckerResult {
             error: "Manual check, see benchmark for audit details.".to_string(),
             status: CheckStatus::SKIP,

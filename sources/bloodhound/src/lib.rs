@@ -1,17 +1,19 @@
 use results::{CheckStatus, CheckerResult};
-use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader};
-use std::os::linux::fs::MetadataExt;
-use std::os::unix::fs::PermissionsExt;
-use std::{ffi::OsStr, process::Command};
+use system_access::SystemAccess;
 
 pub mod args;
 pub mod output;
 pub mod results;
+pub mod system_access;
 
 /// Reads a file and checks if the given `search_word` is present in its contents.
-pub fn look_for_word_in_file(path: &str, search_word: &str) -> Result<bool, io::Error> {
-    let reader = BufReader::new(File::open(path)?);
+pub fn look_for_word_in_file(
+    sac: &dyn SystemAccess,
+    path: &str,
+    search_word: &str,
+) -> Result<bool, io::Error> {
+    let reader = BufReader::new(sac.open(path)?);
     Ok(reader.lines().any(|line| {
         line.unwrap_or_default()
             .split_ascii_whitespace()
@@ -20,18 +22,26 @@ pub fn look_for_word_in_file(path: &str, search_word: &str) -> Result<bool, io::
 }
 
 /// Reads a file and checks if the given `search_str` is present in its contents.
-pub fn look_for_string_in_file(path: &str, search_str: &str) -> Result<bool, io::Error> {
-    let reader = BufReader::new(File::open(path)?);
+pub fn look_for_string_in_file(
+    sac: &dyn SystemAccess,
+    path: &str,
+    search_str: &str,
+) -> Result<bool, io::Error> {
+    let reader = BufReader::new(sac.open(path)?);
     Ok(reader
         .lines()
         .any(|line| line.unwrap_or_default().contains(search_str)))
 }
 
 /// Reads a file and checks if the given `search_strs` are present in its contents.
-pub fn look_for_strings_in_file(path: &str, search_strs: &[&str]) -> Result<bool, io::Error> {
+pub fn look_for_strings_in_file(
+    sac: &dyn SystemAccess,
+    path: &str,
+    search_strs: &[&str],
+) -> Result<bool, io::Error> {
     let mut matched = 0;
 
-    let reader = BufReader::new(File::open(path)?);
+    let reader = BufReader::new(sac.open(path)?);
     for line in reader.lines() {
         let content = line.unwrap_or_default();
         for search_str in search_strs {
@@ -51,10 +61,10 @@ pub fn look_for_strings_in_file(path: &str, search_strs: &[&str]) -> Result<bool
 /// Otherwise, the `CheckerResult` returned will have a `CheckStatus::FAIL`.
 #[macro_export]
 macro_rules! check_file_exists {
-    ($path:expr, $unable_to_find_error:expr) => {{
+    ($sac:expr, $path:expr, $unable_to_find_error:expr) => {{
         let mut result = CheckerResult::default();
 
-        if let Ok(file) = std::fs::File::open($path) {
+        if let Ok(file) = $sac.open($path) {
             result.status = CheckStatus::PASS;
         } else {
             result.error = $unable_to_find_error.to_string();
@@ -77,10 +87,10 @@ macro_rules! check_file_exists {
 /// `unable_to_check_error` value.
 #[macro_export]
 macro_rules! check_file_contains {
-    ($path:expr, $strings_to_match:expr, $unable_to_check_error:expr, $unable_to_find_error:expr) => {{
+    ($sac:expr, $path:expr, $strings_to_match:expr, $unable_to_check_error:expr, $unable_to_find_error:expr) => {{
         let mut result = CheckerResult::default();
 
-        if let Ok(found) = look_for_strings_in_file($path, $strings_to_match) {
+        if let Ok(found) = look_for_strings_in_file($sac, $path, $strings_to_match) {
             if found {
                 result.status = CheckStatus::PASS;
             } else {
@@ -96,22 +106,24 @@ macro_rules! check_file_contains {
 }
 
 /// Executes a command and checks if the given `search_str` is in the output.
-pub fn look_for_string_in_output<I, S>(cmd: &str, args: I, search_str: &str) -> Option<bool>
-where
-    I: IntoIterator<Item = S>,
-    S: AsRef<OsStr>,
-{
+pub fn look_for_string_in_output(
+    sac: &dyn SystemAccess,
+    cmd: &str,
+    args: &[&str],
+    search_str: &str,
+) -> Option<bool> {
     let search_strs = [search_str];
-    look_for_strings_in_output(cmd, args, &search_strs)
+    look_for_strings_in_output(sac, cmd, args, &search_strs)
 }
 
 /// Executes a command and checks if the given `search_strs` are in the output.
-pub fn look_for_strings_in_output<I, S>(cmd: &str, args: I, search_strs: &[&str]) -> Option<bool>
-where
-    I: IntoIterator<Item = S>,
-    S: AsRef<OsStr>,
-{
-    if let Ok(output) = Command::new(cmd).args(args).output() {
+pub fn look_for_strings_in_output(
+    sac: &dyn SystemAccess,
+    cmd: &str,
+    args: &[&str],
+    search_strs: &[&str],
+) -> Option<bool> {
+    if let Ok(output) = sac.command_output(cmd, args) {
         if output.status.success() {
             let mut matched = 0;
 
@@ -144,10 +156,10 @@ where
 /// check will need to be performed and the `error` field will contain the `unable_to_check_error` value.
 #[macro_export]
 macro_rules! check_output_contains {
-    ($cmd:expr, $args:expr, $strings_to_match:expr, $unable_to_check_error:expr, $unable_to_find_error:expr) => {{
+    ($sac:expr, $cmd:expr, $args:expr, $strings_to_match:expr, $unable_to_check_error:expr, $unable_to_find_error:expr) => {{
         let mut result = CheckerResult::default();
 
-        if let Some(found) = look_for_strings_in_output($cmd, $args, $strings_to_match) {
+        if let Some(found) = look_for_strings_in_output($sac, $cmd, $args, $strings_to_match) {
             if found {
                 result.status = CheckStatus::PASS;
             } else {
@@ -163,36 +175,31 @@ macro_rules! check_output_contains {
 }
 
 /// Tests whether a file has the given permission mode bits set, returning a `Result` based on the results.
-pub fn check_file_not_mode(file_path: &str, mode: u32) -> CheckerResult {
+pub fn check_file_not_mode(sac: &dyn SystemAccess, file_path: &str, mode: u32) -> CheckerResult {
     let mut result = CheckerResult::default();
 
-    if let Ok(file) = File::open(file_path) {
-        if let Ok(metadata) = file.metadata() {
-            // Extract just the permission bits
-            let file_mode = metadata.permissions().mode() & 0o777;
-
-            if (file_mode & mode) > 0 {
-                result.error = format!("file {file_path} has extra permissions: 0x{file_mode:o}");
-                result.status = CheckStatus::FAIL;
-            } else {
-                result.status = CheckStatus::PASS;
-            }
+    if let Ok(metadata) = sac.metadata(file_path) {
+        // Extract just the permission bits
+        let file_mode = metadata.mode & 0o777;
+        if (file_mode & mode) > 0 {
+            result.error = format!("file {file_path} has extra permissions: 0x{file_mode:o}");
+            result.status = CheckStatus::FAIL;
         } else {
-            result.error = "unable to get file metadata information".to_string();
+            result.status = CheckStatus::PASS;
         }
     } else {
-        result.error = format!("unable to inspect '{file_path}'");
+        result.error = "unable to get file metadata information".to_string();
     }
 
     result
 }
 
 /// Verifies the file at the given path is owned by root:root, returning a `Results` based on the results.
-pub fn ensure_file_owner_and_group_root(file_path: &str) -> CheckerResult {
+pub fn ensure_file_owner_and_group_root(sac: &dyn SystemAccess, file_path: &str) -> CheckerResult {
     let mut result = CheckerResult::default();
 
-    if let Ok(metadata) = fs::metadata(file_path) {
-        if metadata.st_uid() != 0 || metadata.st_gid() != 0 {
+    if let Ok(metadata) = sac.metadata(file_path) {
+        if metadata.uid != 0 || metadata.gid != 0 {
             result.error = "File owner is not root:root".to_string();
             result.status = CheckStatus::FAIL;
         } else {
@@ -207,12 +214,12 @@ pub fn ensure_file_owner_and_group_root(file_path: &str) -> CheckerResult {
 
 #[cfg(test)]
 mod test_utils {
+    use super::*;
     use std::fs::{self, OpenOptions};
     use std::io::Write;
     use std::os::unix::fs::OpenOptionsExt;
+    use system_access::NativeSystemAccess;
     use tempfile::NamedTempFile;
-
-    use super::*;
 
     macro_rules! temp_file_path {
         ($path:expr) => {{
@@ -238,7 +245,9 @@ mod test_utils {
         )
         .unwrap();
 
-        let found = look_for_word_in_file(temp_file_path!(test_file), "udf").unwrap();
+        let found =
+            look_for_word_in_file(&NativeSystemAccess {}, temp_file_path!(test_file), "udf")
+                .unwrap();
         assert!(found);
     }
 
@@ -255,7 +264,9 @@ mod test_utils {
         )
         .unwrap();
 
-        let found = look_for_word_in_file(temp_file_path!(test_file), "udf").unwrap();
+        let found =
+            look_for_word_in_file(&NativeSystemAccess {}, temp_file_path!(test_file), "udf")
+                .unwrap();
         assert!(!found);
     }
 
@@ -272,13 +283,16 @@ mod test_utils {
         )
         .unwrap();
 
-        let found = look_for_word_in_file(temp_file_path!(test_file), "udf").unwrap();
+        let found =
+            look_for_word_in_file(&NativeSystemAccess {}, temp_file_path!(test_file), "udf")
+                .unwrap();
         assert!(!found);
     }
 
     #[test]
     fn test_look_for_word_in_file_bad_path() {
-        let result = look_for_word_in_file("/not/a/real/path", "search_str");
+        let result =
+            look_for_word_in_file(&NativeSystemAccess {}, "/not/a/real/path", "search_str");
         assert!(result.is_err());
     }
 
@@ -295,7 +309,9 @@ mod test_utils {
         )
         .unwrap();
 
-        let found = look_for_string_in_file(temp_file_path!(test_file), " udf,").unwrap();
+        let found =
+            look_for_string_in_file(&NativeSystemAccess {}, temp_file_path!(test_file), " udf,")
+                .unwrap();
         assert!(found);
     }
 
@@ -312,13 +328,16 @@ mod test_utils {
         )
         .unwrap();
 
-        let found = look_for_string_in_file(temp_file_path!(test_file), " udf,").unwrap();
+        let found =
+            look_for_string_in_file(&NativeSystemAccess {}, temp_file_path!(test_file), " udf,")
+                .unwrap();
         assert!(!found);
     }
 
     #[test]
     fn test_string_in_file_bad_path() {
-        let result = look_for_string_in_file("/not/a/real/path", "search_str");
+        let result =
+            look_for_string_in_file(&NativeSystemAccess {}, "/not/a/real/path", "search_str");
         assert!(result.is_err());
     }
 
@@ -335,8 +354,12 @@ mod test_utils {
         )
         .unwrap();
 
-        let found =
-            look_for_strings_in_file(temp_file_path!(test_file), &[" udf,", "57344 1"]).unwrap();
+        let found = look_for_strings_in_file(
+            &NativeSystemAccess {},
+            temp_file_path!(test_file),
+            &[" udf,", "57344 1"],
+        )
+        .unwrap();
         assert!(found);
     }
 
@@ -345,8 +368,12 @@ mod test_utils {
         let mut test_file = NamedTempFile::new().unwrap();
         writeln!(test_file, "udf 139264 0 - Live 0xffffffffc05e1000, crc_itu_t 16384 1 udf, Live 0xffffffffc05dc000, configfs 57344 1 - Live 0xffffffffc0320000").unwrap();
 
-        let found =
-            look_for_strings_in_file(temp_file_path!(test_file), &[" udf,", "57344 1"]).unwrap();
+        let found = look_for_strings_in_file(
+            &NativeSystemAccess {},
+            temp_file_path!(test_file),
+            &[" udf,", "57344 1"],
+        )
+        .unwrap();
         assert!(found);
     }
 
@@ -363,14 +390,22 @@ mod test_utils {
         )
         .unwrap();
 
-        let found =
-            look_for_strings_in_file(temp_file_path!(test_file), &[" udf,", "57344 1"]).unwrap();
+        let found = look_for_strings_in_file(
+            &NativeSystemAccess {},
+            temp_file_path!(test_file),
+            &[" udf,", "57344 1"],
+        )
+        .unwrap();
         assert!(!found);
     }
 
     #[test]
     fn test_strings_in_file_bad_path() {
-        let result = look_for_strings_in_file("/not/a/real/path", &["foo", "search_str"]);
+        let result = look_for_strings_in_file(
+            &NativeSystemAccess {},
+            "/not/a/real/path",
+            &["foo", "search_str"],
+        );
         assert!(result.is_err());
     }
 
@@ -380,7 +415,13 @@ mod test_utils {
         insmod /lib/modules/5.15.90/kernel/lib/crc-itu-t.ko.xz
         install /bin/true'";
 
-        let found = look_for_string_in_output("echo", [cmd_output], "install /bin/true").unwrap();
+        let found = look_for_string_in_output(
+            &NativeSystemAccess {},
+            "echo",
+            &[cmd_output],
+            "install /bin/true",
+        )
+        .unwrap();
         assert!(found);
     }
 
@@ -388,13 +429,19 @@ mod test_utils {
     fn test_string_in_output_not_found() {
         let cmd_output = "'insmod /lib/modules/5.15.90/kernel/fs/udf/udf.ko.xz'";
 
-        let found = look_for_string_in_output("echo", [cmd_output], "install /bin/true").unwrap();
+        let found = look_for_string_in_output(
+            &NativeSystemAccess {},
+            "echo",
+            &[cmd_output],
+            "install /bin/true",
+        )
+        .unwrap();
         assert!(!found);
     }
 
     #[test]
     fn test_string_in_output_bad_cmd() {
-        let result = look_for_string_in_output("ekko", [""], "blah");
+        let result = look_for_string_in_output(&NativeSystemAccess {}, "ekko", &[""], "blah");
         assert!(result.is_none());
     }
 
@@ -404,9 +451,13 @@ mod test_utils {
         insmod /lib/modules/5.15.90/kernel/lib/crc-itu-t.ko.xz
         install /bin/true'";
 
-        let found =
-            look_for_strings_in_output("echo", [cmd_output], &["5.15.90", "install /bin/true"])
-                .unwrap();
+        let found = look_for_strings_in_output(
+            &NativeSystemAccess {},
+            "echo",
+            &[cmd_output],
+            &["5.15.90", "install /bin/true"],
+        )
+        .unwrap();
         assert!(found);
     }
 
@@ -414,15 +465,19 @@ mod test_utils {
     fn test_strings_in_output_not_found() {
         let cmd_output = "'insmod /lib/modules/5.15.90/kernel/fs/udf/udf.ko.xz'";
 
-        let found =
-            look_for_strings_in_output("echo", [cmd_output], &["5.15.90", "install /bin/true"])
-                .unwrap();
+        let found = look_for_strings_in_output(
+            &NativeSystemAccess {},
+            "echo",
+            &[cmd_output],
+            &["5.15.90", "install /bin/true"],
+        )
+        .unwrap();
         assert!(!found);
     }
 
     #[test]
     fn test_strings_in_output_bad_cmd() {
-        let result = look_for_strings_in_output("ekko", [""], &["blah"]);
+        let result = look_for_strings_in_output(&NativeSystemAccess {}, "ekko", &[""], &["blah"]);
         assert!(result.is_none());
     }
 
@@ -446,7 +501,7 @@ mod test_utils {
             .open(&test_file_path)
             .unwrap();
 
-        let result = check_file_not_mode(test_file_path.as_str(), 0b111111);
+        let result = check_file_not_mode(&NativeSystemAccess {}, test_file_path.as_str(), 0b111111);
         assert_eq!(result.status, CheckStatus::PASS);
 
         // Clean up, fine to ignore errors
@@ -473,7 +528,7 @@ mod test_utils {
             .open(&test_file_path)
             .unwrap();
 
-        let result = check_file_not_mode(test_file_path.as_str(), 0b111111);
+        let result = check_file_not_mode(&NativeSystemAccess {}, test_file_path.as_str(), 0b111111);
         assert_eq!(result.status, CheckStatus::FAIL);
 
         // Clean up, fine to ignore errors
@@ -484,7 +539,7 @@ mod test_utils {
     fn test_check_file_not_mode_file_not_found() {
         let test_file_path = "/tmp/whatdoyouwant";
 
-        let result = check_file_not_mode(test_file_path, 0b111111);
+        let result = check_file_not_mode(&NativeSystemAccess {}, test_file_path, 0b111111);
         assert_eq!(result.status, CheckStatus::SKIP);
 
         // Clean up, fine to ignore errors
