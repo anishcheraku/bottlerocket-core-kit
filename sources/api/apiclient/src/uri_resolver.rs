@@ -111,10 +111,10 @@ pub struct HttpUri {
 impl TryFrom<&SettingsInput> for HttpUri {
     type Error = ResolverError;
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
+        use resolver_error::*;
         let url = input.parsed_url.clone().context(InvalidHTTPUriSnafu {
             input_source: input.input.clone(),
         })?;
-        use resolver_error::*;
         ensure!(
             url.scheme() == "http" || url.scheme() == "https",
             InvalidHTTPUriSnafu {
@@ -129,6 +129,7 @@ impl TryFrom<&SettingsInput> for HttpUri {
 impl UriResolver for HttpUri {
     async fn resolve(&self) -> ResolverResult<String> {
         use resolver_error::*;
+        const MAX_SIZE_BYTES: u64 = 100 * 1024 * 1024;
         // 1) issue the GET
         let resp = reqwest::get(self.url.clone())
             .await
@@ -147,8 +148,32 @@ impl UriResolver for HttpUri {
             .fail();
         };
 
-        // 3) read the body
-        resp.text().await.context(HttpBodySnafu {
+        // 3) check content length if available
+        if let Some(content_length) = resp.content_length() {
+            if content_length > MAX_SIZE_BYTES {
+                return Err(ResolverError::HttpObjectTooLarge {
+                    size: content_length,
+                    max_size: MAX_SIZE_BYTES,
+                    uri: self.url.to_string(),
+                });
+            }
+        }
+
+        // 4) read the body as bytes first to check size
+        let bytes = resp.bytes().await.context(HttpBodySnafu {
+            uri: self.url.to_string(),
+        })?;
+
+        if bytes.len() as u64 > MAX_SIZE_BYTES {
+            return Err(ResolverError::HttpObjectTooLarge {
+                size: bytes.len() as u64,
+                max_size: MAX_SIZE_BYTES,
+                uri: self.url.to_string(),
+            });
+        }
+
+        // 5) convert to string
+        String::from_utf8(bytes.to_vec()).context(Utf8DecodeSnafu {
             uri: self.url.to_string(),
         })
     }
@@ -193,8 +218,35 @@ impl UriResolver for S3Uri {
         use resolver_error::*;
         let cfg = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
         let client = aws_sdk_s3::Client::new(&cfg);
-
-        // 1) GET the object
+        const MAX_SIZE: i64 = 100 * 1024 * 1024;
+        
+        // 1) check the object size using HEAD request
+        let head_resp = client
+            .head_object()
+            .bucket(&self.bucket)
+            .key(&self.key)
+            .send()
+            .await
+            .context(S3HeadSnafu {
+                bucket: self.bucket.clone(),
+                key: self.key.clone(),
+            })?;
+        
+        
+        // 2) check if the object size exceeds the limit
+        if let Some(size) = head_resp.content_length {
+            ensure!(
+                size < MAX_SIZE,
+                resolver_error::S3ObjectTooLargeSnafu {
+                    size: size as u64,
+                    max_size: MAX_SIZE as u64,
+                    bucket: self.bucket.clone(),
+                    key: self.key.clone(),
+                }
+            );
+        }
+        
+        // 3) GET the object
         let resp = client
             .get_object()
             .bucket(&self.bucket)
@@ -206,13 +258,13 @@ impl UriResolver for S3Uri {
                 key: self.key.clone(),
             })?;
 
-        // 2) COLLECT the body stream
+        // 4) COLLECT the body stream
         let bytes = resp.body.collect().await.context(S3BodySnafu {
             bucket: self.bucket.clone(),
             key: self.key.clone(),
         })?;
 
-        // 3) UTF-8 decode
+        // 5) UTF-8 decode
         Ok(String::from_utf8_lossy(&bytes.into_bytes()).into_owned())
     }
 }
@@ -230,23 +282,22 @@ impl TryFrom<&SettingsInput> for SecretsManagerUri {
     type Error = ResolverError;
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
         use resolver_error::*;
-        // must start with "secretsmanager://"
+
+        const PREFIX: &str = "secretsmanager://";
+        let uri_str = input.input.as_str();
+        let remainder = uri_str
+            .strip_prefix(PREFIX)
+            .context(SecretsManagerUriSnafu {
+                input_source: input.input.clone(),
+            })?;
         ensure!(
-            input.input.as_str().starts_with("secretsmanager://"),
-            SecretsManagerUriSnafu {
-                input_source: input.input.clone()
-            }
-        );
-        // strip the prefix and ensure there's actually an ID
-        let id = &input.input.as_str().strip_prefix("secretsmanager://");
-        ensure!(
-            id.is_some(),
+            !remainder.is_empty(),
             SecretsManagerUriSnafu {
                 input_source: input.input.clone()
             }
         );
         Ok(SecretsManagerUri {
-            secret_id: id.unwrap_or_default().to_string(),
+            secret_id: remainder.to_string(),
         })
     }
 }
@@ -295,25 +346,20 @@ impl TryFrom<&SettingsInput> for SsmUri {
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
         use resolver_error::*;
 
-        // must start with "ssm://"
+        const PREFIX: &str = "ssm://";
+        let uri_str = input.input.as_str();
+        let remainder = uri_str.strip_prefix(PREFIX).context(SsmUriSnafu {
+            input_source: input.input.clone(),
+        })?;
         ensure!(
-            input.input.as_str().starts_with("ssm://"),
+            !remainder.is_empty(),
             SsmUriSnafu {
-                input_source: input.input.as_str().to_string()
-            }
-        );
-
-        // strip the prefix and ensure there's actually a name
-        let name = &input.input.as_str()["ssm://".len()..];
-        ensure!(
-            !name.is_empty(),
-            SsmUriSnafu {
-                input_source: input.input.as_str().to_string()
+                input_source: input.input.clone()
             }
         );
 
         Ok(SsmUri {
-            parameter_name: name.to_string(),
+            parameter_name: remainder.to_string(),
         })
     }
 }
@@ -367,6 +413,15 @@ pub enum ResolverError {
     #[snafu(display("Given invalid HTTP(S) URI '{}'", input_source))]
     InvalidHTTPUri { input_source: String },
 
+    #[snafu(display(
+        "HTTP object at {uri} is too large ({size} bytes, maximum is {max_size} bytes)"
+    ))]
+    HttpObjectTooLarge {
+        size: u64,
+        max_size: u64,
+        uri: String,
+    },
+
     #[snafu(display("Failed to perform HTTP GET to '{}': {}", uri, source))]
     HttpRequest { uri: String, source: reqwest::Error },
 
@@ -378,6 +433,26 @@ pub enum ResolverError {
 
     #[snafu(display("Failed to read HTTP response body from '{}': {}", uri, source))]
     HttpBody { uri: String, source: reqwest::Error },
+
+    #[snafu(display("Failed to HEAD S3 object s3://{bucket}/{key}"))]
+    S3Head {
+        source: aws_sdk_s3::error::SdkError<
+            aws_sdk_s3::operation::head_object::HeadObjectError,
+            aws_sdk_s3::config::http::HttpResponse,
+        >,
+        bucket: String,
+        key: String,
+    },
+
+    #[snafu(display(
+        "S3 object s3://{bucket}/{key} is too large ({size} bytes, maximum is {max_size} bytes)"
+    ))]
+    S3ObjectTooLarge {
+        size: u64,
+        max_size: u64,
+        bucket: String,
+        key: String,
+    },
 
     #[snafu(display("Invalid S3 URI scheme for '{}', expected s3://", input_source))]
     S3UriScheme { input_source: String },
@@ -404,6 +479,9 @@ pub enum ResolverError {
         key: String,
         source: aws_sdk_s3::primitives::ByteStreamError,
     },
+
+    #[snafu(display("No Content-Length for S3 object {bucket}/{key}"))]
+    S3MissingContentLength { bucket: String, key: String },
 
     #[snafu(display(
         "Invalid Secrets Manager URI scheme for '{}', expected secretsmanager://",
@@ -438,6 +516,12 @@ pub enum ResolverError {
 
     #[snafu(display("SSM parameter '{}' did not return a string value", parameter_name))]
     SsmParameterMissing { parameter_name: String },
+
+    #[snafu(display("Failed to decode HTTP response as UTF-8 for {uri}"))]
+    Utf8Decode {
+        source: std::string::FromUtf8Error,
+        uri: String,
+    },
 }
 pub type ResolverResult<T> = std::result::Result<T, ResolverError>;
 
@@ -449,7 +533,7 @@ mod tests {
     use tempfile::NamedTempFile;
 
     /// Verify that FileUri::resolve() reads the full contents of a real file.
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn file_uri_reads_file_content() -> Result<(), Box<dyn std::error::Error>> {
         // 1) Create a temp file and write some content
         let mut tmp = NamedTempFile::new()?;

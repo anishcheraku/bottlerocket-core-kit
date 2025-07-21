@@ -25,6 +25,7 @@ base64.workspace = true
 constants.workspace = true
 datastore.workspace = true
 futures.workspace = true
+futures-util.workspace = true
 futures-channel.workspace = true
 http.workspace = true
 httparse.workspace = true
