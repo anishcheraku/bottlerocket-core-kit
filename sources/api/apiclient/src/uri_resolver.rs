@@ -219,7 +219,7 @@ impl UriResolver for S3Uri {
         let cfg = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
         let client = aws_sdk_s3::Client::new(&cfg);
         const MAX_SIZE: i64 = 100 * 1024 * 1024;
-        
+
         // 1) check the object size using HEAD request
         let head_resp = client
             .head_object()
@@ -231,8 +231,7 @@ impl UriResolver for S3Uri {
                 bucket: self.bucket.clone(),
                 key: self.key.clone(),
             })?;
-        
-        
+
         // 2) check if the object size exceeds the limit
         if let Some(size) = head_resp.content_length {
             ensure!(
@@ -245,7 +244,7 @@ impl UriResolver for S3Uri {
                 }
             );
         }
-        
+
         // 3) GET the object
         let resp = client
             .get_object()
