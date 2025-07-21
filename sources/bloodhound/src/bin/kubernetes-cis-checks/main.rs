@@ -16,18 +16,24 @@ fn main() {
     let checker: Box<dyn Checker> = match cmd_name {
         "k8s04010100" => Box::new(K8S04010100Checker {}),
         "k8s04010200" => Box::new(K8S04010200Checker {}),
-        "k8s04010300" => Box::new(ManualChecker {
-            name: cmd_name.to_string(),
-            title: "If proxy kubeconfig file exists ensure permissions are set to 644 or more restrictive".to_string(),
-            id: "4.1.3".to_string(),
-            level: 1,
-        }),
-        "k8s04010400" => Box::new(ManualChecker {
-            name: cmd_name.to_string(),
-            title: "If proxy kubeconfig file exists ensure ownership is set to root:root".to_string(),
-            id: "4.1.4".to_string(),
-            level: 1,
-        }),
+        "k8s04010300" => match Path::new(KUBEPROXY_CONF_FILE).exists() {
+            true => Box::new(K8S04010300Checker {}),
+            false => Box::new(ManualChecker {
+                name: cmd_name.to_string(),
+                title: "If proxy kubeconfig file exists ensure permissions are set to 600 or more restrictive".to_string(),
+                id: "4.1.3".to_string(),
+                level: 1,
+            })
+        },
+        "k8s04010400" => match Path::new(KUBEPROXY_CONF_FILE).exists() {
+            true => Box::new(K8S04010400Checker {}),
+            false => Box::new(ManualChecker {
+                name: cmd_name.to_string(),
+                title: "If proxy kubeconfig file exists ensure ownership is set to root:root".to_string(),
+                id: "4.1.4".to_string(),
+                level: 1,
+            })
+        },
         "k8s04010500" => Box::new(K8S04010500Checker {}),
         "k8s04010600" => Box::new(K8S04010600Checker {}),
         "k8s04010700" => Box::new(K8S04010700Checker {}),
@@ -63,6 +69,23 @@ fn main() {
         "k8s04021100" => Box::new(K8S04021100Checker {}),
         "k8s04021200" => Box::new(K8S04021200Checker {}),
         "k8s04021300" => Box::new(K8S04021300Checker {}),
+        "k8s04021400" => Box::new(K8S04021400Checker {}),
+        "k8s04021500" => Box::new(ManualChecker {
+            name: cmd_name.to_string(),
+            title: "Ensure that the --IPAddressDeny is set to any".to_string(),
+            id: "4.2.15".to_string(),
+            level: 2,
+        }),
+       "k8s04030100" =>
+           match Path::new(KUBEPROXY_CONF_FILE).exists() {
+               true => Box::new(K8S04030100Checker {}),
+               false => Box::new(ManualChecker {
+                   name: cmd_name.to_string(),
+                   title: "Ensure that the kube-proxy metrics service is bound to localhost".to_string(),
+                   id: "4.3.1".to_string(),
+                   level: 1,
+               })
+         },
         &_ => {
             eprintln!("Command {cmd_name} is not supported.");
             return;
