@@ -407,6 +407,7 @@ dependencies = [
  "datastore",
  "futures",
  "futures-channel",
+ "futures-util",
  "generate-readme",
  "http 0.2.12",
  "httparse",

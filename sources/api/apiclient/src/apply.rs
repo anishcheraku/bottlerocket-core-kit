@@ -66,7 +66,7 @@ where
     Ok(())
 }
 
-/// Holds the raw input string and (if it parses) the URL.
+/// Holds the raw input string and the URL (if it parses).
 pub struct SettingsInput {
     pub input: String,
     pub parsed_url: Option<Url>,
@@ -267,7 +267,7 @@ mod resolver_selection_tests {
     use test_case::test_case;
 
     #[test_case("-",                    TypeId::of::<crate::uri_resolver::StdinUri>();         "stdin")]
-    #[test_case("file:///tmp/foo",      TypeId::of::<crate::uri_resolver::FileUri>();          "file")]
+    #[test_case("file:///tmp/folder",      TypeId::of::<crate::uri_resolver::FileUri>();          "file")]
     #[test_case("http://amazon.com",   TypeId::of::<crate::uri_resolver::HttpUri>();          "http")]
     #[test_case("https://amazon.com",  TypeId::of::<crate::uri_resolver::HttpUri>();          "https")]
     #[test_case("s3://mybucket/path",   TypeId::of::<crate::uri_resolver::S3Uri>();            "s3")]
