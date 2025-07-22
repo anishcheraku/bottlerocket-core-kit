@@ -17,6 +17,10 @@ Source101: soci-snapshotter.service
 Source102: soci-snapshotter.socket
 Source1000: clarify.toml
 
+Patch1001: 1001-remove-image-if-rebase-or-initial-fetch-fails.patch
+Patch1002: 1002-move-some-parallelpull-integration-to-helper-funcs.patch
+Patch1003: 1003-hard-fail-on-config-parsing-errors.patch
+
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libz-devel
 Requires: %{name}(binaries)
@@ -43,7 +47,7 @@ Conflicts: (%{_cross_os}image-feature(no-fips) or %{name}-bin)
 %{summary}.
 
 %prep
-%setup -n %{gorepo}-%{gover} -q
+%autosetup -n %{gorepo}-%{gover} -p1
 %setup -T -D -n %{gorepo}-%{gover} -b 1 -q
 %setup -T -D -n %{gorepo}-%{gover} -b 2 -q
 

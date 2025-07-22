@@ -1,0 +1,95 @@
+From 8b2bf80a852b68e7bdc24fcb5d35772566376ada Mon Sep 17 00:00:00 2001
+From: David Son <davbson@amazon.com>
+Date: Tue, 8 Jul 2025 23:32:29 +0000
+Subject: [PATCH] Remove image if rebase or initial fetch fails
+
+If an image is unable to be claimed, the associated image pull with this
+request will fail, so it would make sense to also remove the rest of the
+jobs associated with this image.
+
+Additionally, if the initial authorization fetch fails, we should also
+remove the image from unpackJobs to avoid blocking future image pulls.
+
+Signed-off-by: David Son <davbson@amazon.com>
+---
+ fs/fs.go | 51 ++++++++++++++++++++++++++++++---------------------
+ 1 file changed, 30 insertions(+), 21 deletions(-)
+
+diff --git a/fs/fs.go b/fs/fs.go
+index 1eaac517..7a789b91 100644
+--- a/fs/fs.go
++++ b/fs/fs.go
+@@ -478,33 +478,41 @@ func (fs *filesystem) preloadAllLayers(ctx context.Context, desc ocispec.Descrip
+ 	premountCtx = namespaces.WithNamespace(premountCtx, ns)
+ 	imageJob := fs.inProgressImageUnpacks.GetOrAddImageJob(imageDigest, cancel)
+ 
+-	// We only want to premount all layers that don't exist yet.
+-	// Since layer order is deterministic, we can safely assume that
+-	// every layer after this needs to be premounted as well.
+-	startPremounting := false
+-	for _, l := range manifest.Layers {
+-		if images.IsLayerType(l.MediaType) {
+-			if l.Digest.String() == desc.Digest.String() {
+-				startPremounting = true
+-
+-				// We don't have to preauthorize if we only do one request at a time
+-				if fs.inProgressImageUnpacks.imagePullCfg.MaxConcurrentDownloadsPerImage != 1 {
+-					err = remoteStore.doInitialFetch(ctx, constructRef(refspec, desc))
+-					if err != nil {
+-						return fmt.Errorf("error doing initial client fetch: %w", err)
++	// If we fail anywhere after making the image job, we must remove the associated image job
++	premountAll := func() error {
++		// We only want to premount all layers that don't exist yet.
++		// Since layer order is deterministic, we can safely assume that
++		// every layer after this needs to be premounted as well.
++		startPremounting := false
++		for _, l := range manifest.Layers {
++			if images.IsLayerType(l.MediaType) {
++				if l.Digest.String() == desc.Digest.String() {
++					startPremounting = true
++
++					// We don't have to preauthorize if we only do one request at a time
++					if fs.inProgressImageUnpacks.imagePullCfg.MaxConcurrentDownloadsPerImage != 1 {
++						err = remoteStore.doInitialFetch(ctx, constructRef(refspec, desc))
++						if err != nil {
++							return fmt.Errorf("error doing initial client fetch: %w", err)
++						}
+ 					}
+ 				}
+-			}
+-			if startPremounting {
+-				layerJob, err := fs.inProgressImageUnpacks.AddLayerJob(imageJob, l.Digest.String())
+-				if err != nil {
+-					return fmt.Errorf("error adding layer job: %w", err)
++				if startPremounting {
++					layerJob, err := fs.inProgressImageUnpacks.AddLayerJob(imageJob, l.Digest.String())
++					if err != nil {
++						return fmt.Errorf("error adding layer job: %w", err)
++					}
++					go fs.premount(premountCtx, l, refspec, remoteStore, diffIDMap, layerJob)
+ 				}
+-				go fs.premount(premountCtx, l, refspec, remoteStore, diffIDMap, layerJob)
+ 			}
+ 		}
++		return nil
+ 	}
+-	return nil
++
++	if err := premountAll(); err != nil {
++		fs.inProgressImageUnpacks.RemoveImageWithError(imageDigest, err)
++	}
++	return err
+ }
+ 
+ func (fs *filesystem) premount(ctx context.Context, desc ocispec.Descriptor, refspec reference.Spec, remoteStore resolverStorage, diffIDMap map[string]digest.Digest, layerJob *layerUnpackJob) error {
+@@ -559,6 +567,7 @@ func (fs *filesystem) premount(ctx context.Context, desc ocispec.Descriptor, ref
+ func (fs *filesystem) rebase(ctx context.Context, dgst digest.Digest, imageDigest, mountpoint string) error {
+ 	layerJob, err := fs.inProgressImageUnpacks.Claim(imageDigest, dgst.String())
+ 	if err != nil {
++		fs.inProgressImageUnpacks.RemoveImageWithError(imageDigest, err)
+ 		return fmt.Errorf("error attempting to claim job to rebase: %w", err)
+ 	}
+ 	defer func() {
+-- 
+2.47.1
+
