@@ -753,7 +753,7 @@ impl Checker for K8S04021400Checker {
                 result.status = CheckStatus::FAIL;
             }
         } else {
-            result.error = format!("unable to read '{}'", KUBELET_CONF_FILE);
+            result.error = format!("unable to read '{KUBELET_CONF_FILE}'");
         }
 
         result
@@ -797,7 +797,7 @@ impl Checker for K8S04030100Checker {
                 result.status = CheckStatus::PASS;
             }
         } else {
-            result.error = format!("unable to read '{}'", KUBEPROXY_CONF_FILE);
+            result.error = format!("unable to read '{KUBEPROXY_CONF_FILE}'");
         }
         result
     }
