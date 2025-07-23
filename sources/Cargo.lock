@@ -401,7 +401,6 @@ dependencies = [
  "aws-sdk-s3",
  "aws-sdk-secretsmanager",
  "aws-sdk-ssm",
- "aws-smithy-runtime-api",
  "base64 0.22.1",
  "constants",
  "datastore",
