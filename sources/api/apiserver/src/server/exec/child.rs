@@ -241,6 +241,13 @@ impl ChildHandles {
     }
 }
 
+impl Drop for ChildHandles {
+    /// Ensures the RawFd is properly closed when ChildHandles is dropped.
+    fn drop(&mut self) {
+        let _ = close(self.pty_fd);
+    }
+}
+
 /// ChildFds sets up read and write file descriptors for a Command (before it's spawned) based on
 /// whether the user requested a TTY.
 struct ChildFds {
