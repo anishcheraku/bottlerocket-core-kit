@@ -65,6 +65,7 @@ members = [
   "packages/libglib",
   "packages/libinih",
   "packages/libisal",
+  "packages/libjansson",
   "packages/libmnl",
   "packages/libncurses",
   "packages/libnetfilter_conntrack",

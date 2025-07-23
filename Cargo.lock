@@ -128,6 +128,7 @@ dependencies = [
  "libglib",
  "libinih",
  "libisal",
+ "libjansson",
  "libjson-c",
  "libmnl",
  "libncurses",
@@ -607,6 +608,13 @@ dependencies = [
 [[package]]
 name = "libisal"
 version = "0.1.0"
+dependencies = [
+ "glibc",
+]
+
+[[package]]
+name = "libjansson"
+version = "2.14.1"
 dependencies = [
  "glibc",
 ]
