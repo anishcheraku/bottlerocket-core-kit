@@ -331,6 +331,74 @@ impl UriResolver for SecretsManagerUri {
     }
 }
 
+/// Uri Resolver that fetches a parameter by full SSM ARN.
+///
+/// Accepts `ssm://arn:aws:ssm:<region>:<account_id>:parameter/<name>`,
+/// uses default AWS SDK credential chain (with region override and
+/// custom credentials provider) and returns the decrypted value.
+pub struct SsmArn {
+    region: String,
+    parameter_name: String,
+}
+
+impl TryFrom<&SettingsInput> for SsmArn {
+    type Error = ResolverError;
+    fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
+        use resolver_error::*;
+
+        // Must be a full SSM ARN
+        ensure!(
+            input.input.as_str().starts_with("arn:aws:ssm:"),
+            SsmArnUriSnafu {
+                input_source: input.input.clone(),
+            }
+        );
+
+        let parts: Vec<&str> = input.input.as_str().split(':').collect();
+        let region = parts[3];
+
+        Ok(SsmArn {
+            region: region.to_string(),
+            parameter_name: input.input.to_string(),
+        })
+    }
+}
+
+#[async_trait]
+impl UriResolver for SsmArn {
+    async fn resolve(&self) -> ResolverResult<String> {
+        use resolver_error::*;
+        // 1) Load default config, then override region & credentials
+        let cfg = aws_config::defaults(aws_config::BehaviorVersion::latest())
+            .region(aws_sdk_ssm::config::Region::new(self.region.clone()))
+            .load()
+            .await;
+
+        let client = aws_sdk_ssm::Client::new(&cfg);
+
+        // 2) Fetch the parameter with decryption
+        let resp = client
+            .get_parameter()
+            .name(self.parameter_name.clone())
+            .with_decryption(true)
+            .send()
+            .await
+            .context(SsmGetParameterSnafu {
+                parameter_name: self.parameter_name.clone(),
+            })?;
+
+        // extract the string value
+        let value = resp
+            .parameter
+            .and_then(|p| p.value().map(|v| v.to_string()))
+            .context(SsmParameterMissingSnafu {
+                parameter_name: self.parameter_name.clone(),
+            })?;
+
+        Ok(value)
+    }
+}
+
 /// Uri Resolver that fetches parameters from AWS SSM Parameter Store.
 ///
 /// This resolver accepts URIs of the form `ssm://parameter_name`, uses the
@@ -502,6 +570,37 @@ pub enum ResolverError {
 
     #[snafu(display("Secrets Manager secret '{}' did not return a string value", secret_id))]
     SecretsManagerStringMissing { secret_id: String },
+
+    #[snafu(display(
+        "Invalid SSM ARN scheme for '{}', expected ssm://arn:aws:ssm:…",
+        input_source
+    ))]
+    SsmArnUri { input_source: String },
+
+    #[snafu(display("Invalid SSM ARN '{}': missing region", input_source))]
+    SsmArnRegionMissing { input_source: String },
+    #[snafu(display("Invalid SSM ARN '{}': missing account ID", input_source))]
+    SsmArnAccountMissing { input_source: String },
+    #[snafu(display("Invalid SSM ARN '{}': missing resource section", input_source))]
+    SsmArnResourceMissing { input_source: String },
+    #[snafu(display(
+        "Invalid SSM ARN '{}': resource type must be 'parameter'",
+        input_source
+    ))]
+    SsmArnResourceType { input_source: String },
+    #[snafu(display("Invalid SSM ARN '{}': missing parameter name", input_source))]
+    SsmArnNameMissing { input_source: String },
+    #[snafu(display("Invalid SSM ARN '{}': parameter name is empty", input_source))]
+    SsmArnNameEmpty { input_source: String },
+
+    #[snafu(display("Failed to fetch parameter '{}' from SSM ARN", parameter_name))]
+    SsmArnGetParameter {
+        parameter_name: String,
+        source:
+            aws_sdk_ssm::error::SdkError<aws_sdk_ssm::operation::get_parameter::GetParameterError>,
+    },
+    #[snafu(display("SSM ARN parameter '{}' did not return a string value", parameter_name))]
+    SsmArnValueMissing { parameter_name: String },
 
     #[snafu(display("Invalid SSM URI scheme for '{}', expected ssm://", input_source))]
     SsmUri { input_source: String },
