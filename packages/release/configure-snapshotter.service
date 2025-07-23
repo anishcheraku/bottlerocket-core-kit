@@ -1,0 +1,30 @@
+[Unit]
+Description=Configure Snapshotter
+Before=containerd.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/containerd/selected-snapshotter
+EnvironmentFile=-/var/cache/containerd/active-snapshotter
+# Skip cleanup if either snapshotter variable is empty
+ExecCondition=[ -n "${ACTIVE_SNAPSHOTTER}" ]
+ExecCondition=[ -n "${SELECTED_SNAPSHOTTER}" ]
+# Check if the active snapshotter has changed
+ExecCondition=[ "${SELECTED_SNAPSHOTTER}" != "${ACTIVE_SNAPSHOTTER}" ]
+# Don't error if the directories don't exist.
+ExecStart=-/usr/bin/find /var/lib/soci-snapshotter -mindepth 1 -delete -true
+ExecStart=-/usr/bin/find /var/lib/containerd -mindepth 1 -delete -true
+ExecStart=/usr/bin/truncate -s0 /var/cache/containerd/active-snapshotter
+ExecStart=/usr/bin/echo 'ACTIVE_SNAPSHOTTER="${SELECTED_SNAPSHOTTER}"'
+
+# Set the ACTIVE_SNAPSHOTTER regardless of if conditions are met for cleanup.
+# This mitigates the behavior that an unmet ExecCondition will truncate the active-snapshotter EnvironmentFile.
+ExecStopPost=/usr/bin/truncate -s0 /var/cache/containerd/active-snapshotter
+ExecStopPost=/usr/bin/echo 'ACTIVE_SNAPSHOTTER="${SELECTED_SNAPSHOTTER}"'
+
+RemainAfterExit=true
+# Write the active snapshotter.
+StandardOutput=file:/var/cache/containerd/active-snapshotter
+
+[Install]
+WantedBy=multi-user.target
