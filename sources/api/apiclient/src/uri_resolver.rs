@@ -731,7 +731,9 @@ mod tests {
 
 #[cfg(test)]
 mod parse_uri_tests {
-    use super::{FileUri, HttpUri, S3Uri, SecretsManagerUri, SsmUri, StdinUri};
+    use super::{
+        FileUri, HttpUri, S3Uri, SecretsManagerArn, SecretsManagerUri, SsmArn, SsmUri, StdinUri,
+    };
     use crate::apply::SettingsInput;
     use std::convert::TryFrom;
     use test_case::test_case;
@@ -774,12 +776,38 @@ mod parse_uri_tests {
         assert_eq!(uri.key, exp_key, "S3 key");
     }
 
+    // SecretsManagerArn
+    #[test_case(
+         "arn:aws:secretsmanager:us-east-1:111122223333:secret:mysecret",
+         "us-east-1", "arn:aws:secretsmanager:us-east-1:111122223333:secret:mysecret";
+         "secretsmanager_arn_ok"
+    )]
+    fn parse_secretsmanager_arn(input: &str, exp_region: &str, exp_id: &str) {
+        let settings = SettingsInput::new(input);
+        let uri = SecretsManagerArn::try_from(&settings).expect("should parse SecretsManager ARN");
+        assert_eq!(uri.region, exp_region, "SecretsManager ARN region");
+        assert_eq!(uri.secret_id, exp_id, "SecretsManager ARN secret id");
+    }
+
     //SecretsManagerUri
     #[test_case("secretsmanager://mysecret", "mysecret"; "secrets_ok")]
     fn parse_secrets(input: &str, exp_id: &str) {
         let settings = SettingsInput::new(input);
         let uri = SecretsManagerUri::try_from(&settings).expect("should parse SecretsManager URI");
         assert_eq!(uri.secret_id, exp_id, "secret_id");
+    }
+
+    // SsmArn
+    #[test_case(
+         "arn:aws:ssm:us-west-2:123456789012:parameter/myparam",
+         "us-west-2", "arn:aws:ssm:us-west-2:123456789012:parameter/myparam";
+         "ssm_arn_ok"
+    )]
+    fn parse_ssm_arn(input: &str, exp_region: &str, exp_param: &str) {
+        let settings = SettingsInput::new(input);
+        let uri = SsmArn::try_from(&settings).expect("should parse SSM ARN");
+        assert_eq!(uri.region, exp_region, "SSM ARN region");
+        assert_eq!(uri.parameter_name, exp_param, "SSM ARN parameter");
     }
 
     //SsmUri

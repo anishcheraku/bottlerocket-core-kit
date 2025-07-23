@@ -282,7 +282,9 @@ mod resolver_selection_tests {
     #[test_case("https://amazon.com",  TypeId::of::<crate::uri_resolver::HttpUri>();          "https")]
     #[test_case("s3://mybucket/path",   TypeId::of::<crate::uri_resolver::S3Uri>();            "s3")]
     #[test_case("secretsmanager://sec", TypeId::of::<crate::uri_resolver::SecretsManagerUri>(); "secrets")]
-    #[test_case("ssm://param",          TypeId::of::<crate::uri_resolver::SsmUri>();           "ssm")]
+    #[test_case("ssm://param",          TypeId::of::<crate::uri_resolver::SsmUri>();           "ssmUri")]
+    #[test_case("arn:aws:ssm:<region>:<account_id>:parameter/<name>",          TypeId::of::<crate::uri_resolver::SsmArn>();           "ssmArn")]
+    #[test_case("arn:aws:secretsmanager:<region>:<account-id>:secret:<secret-id>",          TypeId::of::<crate::uri_resolver::SecretsManagerArn>();           "secretsmanagerArn")]
 
     fn resolver_selection(input: &str, expected: std::any::TypeId) {
         let settings = SettingsInput::new(input);
