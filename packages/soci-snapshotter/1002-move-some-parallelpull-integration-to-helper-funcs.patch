@@ -1,0 +1,67 @@
+From 3aa90d17adf339e04972d33f3925c0fcf5e691f9 Mon Sep 17 00:00:00 2001
+From: David Son <davbson@amazon.com>
+Date: Fri, 18 Jul 2025 19:47:42 +0000
+Subject: [PATCH] Move some ParallelPull integration to helper funcs
+
+Signed-off-by: David Son <davbson@amazon.com>
+---
+ integration/pull_test.go | 12 ++----------
+ integration/util_test.go | 12 ++++++++++++
+ 2 files changed, 14 insertions(+), 10 deletions(-)
+
+diff --git a/integration/pull_test.go b/integration/pull_test.go
+index 686fa10e..bf8ad2c7 100644
+--- a/integration/pull_test.go
++++ b/integration/pull_test.go
+@@ -885,11 +885,7 @@ func TestPullWithParallelism(t *testing.T) {
+ 		},
+ 		{
+ 			name: "set chunk size",
+-			opts: []snapshotterConfigOpt{
+-				func(cfg *config.Config) {
+-					cfg.PullModes.Parallel.ConcurrentDownloadChunkSize = 1_000_000
+-				},
+-			},
++			opts: []snapshotterConfigOpt{withConcurrentDownloadChunkSize(1_000_000)},
+ 		},
+ 	}
+ 
+@@ -902,11 +898,7 @@ func TestPullWithParallelism(t *testing.T) {
+ 		},
+ 		{
+ 			name: "parallel unpacking",
+-			opts: []snapshotterConfigOpt{
+-				func(cfg *config.Config) {
+-					cfg.PullModes.Parallel.MaxConcurrentUnpacks = 3
+-				},
+-			},
++			opts: []snapshotterConfigOpt{withConcurrentUnpacks(3)},
+ 		},
+ 	}
+ 
+diff --git a/integration/util_test.go b/integration/util_test.go
+index ac2c84df..332a95ef 100644
+--- a/integration/util_test.go
++++ b/integration/util_test.go
+@@ -377,6 +377,18 @@ func withUnboundedPullUnpack() snapshotterConfigOpt {
+ 	}
+ }
+ 
++func withConcurrentDownloadChunkSize(chunkSize int64) snapshotterConfigOpt {
++	return func(c *config.Config) {
++		c.PullModes.Parallel.ConcurrentDownloadChunkSize = chunkSize
++	}
++}
++
++func withConcurrentUnpacks(n int64) snapshotterConfigOpt {
++	return func(c *config.Config) {
++		c.PullModes.Parallel.MaxConcurrentUnpacks = n
++	}
++}
++
+ func withDiscardUnpackedLayers() snapshotterConfigOpt {
+ 	return func(c *config.Config) {
+ 		c.PullModes.Parallel.DiscardUnpackedLayers = true
+-- 
+2.47.1
+
