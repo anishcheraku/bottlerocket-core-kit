@@ -8,6 +8,7 @@ Before=containerd.service
 [Service]
 Type=notify
 EnvironmentFile=/etc/network/proxy.env
-ExecStart=/usr/bin/soci-snapshotter-grpc --address fd://
+ExecStart=/usr/bin/soci-snapshotter-grpc --address fd:// --config /etc/soci-snapshotter/config.toml --root /var/lib/soci-snapshotter
 Restart=always
 RestartSec=5
+SyslogIdentifier=soci-snapshotter

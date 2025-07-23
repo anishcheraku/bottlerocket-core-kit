@@ -1,0 +1,12 @@
+[required-extensions]
+container-runtime = "v1"
+std = { version = "v1" }
++++
+---
+kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+{{#if settings.container-runtime.snapshotter}}
+{{#if (eq settings.container-runtime.snapshotter "soci" )}}
+imageServiceEndpoint: unix:///run/soci-snapshotter/soci-snapshotter.sock
+{{/if}}
+{{/if}}

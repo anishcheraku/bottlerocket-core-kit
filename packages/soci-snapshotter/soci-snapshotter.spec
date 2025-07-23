@@ -13,6 +13,9 @@ URL: https://github.com/awslabs/soci-snapshotter
 Source0: https://github.com/awslabs/soci-snapshotter/archive/v%{gover}/soci-snapshotter-%{gover}.tar.gz
 Source1: bundled-soci-snapshotter-%{gover}.tar.gz
 Source2: bundled-cmd.tar.gz
+Source3: soci-config-toml
+Source4: k8s-snapshotter-conf
+Source100: etc-soci-snapshotter.mount.in
 Source101: soci-snapshotter.service
 Source102: soci-snapshotter.socket
 Source1000: clarify.toml
@@ -24,12 +27,14 @@ Patch1003: 1003-hard-fail-on-config-parsing-errors.patch
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libz-devel
 Requires: %{name}(binaries)
+Requires: (%{name}-k8s if %{_cross_os}variant-runtime(k8s))
+Requires: %{name}(optimized-gunzip)
 
 %description
 %{summary}.
 
 %package bin
-Summary: Remote management agent binaries
+Summary: A remote snapshotter for containerd
 Provides: %{name}(binaries)
 Requires: (%{_cross_os}image-feature(no-fips) and %{name})
 Conflicts: (%{_cross_os}image-feature(fips) or %{name}-fips-bin)
@@ -38,12 +43,43 @@ Conflicts: (%{_cross_os}image-feature(fips) or %{name}-fips-bin)
 %{summary}.
 
 %package fips-bin
-Summary: Remote management agent binaries, FIPS edition
+Summary: A remote snapshotter for containerd, FIPS edition
 Provides: %{name}(binaries)
 Requires: (%{_cross_os}image-feature(fips) and %{name})
 Conflicts: (%{_cross_os}image-feature(no-fips) or %{name}-bin)
 
 %description fips-bin
+%{summary}.
+
+%package pigz
+Summary: Prefer pigz for gzip decompression
+Requires: %{_cross_os}pigz
+Requires: %{name}
+Provides: %{name}(optimized-gunzip) = 1:
+Conflicts: %{name}-igzip
+
+%description pigz
+%{summary}.
+
+%package igzip
+Summary: Prefer igzip for gzip decompression
+Requires: %{_cross_os}igzip
+Requires: %{name}
+Conflicts: %{name}-pigz
+%if "%{_cross_arch}" == "x86_64"
+Provides: %{name}(optimized-gunzip) = 2:
+%else
+Provides: %{name}(optimized-gunzip) = 0:
+%endif
+
+%description igzip
+%{summary}.
+
+%package k8s
+Summary: Drop-ins to override the kubelet's configuration
+Provides: %{name}(k8s)
+
+%description k8s
 %{summary}.
 
 %prep
@@ -58,37 +94,56 @@ export LD_VERSION="-X github.com/awslabs/soci-snapshotter/version.Version=v%{gov
 export LD_REVISION="-X github.com/awslabs/soci-snapshotter/version.Revision=%{gitrev}"
 
 go build -C cmd -ldflags="${GOLDFLAGS} ${LD_VERSION} ${LD_REVISION}" -o "../out/soci-snapshotter-grpc" ./soci-snapshotter-grpc
-go build -C cmd -ldflags="${GOLDFLAGS} ${LD_VERSION} ${LD_REVISION}" -o "../out/soci" ./soci
 
 gofips build -C cmd -ldflags="${GOLDFLAGS} ${LD_VERSION} ${LD_REVISION}" -o "../out/fips/soci-snapshotter-grpc" ./soci-snapshotter-grpc
-gofips build -C cmd -ldflags="${GOLDFLAGS} ${LD_VERSION} ${LD_REVISION}" -o "../out/fips/soci" ./soci
 
 %install
 install -d %{buildroot}%{_cross_bindir}
 install -d %{buildroot}%{_cross_fips_bindir}
 install -d %{buildroot}%{_cross_unitdir}
 install -p -m 0755 out/soci-snapshotter-grpc %{buildroot}%{_cross_bindir}
-install -p -m 0755 out/soci %{buildroot}%{_cross_bindir}
 install -p -m 0755 out/fips/soci-snapshotter-grpc %{buildroot}%{_cross_fips_bindir}
-install -p -m 0755 out/fips/soci %{buildroot}%{_cross_fips_bindir}
+
+SOCIMOUNTPATH=$(systemd-escape --path /etc/soci-snapshotter)
+install -p -m 0644 %{S:100} %{buildroot}%{_cross_unitdir}/${SOCIMOUNTPATH}.mount
+
 install -D -p -m 0644 %{S:101} %{buildroot}%{_cross_unitdir}
 install -D -p -m 0644 %{S:102} %{buildroot}%{_cross_unitdir}
 
+install -d %{buildroot}%{_cross_templatedir}
+install -p -m 0644 %{S:3} %{buildroot}%{_cross_templatedir}/soci-config-toml
+install -p -m 0644 %{S:4} %{buildroot}%{_cross_templatedir}/k8s-snapshotter-conf
+
 %cross_scan_attribution --clarify %{S:1000} go-vendor vendor
+
+%post igzip -p <lua>
+posix.symlink("%{_cross_bindir}/igzip", "%{_cross_bindir}/soci-gunzip")
+
+%post pigz -p <lua>
+posix.symlink("%{_cross_bindir}/unpigz", "%{_cross_bindir}/soci-gunzip")
 
 %files
 %license LICENSE NOTICE.md
 %{_cross_unitdir}/soci-snapshotter.service
 %{_cross_unitdir}/soci-snapshotter.socket
+%{_cross_unitdir}/etc-soci\x2dsnapshotter.mount
 %{_cross_attribution_vendor_dir}
 %{_cross_attribution_file}
+%{_cross_templatedir}/soci-config-toml
 
 %files bin
 %{_cross_bindir}/soci-snapshotter-grpc
-%{_cross_bindir}/soci
 
 %files fips-bin
 %{_cross_fips_bindir}/soci-snapshotter-grpc
-%{_cross_fips_bindir}/soci
+
+%files pigz
+# No files provided by pigz but required for packaging.
+
+%files igzip
+# No files provided by igzip but required for packaging.
+
+%files k8s
+%{_cross_templatedir}/k8s-snapshotter-conf
 
 %changelog
