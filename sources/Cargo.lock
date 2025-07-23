@@ -396,7 +396,6 @@ dependencies = [
  "aws-sdk-secretsmanager",
  "aws-sdk-ssm",
  "aws-smithy-checksums",
- "aws-smithy-runtime-api",
  "aws-smithy-types",
  "base64 0.22.1",
  "constants",

@@ -74,7 +74,13 @@ pub struct SettingsInput {
 impl SettingsInput {
     pub(crate) fn new(input: impl Into<String>) -> Self {
         let input = input.into();
-        let parsed_url = Url::parse(&input).ok();
+        let parsed_url = match Url::parse(&input) {
+            Ok(url) => Some(url),
+            Err(err) => {
+                log::debug!("URL parse failed for '{}': {}", input, err);
+                None
+            }
+        };
         SettingsInput { input, parsed_url }
     }
 }
@@ -89,42 +95,33 @@ where
     resolver.resolve().await.context(ResolverFailureSnafu)
 }
 
+/// Macro to try multiple settings resolver types in sequence, returning the first one that succeeds.
+macro_rules! try_resolvers {
+    ($input:expr, $($resolver_type:ty),+ $(,)?) => {
+        $(
+            if let Ok(r) = <$resolver_type>::try_from($input) {
+                log::debug!("select_resolver: picked {}", stringify!($resolver_type));
+                return Ok(Box::new(r));
+            }
+        )+
+    };
+}
+
 /// Choose which UriResolver applies to `input` (stdin, file://, http(s)://, s3://, secretsmanager://, and ssm://).
 fn select_resolver(input: &SettingsInput) -> Result<Box<dyn crate::uri_resolver::UriResolver>> {
-    use crate::uri_resolver;
+    use crate::uri_resolver::*;
 
-    // stdin ("-")
-    if let Ok(r) = uri_resolver::StdinUri::try_from(input) {
-        return Ok(Box::new(r));
-    }
+    try_resolvers!(input, StdinUri, FileUri, HttpUri,);
 
-    // file://
-    if let Ok(r) = uri_resolver::FileUri::try_from(input) {
-        return Ok(Box::new(r));
-    }
-
-    // http(s)://
-    if let Ok(r) = uri_resolver::HttpUri::try_from(input) {
-        return Ok(Box::new(r));
-    }
-
-    // s3://
     #[cfg(feature = "tls")]
-    if let Ok(r) = uri_resolver::S3Uri::try_from(input) {
-        return Ok(Box::new(r));
-    }
-
-    // secretsmanager://
-    #[cfg(feature = "tls")]
-    if let Ok(r) = uri_resolver::SecretsManagerUri::try_from(input) {
-        return Ok(Box::new(r));
-    }
-
-    // ssm://
-    #[cfg(feature = "tls")]
-    if let Ok(r) = uri_resolver::SsmUri::try_from(input) {
-        return Ok(Box::new(r));
-    }
+    try_resolvers!(
+        input,
+        S3Uri,
+        SecretsManagerArn,
+        SecretsManagerUri,
+        SsmArn,
+        SsmUri,
+    );
 
     error::NoResolverSnafu {
         input_source: input.input.clone(),
