@@ -845,6 +845,7 @@ version = "0.1.0"
 dependencies = [
  "glibc",
  "iptables",
+ "libjansson",
  "libmnl",
  "libnftnl",
  "readline",

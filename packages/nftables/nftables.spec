@@ -11,10 +11,12 @@ Source10: nftables-tmpfiles.conf
 
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}iptables-devel
+BuildRequires: %{_cross_os}libjansson-devel
 BuildRequires: %{_cross_os}libmnl-devel
 BuildRequires: %{_cross_os}libnftnl-devel
 BuildRequires: %{_cross_os}readline-devel
 Requires: %{_cross_os}iptables
+Requires: %{_cross_os}libjansson
 Requires: %{_cross_os}libmnl
 Requires: %{_cross_os}libnftnl
 Requires: %{_cross_os}readline
@@ -39,8 +41,8 @@ Requires: %{name}
   --enable-debug \
   --with-cli=readline \
   --with-mini-gmp \
+  --with-json \
   --with-xtables \
-  --without-json \
   %{nil}
 
 %force_disable_rpath
