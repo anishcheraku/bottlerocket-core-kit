@@ -118,6 +118,11 @@ fn select_resolver(input: &SettingsInput) -> Result<Box<dyn crate::uri_resolver:
         return Ok(Box::new(r));
     }
 
+    // arn:aws:ssm:…
+    if let Ok(r) = uri_resolver::SsmArn::try_from(input) {
+        return Ok(Box::new(r));
+    }
+
     // ssm://
     if let Ok(r) = uri_resolver::SsmUri::try_from(input) {
         return Ok(Box::new(r));
