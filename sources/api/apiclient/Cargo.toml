@@ -45,14 +45,15 @@ serde_json.workspace = true
 signal-hook.workspace = true
 simplelog.workspace = true
 snafu = { workspace = true, features = ["futures"] }
-test-case.workspace = true
 tokio = { workspace = true, features = ["fs", "io-std", "io-util", "macros", "rt-multi-thread", "time"] }
 tokio-tungstenite = { workspace = true, features = ["connect"] }
 toml.workspace = true
 unindent.workspace = true
 url.workspace = true
-aws-smithy-runtime-api.workspace = true
-tempfile.workspace = true
 
 [build-dependencies]
 generate-readme.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+test-case.workspace = true
