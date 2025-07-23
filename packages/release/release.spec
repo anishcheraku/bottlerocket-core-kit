@@ -9,15 +9,22 @@ Summary: Bottlerocket release
 License: Apache-2.0 OR MIT
 URL: https://github.com/bottlerocket-os/bottlerocket
 
+# Core config files.
 Source11: nsswitch.conf
+
+# Sysctl drop-ins.
+Source80: release-sysctl.conf
+Source81: release-swap-sysctl.conf
+
+# Other drop-ins.
 Source93: release-tmpfiles.conf
 Source94: release-fips-tmpfiles.conf
 Source95: release-systemd-networkd.conf
 Source96: release-repart-local.conf
-Source97: release-sysctl.conf
 Source98: release-systemd-system.conf
 Source99: release-ca-certificates-tmpfiles.conf
 
+# Templates for the settings API.
 Source200: motd.template
 Source201: proxy-env
 Source202: hostname-env
@@ -63,6 +70,7 @@ Source1046: mask-local-var.service
 Source1047: repart-data-preferred.service
 Source1048: repart-data-fallback.service
 Source1049: prepare-local-fs.service
+Source1050: prepare-swap.service
 
 # Feature-specific units.
 Source1060: capture-kernel-dump.service
@@ -149,6 +157,14 @@ Requires: %{_cross_os}libkcapi
 %description fips
 %{summary}.
 
+%package swap
+Summary: Bottlerocket release, with zram-based swap
+Requires: %{name}
+Requires: (%{name}-fips if %{_cross_os}image-feature(fips))
+
+%description swap
+%{summary}.
+
 %prep
 
 %build
@@ -169,7 +185,8 @@ install -d %{buildroot}%{_cross_libdir}/repart.d/
 install -p -m 0644 %{S:96} %{buildroot}%{_cross_libdir}/repart.d/80-local.conf
 
 install -d %{buildroot}%{_cross_sysctldir}
-install -p -m 0644 %{S:97} %{buildroot}%{_cross_sysctldir}/80-release.conf
+install -p -m 0644 %{S:80} %{buildroot}%{_cross_sysctldir}/80-release.conf
+install -p -m 0644 %{S:81} %{buildroot}%{_cross_sysctldir}/81-release-swap.conf
 
 install -d %{buildroot}%{_cross_unitdir}/service.d
 install -p -m 0644 %{S:1104} %{buildroot}%{_cross_unitdir}/service.d/00-aws-config.conf
@@ -196,6 +213,7 @@ install -p -m 0644 \
   %{S:1025} %{S:1026} %{S:1027} %{S:1028} %{S:1029} \
   %{S:1040} %{S:1041} %{S:1042} %{S:1043} %{S:1044} \
   %{S:1045} %{S:1046} %{S:1047} %{S:1048} %{S:1049} \
+  %{S:1050} \
   %{S:1060} %{S:1061} %{S:1062} %{S:1063} %{S:1064} \
   %{S:1065} %{S:1066} %{S:1067} \
   %{buildroot}%{_cross_unitdir}
@@ -354,5 +372,9 @@ ln -s preconfigured.target %{buildroot}%{_cross_unitdir}/default.target
 %{_cross_unitdir}/check-fips-modules.service
 %dir %{_cross_unitdir}/check-fips-modules.service.d
 %{_cross_unitdir}/fips-modprobe@.service
+
+%files swap
+%{_cross_sysctldir}/81-release-swap.conf
+%{_cross_unitdir}/prepare-swap.service
 
 %changelog
