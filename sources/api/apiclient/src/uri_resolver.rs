@@ -268,6 +268,82 @@ impl UriResolver for S3Uri {
     }
 }
 
+/// Uri Resolver that fetches secrets from AWS Secrets Manager by ARN.
+///
+/// This resolver accepts full AWS Secrets Manager ARNs of the form
+/// `arn:aws:secretsmanager:region:account-id:secret:secret-id`,
+/// uses the AWS SDK’s default credential and region resolution scoped to the
+/// ARN’s region, and returns the `SecretString` payload of the specified secret.
+pub struct SecretsManagerArn {
+    region: String,
+    secret_id: String,
+}
+
+impl TryFrom<&SettingsInput> for SecretsManagerArn {
+    type Error = ResolverError;
+
+    fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
+        use resolver_error::*;
+        ensure!(
+            input.input.as_str().starts_with("arn:aws:secretsmanager:"),
+            SecretsManagerArnSnafu {
+                input_source: input.input.clone(),
+            }
+        );
+        let parts: Vec<&str> = input.input.as_str().split(':').collect();
+
+        ensure!(
+            parts.len() > 6,
+            InvalidArnFormatSnafu {
+                input_source: input.input.clone(),
+                reason: format!(
+                    "expected at least 6 ':' separators (7 parts), found {}",
+                    parts.len()
+                ),
+            }
+        );
+        let region = parts[3];
+
+        Ok(SecretsManagerArn {
+            region: region.to_string(),
+            secret_id: input.input.to_string(),
+        })
+    }
+}
+
+#[async_trait::async_trait]
+impl UriResolver for SecretsManagerArn {
+    async fn resolve(&self) -> ResolverResult<String> {
+        use resolver_error::*;
+        // 1) Load default config, then override region & credentials
+        let cfg = aws_config::defaults(aws_config::BehaviorVersion::latest())
+            .region(aws_sdk_secretsmanager::config::Region::new(
+                self.region.clone(),
+            ))
+            .load()
+            .await;
+
+        let client = aws_sdk_secretsmanager::Client::new(&cfg);
+
+        // 2) fetch the secret, propagating any SdkError into SecretsManagerGet
+        let resp = client
+            .get_secret_value()
+            .secret_id(self.secret_id.clone())
+            .send()
+            .await
+            .context(SecretsManagerGetSnafu {
+                secret_id: self.secret_id.clone(),
+            })?;
+
+        // 3) extract the string payload, or error if it was missing
+        resp.secret_string()
+            .map(str::to_string)
+            .context(SecretsManagerStringMissingSnafu {
+                secret_id: self.secret_id.clone(),
+            })
+    }
+}
+
 /// Uri Resolver that fetches secrets from AWS Secrets Manager.
 ///
 /// This resolver accepts URIs of the form `secretsmanager://secret_id`, uses
@@ -304,8 +380,6 @@ impl TryFrom<&SettingsInput> for SecretsManagerUri {
 #[async_trait]
 impl UriResolver for SecretsManagerUri {
     async fn resolve(&self) -> ResolverResult<String> {
-        use aws_config::{self};
-        use aws_sdk_secretsmanager;
         use resolver_error::*;
 
         // 1) load AWS config (region/account via env)
@@ -335,7 +409,7 @@ impl UriResolver for SecretsManagerUri {
 ///
 /// Accepts `ssm://arn:aws:ssm:<region>:<account_id>:parameter/<name>`,
 /// uses default AWS SDK credential chain (with region override and
-/// custom credentials provider) and returns the decrypted value.
+/// and returns the decrypted value.
 pub struct SsmArn {
     region: String,
     parameter_name: String,
@@ -349,12 +423,22 @@ impl TryFrom<&SettingsInput> for SsmArn {
         // Must be a full SSM ARN
         ensure!(
             input.input.as_str().starts_with("arn:aws:ssm:"),
-            SsmArnUriSnafu {
+            SsmArnSnafu {
                 input_source: input.input.clone(),
             }
         );
 
         let parts: Vec<&str> = input.input.as_str().split(':').collect();
+        ensure!(
+            parts.len() > 5,
+            InvalidArnFormatSnafu {
+                input_source: input.input.clone(),
+                reason: format!(
+                    "expected at least 5 ':' separators (6 parts), found {}",
+                    parts.len()
+                ),
+            }
+        );
         let region = parts[3];
 
         Ok(SsmArn {
@@ -387,7 +471,7 @@ impl UriResolver for SsmArn {
                 parameter_name: self.parameter_name.clone(),
             })?;
 
-        // extract the string value
+        // 3) Extract the string value
         let value = resp
             .parameter
             .and_then(|p| p.value().map(|v| v.to_string()))
@@ -465,6 +549,12 @@ impl UriResolver for SsmUri {
 #[derive(Debug, Snafu)]
 #[snafu(module)]
 pub enum ResolverError {
+    #[snafu(display("Invalid ARN '{}': {}", input_source, reason))]
+    InvalidArnFormat {
+        input_source: String,
+        reason: String,
+    },
+
     #[snafu(display("Failed to read standard input: {}", source))]
     StdinRead { source: std::io::Error },
 
@@ -572,26 +662,16 @@ pub enum ResolverError {
     SecretsManagerStringMissing { secret_id: String },
 
     #[snafu(display(
-        "Invalid SSM ARN scheme for '{}', expected ssm://arn:aws:ssm:…",
+        "Invalid Secrets Manager ARN scheme for '{}', expected arn:aws:secretsmanager:…",
         input_source
     ))]
-    SsmArnUri { input_source: String },
+    SecretsManagerArn { input_source: String },
 
-    #[snafu(display("Invalid SSM ARN '{}': missing region", input_source))]
-    SsmArnRegionMissing { input_source: String },
-    #[snafu(display("Invalid SSM ARN '{}': missing account ID", input_source))]
-    SsmArnAccountMissing { input_source: String },
-    #[snafu(display("Invalid SSM ARN '{}': missing resource section", input_source))]
-    SsmArnResourceMissing { input_source: String },
     #[snafu(display(
-        "Invalid SSM ARN '{}': resource type must be 'parameter'",
+        "Invalid SSM ARN scheme for '{}', expected arn:aws:ssm:…",
         input_source
     ))]
-    SsmArnResourceType { input_source: String },
-    #[snafu(display("Invalid SSM ARN '{}': missing parameter name", input_source))]
-    SsmArnNameMissing { input_source: String },
-    #[snafu(display("Invalid SSM ARN '{}': parameter name is empty", input_source))]
-    SsmArnNameEmpty { input_source: String },
+    SsmArn { input_source: String },
 
     #[snafu(display("Failed to fetch parameter '{}' from SSM ARN", parameter_name))]
     SsmArnGetParameter {

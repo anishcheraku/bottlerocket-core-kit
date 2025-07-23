@@ -114,6 +114,11 @@ fn select_resolver(input: &SettingsInput) -> Result<Box<dyn crate::uri_resolver:
     }
 
     // secretsmanager://
+    if let Ok(r) = uri_resolver::SecretsManagerArn::try_from(input) {
+        return Ok(Box::new(r));
+    }
+
+    // secretsmanager://
     if let Ok(r) = uri_resolver::SecretsManagerUri::try_from(input) {
         return Ok(Box::new(r));
     }
