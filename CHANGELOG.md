@@ -1,3 +1,39 @@
+# v10.0.0 (2025-07-25)
+
+## OS Changes
+- Fix file descriptor leak in `apiserver exec` ([#595])
+- Add release subpackage to enable zram-backed `swap` ([#590])
+
+### Third Party Package Updates
+- Update `cni`, `cni-plugins`, `libaudit`, `libbpf`, `libdevmapper`, `libglib`, and `libncurses` ([#600])
+
+## Orchestrator Changes
+### Kubernetes
+- Add soci-snapshotter support 
+  - Configure soci-snapshotter for parallel pull unpack feature ([#569])
+  - Optionally configure containerd and kubelet with soci-snapshotter via drop-in configuration files ([#576])
+  - Extend selinux-policy to cover soci-snapshotter ([#579])
+  - Add `configure-snapshotter.service` to reset state directories of snapshotters on boot when selected snapshotter changes ([#582]) 
+  - Apply upstream patches to soci-snapshotter ([#599])
+- Support extending kubelet configuration via drop-in files ([#576])
+- Update to the latest CIS K8s guidance v1.11.1 ([#563]) - Thanks @tzneal
+- Drop `kubernetes-1.27` and `ecr-credential-provider-1.27` ([#605])
+
+## Build Changes
+- Update `twoliter` to 0.11.0 ([#592])
+
+[#563]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/563
+[#569]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/569
+[#576]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/576
+[#579]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/579
+[#582]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/582
+[#590]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/590
+[#592]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/592
+[#595]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/595
+[#599]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/599
+[#600]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/600
+[#605]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/605
+
 # v9.2.1 (2025-07-24)
 
 ## OS Changes
