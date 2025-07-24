@@ -200,7 +200,7 @@
 ; for files in /etc.
 (allow trusted_s etc_t (files (mutate mount)))
 
-; wicked calls netdog which writes /etc/resolv.conf.
+; systemd-networkd calls netdog which writes /etc/resolv.conf.
 (allow network_t etc_t (files (mutate)))
 
 ; Privileged subjects are allowed to write to and manage mounts for
@@ -365,7 +365,7 @@
 (allow bus_t global (security (compute_av)))
 (allow bus_t init_t (system (status)))
 
-; wicked needs DBUS for IPC.
+; networkd needs DBUS for IPC.
 (allow network_t bus_t (dbus (all)))
 (allow network_t network_t (dbus (all)))
 
