@@ -1,6 +1,7 @@
 # v10.0.0 (2025-07-25)
 
 ## OS Changes
+- Deprecate wicked package ([#560])
 - Fix file descriptor leak in `apiserver exec` ([#595])
 - Add release subpackage to enable zram-backed `swap` ([#590])
 
@@ -15,6 +16,7 @@
   - Extend selinux-policy to cover soci-snapshotter ([#579])
   - Add `configure-snapshotter.service` to reset state directories of snapshotters on boot when selected snapshotter changes ([#582]) 
   - Apply upstream patches to soci-snapshotter ([#599])
+  - Drop CLI from `soci-snapshotter` ([#569])
 - Support extending kubelet configuration via drop-in files ([#576])
 - Update to the latest CIS K8s guidance v1.11.1 ([#563]) - Thanks @tzneal
 - Drop `kubernetes-1.27` and `ecr-credential-provider-1.27` ([#605])
@@ -22,6 +24,7 @@
 ## Build Changes
 - Update `twoliter` to 0.11.0 ([#592])
 
+[#560]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/560
 [#563]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/563
 [#569]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/569
 [#576]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/576
