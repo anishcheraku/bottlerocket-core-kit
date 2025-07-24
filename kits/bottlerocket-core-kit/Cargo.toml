@@ -54,7 +54,6 @@ iputils = { path = "../../packages/iputils" }
 kexec-tools = { path = "../../packages/kexec-tools" }
 keyutils = { path = "../../packages/keyutils" }
 kmod = { path = "../../packages/kmod" }
-kubernetes-1_27 = { path = "../../packages/kubernetes-1.27" }
 kubernetes-1_28 = { path = "../../packages/kubernetes-1.28" }
 kubernetes-1_29 = { path = "../../packages/kubernetes-1.29" }
 kubernetes-1_30 = { path = "../../packages/kubernetes-1.30" }
