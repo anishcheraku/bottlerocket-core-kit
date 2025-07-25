@@ -14,12 +14,53 @@ use std::any::Any;
 use std::convert::TryFrom;
 use std::path::PathBuf;
 use tokio::io::AsyncReadExt;
+const MAX_SIZE_BYTES: u64 = 100 * 1024 * 1024;
 
 /// Anything that can fetch itself as a UTF-8 `String`.
 #[async_trait]
 pub trait UriResolver: Any {
     /// Fetches the contents of this URI as a `String`.
     async fn resolve(&self) -> ResolverResult<String>;
+}
+
+// A minimal AWS ARN parser for our resolvers.
+struct Arn {
+    service: String,
+    region: String,
+}
+
+impl Arn {
+    /// Parse an ARN of the form:
+    ///   arn:aws:<service>:<region>:<account>:<resource…>
+    fn parse(input: &str) -> ResolverResult<Self> {
+        use resolver_error::InvalidArnFormatSnafu;
+
+        // Quick sanity check
+        ensure!(
+            input.starts_with("arn:aws:"),
+            InvalidArnFormatSnafu {
+                input_source: input.to_string(),
+                reason: "must start with 'arn:aws:'".to_string(),
+            }
+        );
+
+        // split into exactly 6 parts: ["arn","aws",service,region,account,rest]
+        let parts: Vec<&str> = input.split(':').collect();
+        ensure!(
+            parts.len() > 5,
+            InvalidArnFormatSnafu {
+                input_source: input.to_string(),
+                reason: format!("expected at least 5 ':' separators, found {}", parts.len()),
+            }
+        );
+        let service = parts[2];
+        let region = parts[3];
+
+        Ok(Arn {
+            service: service.to_string(),
+            region: region.to_string(),
+        })
+    }
 }
 
 /// Uri Resolver that reads from standard input.
@@ -129,7 +170,6 @@ impl TryFrom<&SettingsInput> for HttpUri {
 impl UriResolver for HttpUri {
     async fn resolve(&self) -> ResolverResult<String> {
         use resolver_error::*;
-        const MAX_SIZE_BYTES: u64 = 100 * 1024 * 1024;
         // 1) issue the GET
         let resp = reqwest::get(self.url.clone())
             .await
@@ -218,7 +258,6 @@ impl UriResolver for S3Uri {
         use resolver_error::*;
         let cfg = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
         let client = aws_sdk_s3::Client::new(&cfg);
-        const MAX_SIZE: i64 = 100 * 1024 * 1024;
 
         // 1) check the object size using HEAD request
         let head_resp = client
@@ -235,10 +274,10 @@ impl UriResolver for S3Uri {
         // 2) check if the object size exceeds the limit
         if let Some(size) = head_resp.content_length {
             ensure!(
-                size < MAX_SIZE,
+                (size as u64) < MAX_SIZE_BYTES,
                 resolver_error::S3ObjectTooLargeSnafu {
                     size: size as u64,
-                    max_size: MAX_SIZE as u64,
+                    max_size: MAX_SIZE_BYTES,
                     bucket: self.bucket.clone(),
                     key: self.key.clone(),
                 }
@@ -284,29 +323,29 @@ impl TryFrom<&SettingsInput> for SecretsManagerArn {
 
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
         use resolver_error::*;
+        // 1) Scheme check
         ensure!(
             input.input.as_str().starts_with("arn:aws:secretsmanager:"),
             SecretsManagerArnSnafu {
-                input_source: input.input.clone(),
+                input_source: input.input.clone()
             }
         );
-        let parts: Vec<&str> = input.input.as_str().split(':').collect();
 
+        // 2) Delegate to Arn parser
+        let arn = Arn::parse(input.input.as_str())?;
+
+        // (optional) enforce service name
         ensure!(
-            parts.len() > 6,
-            InvalidArnFormatSnafu {
-                input_source: input.input.clone(),
-                reason: format!(
-                    "expected at least 6 ':' separators (7 parts), found {}",
-                    parts.len()
-                ),
+            arn.service == "secretsmanager",
+            SecretsManagerArnSnafu {
+                input_source: input.input.clone()
             }
         );
-        let region = parts[3];
 
+        // 3) Construct
         Ok(SecretsManagerArn {
-            region: region.to_string(),
-            secret_id: input.input.to_string(),
+            region: arn.region,
+            secret_id: input.input.to_string(), // AWS SDK will accept the full ARN as the secret_id
         })
     }
 }
@@ -420,30 +459,29 @@ impl TryFrom<&SettingsInput> for SsmArn {
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
         use resolver_error::*;
 
-        // Must be a full SSM ARN
+        // 1) Scheme check
         ensure!(
             input.input.as_str().starts_with("arn:aws:ssm:"),
             SsmArnSnafu {
-                input_source: input.input.clone(),
+                input_source: input.input.clone()
             }
         );
 
-        let parts: Vec<&str> = input.input.as_str().split(':').collect();
+        // 2) Delegate the rest to our Arn parser
+        let arn = Arn::parse(input.input.as_str())?;
+
+        // (optional) enforce service name
         ensure!(
-            parts.len() > 5,
-            InvalidArnFormatSnafu {
-                input_source: input.input.clone(),
-                reason: format!(
-                    "expected at least 5 ':' separators (6 parts), found {}",
-                    parts.len()
-                ),
+            arn.service == "ssm",
+            SsmArnSnafu {
+                input_source: input.input.clone()
             }
         );
-        let region = parts[3];
 
+        // 3) Construct
         Ok(SsmArn {
-            region: region.to_string(),
-            parameter_name: input.input.to_string(),
+            region: arn.region,
+            parameter_name: input.input.to_string(), // still use the full `/parameter/...` segment
         })
     }
 }
