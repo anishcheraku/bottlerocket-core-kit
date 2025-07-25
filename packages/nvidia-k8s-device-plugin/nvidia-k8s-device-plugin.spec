@@ -2,7 +2,7 @@
 %global gorepo k8s-device-plugin
 %global goimport %{goproject}/%{gorepo}
 
-%global gover 0.17.1
+%global gover 0.17.3
 %global rpmver %{gover}
 
 Name: %{_cross_os}nvidia-k8s-device-plugin
@@ -17,8 +17,6 @@ Source1: nvidia-k8s-device-plugin.service
 Source2: nvidia-k8s-device-plugin-conf
 Source3: nvidia-k8s-device-plugin-exec-start-conf
 Source4: nvidia-k8s-device-plugin-mig-conf
-
-Patch0001: 0001-fix-ldcache-parsing-for-aarch64.patch
 
 BuildRequires: %{_cross_os}glibc-devel
 Requires: %{name}(binaries)
