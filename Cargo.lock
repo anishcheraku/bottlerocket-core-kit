@@ -86,7 +86,6 @@ dependencies = [
  "docker-init",
  "e2fsprogs",
  "early-boot-config",
- "ecr-credential-provider-1_27",
  "ecr-credential-provider-1_28",
  "ecr-credential-provider-1_29",
  "ecr-credential-provider-1_30",
@@ -107,7 +106,6 @@ dependencies = [
  "kexec-tools",
  "keyutils",
  "kmod",
- "kubernetes-1_27",
  "kubernetes-1_28",
  "kubernetes-1_29",
  "kubernetes-1_30",
@@ -300,13 +298,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ecr-credential-provider-1_27"
-version = "0.1.0"
-dependencies = [
- "glibc",
-]
-
-[[package]]
 name = "ecr-credential-provider-1_28"
 version = "0.1.0"
 dependencies = [
@@ -451,13 +442,6 @@ dependencies = [
  "glibc",
  "libz",
  "libzstd",
-]
-
-[[package]]
-name = "kubernetes-1_27"
-version = "0.1.0"
-dependencies = [
- "glibc",
 ]
 
 [[package]]
