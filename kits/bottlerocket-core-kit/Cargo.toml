@@ -69,7 +69,6 @@ libbpf = { path = "../../packages/libbpf" }
 libcap = { path = "../../packages/libcap" }
 libcrypto = { path = "../../packages/libcrypto" }
 libcryptsetup = { path = "../../packages/libcryptsetup" }
-libdbus = { path = "../../packages/libdbus" }
 libdevmapper = { path = "../../packages/libdevmapper" }
 libelf = { path = "../../packages/libelf" }
 libexpat = { path = "../../packages/libexpat" }

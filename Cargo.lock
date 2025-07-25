@@ -122,7 +122,6 @@ dependencies = [
  "libcap",
  "libcrypto",
  "libcryptsetup",
- "libdbus",
  "libdevmapper",
  "libelf",
  "libexpat",
@@ -565,15 +564,6 @@ dependencies = [
  "libpopt",
  "libselinux",
  "util-linux",
-]
-
-[[package]]
-name = "libdbus"
-version = "0.1.0"
-dependencies = [
- "glibc",
- "libcap",
- "libexpat",
 ]
 
 [[package]]
