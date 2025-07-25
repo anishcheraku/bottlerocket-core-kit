@@ -130,7 +130,6 @@ dependencies = [
  "libglib",
  "libinih",
  "libisal",
- "libiw",
  "libjson-c",
  "libmnl",
  "libncurses",
@@ -623,13 +622,6 @@ dependencies = [
 
 [[package]]
 name = "libisal"
-version = "0.1.0"
-dependencies = [
- "glibc",
-]
-
-[[package]]
-name = "libiw"
 version = "0.1.0"
 dependencies = [
  "glibc",

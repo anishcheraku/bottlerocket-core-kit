@@ -78,7 +78,6 @@ libgcc = { path = "../../packages/libgcc" }
 libglib = { path = "../../packages/libglib" }
 libinih = { path = "../../packages/libinih" }
 libisal = { path = "../../packages/libisal" }
-libiw = { path = "../../packages/libiw" }
 libmnl = { path = "../../packages/libmnl" }
 libncurses = { path = "../../packages/libncurses" }
 libnetfilter_conntrack = { path = "../../packages/libnetfilter_conntrack" }
