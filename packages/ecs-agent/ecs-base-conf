@@ -24,7 +24,7 @@ Environment=ECS_TASK_METADATA_RPS_LIMIT="{{ecs_metadata_service_limits settings.
 Environment=ECS_WARM_POOLS_CHECK="{{default "false" settings.autoscaling.should-wait}}"
 
 # Boolean configurations whose values are inverted in the API
-Environment=ECS_PRIVILEGED_DISABLED="{{negate_or_else true settings.ecs.allow-privileged-containers}}"
+Environment=ECS_DISABLE_PRIVILEGED="{{negate_or_else true settings.ecs.allow-privileged-containers}}"
 Environment=ECS_DISABLE_IMAGE_CLEANUP="{{negate_or_else false settings.ecs.image-cleanup-enabled}}"
 
 Environment=ECS_INSTANCE_ATTRIBUTES='{ "bottlerocket.variant": "{{os.variant_id}}"
