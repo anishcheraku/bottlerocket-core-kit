@@ -14,7 +14,7 @@ use std::any::Any;
 use std::convert::TryFrom;
 use std::path::PathBuf;
 use tokio::io::AsyncReadExt;
-const MAX_SIZE_BYTES: u64 = 100 * 1024 * 1024;
+const MAX_SIZE_BYTES: u64 = 100 * 1024 * 1024; /// Maximum allowed object size for S3 and HTTP(S) resolvers (100 MiB).
 
 /// Anything that can fetch itself as a UTF-8 `String`.
 #[async_trait]
@@ -26,7 +26,8 @@ pub trait UriResolver: Any {
 // A minimal AWS ARN parser for our resolvers.
 struct Arn {
     service: String,
-    region: String,
+    region:  String,
+    parts: i8,
 }
 
 impl Arn {
@@ -34,8 +35,6 @@ impl Arn {
     ///   arn:aws:<service>:<region>:<account>:<resource…>
     fn parse(input: &str) -> ResolverResult<Self> {
         use resolver_error::InvalidArnFormatSnafu;
-
-        // Quick sanity check
         ensure!(
             input.starts_with("arn:aws:"),
             InvalidArnFormatSnafu {
@@ -47,21 +46,26 @@ impl Arn {
         // split into exactly 6 parts: ["arn","aws",service,region,account,rest]
         let parts: Vec<&str> = input.split(':').collect();
         ensure!(
-            parts.len() > 5,
+            parts.len() > 4,
             InvalidArnFormatSnafu {
                 input_source: input.to_string(),
-                reason: format!("expected at least 5 ':' separators, found {}", parts.len()),
+                reason: format!(
+                    "expected at least 4 ':' separators, found {}",
+                    parts.len()
+                ),
             }
         );
         let service = parts[2];
-        let region = parts[3];
+        let region  = parts[3];
 
         Ok(Arn {
-            service: service.to_string(),
-            region: region.to_string(),
+            service:  service.to_string(),
+            region:   region.to_string(),
+            parts:    parts.len() as i8,
         })
     }
 }
+
 
 /// Uri Resolver that reads from standard input.
 ///
@@ -107,11 +111,15 @@ impl TryFrom<&SettingsInput> for FileUri {
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
         use resolver_error::*;
 
-        let url = input.parsed_url.clone().context(FileUriSnafu {
-            input_source: input.input.clone(),
+        let url = {
+            if let None = &input.parsed_url {
+                log::debug!("Failed to parse HTTP URI '{}'", input.input);
+            }
+            input.parsed_url.clone()
+        }.context(FileUriSnafu {
+            input_source: input.input.as_str(),
         })?;
 
-        // only accept file://
         ensure!(
             url.scheme() == "file",
             FileUriSnafu {
@@ -153,7 +161,12 @@ impl TryFrom<&SettingsInput> for HttpUri {
     type Error = ResolverError;
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
         use resolver_error::*;
-        let url = input.parsed_url.clone().context(InvalidHTTPUriSnafu {
+        let url = {
+            if let None = &input.parsed_url {
+                log::debug!("Failed to parse HTTP URI '{}'", input.input);
+            }
+            input.parsed_url.clone()
+        }.context(InvalidHTTPUriSnafu {
             input_source: input.input.clone(),
         })?;
         ensure!(
@@ -170,7 +183,6 @@ impl TryFrom<&SettingsInput> for HttpUri {
 impl UriResolver for HttpUri {
     async fn resolve(&self) -> ResolverResult<String> {
         use resolver_error::*;
-        // 1) issue the GET
         let resp = reqwest::get(self.url.clone())
             .await
             .context(HttpRequestSnafu {
@@ -178,41 +190,34 @@ impl UriResolver for HttpUri {
             })?;
 
         // 2) check status
-        let resp = if resp.status().is_success() {
-            resp
-        } else {
-            return HttpStatusSnafu {
+        ensure!(resp.status().is_success(), HttpStatusSnafu {
                 uri: self.url.to_string(),
                 status: resp.status(),
             }
-            .fail();
-        };
+        );
 
         // 3) check content length if available
         if let Some(content_length) = resp.content_length() {
-            if content_length > MAX_SIZE_BYTES {
-                return Err(ResolverError::HttpObjectTooLarge {
-                    size: content_length,
-                    max_size: MAX_SIZE_BYTES,
-                    uri: self.url.to_string(),
-                });
-            }
+            ensure!(content_length < MAX_SIZE_BYTES, HttpObjectTooLargeSnafu {
+                size: content_length,
+                max_size: MAX_SIZE_BYTES,
+                uri: self.url.to_string(),
+            });
         }
 
         // 4) read the body as bytes first to check size
         let bytes = resp.bytes().await.context(HttpBodySnafu {
             uri: self.url.to_string(),
         })?;
-
-        if bytes.len() as u64 > MAX_SIZE_BYTES {
-            return Err(ResolverError::HttpObjectTooLarge {
+        ensure!(
+            bytes.len() as u64 <= MAX_SIZE_BYTES,
+            HttpObjectTooLargeSnafu {
                 size: bytes.len() as u64,
                 max_size: MAX_SIZE_BYTES,
                 uri: self.url.to_string(),
-            });
-        }
+            }
+        );
 
-        // 5) convert to string
         String::from_utf8(bytes.to_vec()).context(Utf8DecodeSnafu {
             uri: self.url.to_string(),
         })
@@ -302,8 +307,11 @@ impl UriResolver for S3Uri {
             key: self.key.clone(),
         })?;
 
-        // 5) UTF-8 decode
-        Ok(String::from_utf8_lossy(&bytes.into_bytes()).into_owned())
+        String::from_utf8(bytes.to_vec()).context(Utf8DecodeSnafu {
+            uri: format!("s3://{}/{}", self.bucket, self.key),
+        })
+
+
     }
 }
 
@@ -315,7 +323,7 @@ impl UriResolver for S3Uri {
 /// ARN’s region, and returns the `SecretString` payload of the specified secret.
 pub struct SecretsManagerArn {
     region: String,
-    secret_id: String,
+    full_arn: String,
 }
 
 impl TryFrom<&SettingsInput> for SecretsManagerArn {
@@ -323,29 +331,32 @@ impl TryFrom<&SettingsInput> for SecretsManagerArn {
 
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
         use resolver_error::*;
-        // 1) Scheme check
-        ensure!(
-            input.input.as_str().starts_with("arn:aws:secretsmanager:"),
-            SecretsManagerArnSnafu {
-                input_source: input.input.clone()
-            }
-        );
 
         // 2) Delegate to Arn parser
         let arn = Arn::parse(input.input.as_str())?;
 
-        // (optional) enforce service name
+        //enforce proper format for Secrets Manager
+        ensure!(
+            arn.parts == 7,
+            InvalidArnFormatSnafu {
+                input_source: input.input.clone(),
+                reason: format!(
+                    "expected 6 ':' separators (7 parts), found {}",
+                    arn.parts
+                ),
+            }
+        );
+
+        //enforce service name
         ensure!(
             arn.service == "secretsmanager",
-            SecretsManagerArnSnafu {
-                input_source: input.input.clone()
-            }
+            SecretsManagerArnSnafu { input_source: input.input.clone() }
         );
 
         // 3) Construct
         Ok(SecretsManagerArn {
-            region: arn.region,
-            secret_id: input.input.to_string(), // AWS SDK will accept the full ARN as the secret_id
+            region:    arn.region,
+            full_arn: input.input.to_string(), // AWS SDK will accept the full ARN as the secret_id
         })
     }
 }
@@ -354,7 +365,7 @@ impl TryFrom<&SettingsInput> for SecretsManagerArn {
 impl UriResolver for SecretsManagerArn {
     async fn resolve(&self) -> ResolverResult<String> {
         use resolver_error::*;
-        // 1) Load default config, then override region & credentials
+        // 1) Load default config, then override region
         let cfg = aws_config::defaults(aws_config::BehaviorVersion::latest())
             .region(aws_sdk_secretsmanager::config::Region::new(
                 self.region.clone(),
@@ -367,18 +378,18 @@ impl UriResolver for SecretsManagerArn {
         // 2) fetch the secret, propagating any SdkError into SecretsManagerGet
         let resp = client
             .get_secret_value()
-            .secret_id(self.secret_id.clone())
+            .secret_id(self.full_arn.clone())
             .send()
             .await
             .context(SecretsManagerGetSnafu {
-                secret_id: self.secret_id.clone(),
+                secret_id: self.full_arn.clone(),
             })?;
 
         // 3) extract the string payload, or error if it was missing
         resp.secret_string()
             .map(str::to_string)
             .context(SecretsManagerStringMissingSnafu {
-                secret_id: self.secret_id.clone(),
+                secret_id: self.full_arn.clone(),
             })
     }
 }
@@ -451,7 +462,7 @@ impl UriResolver for SecretsManagerUri {
 /// and returns the decrypted value.
 pub struct SsmArn {
     region: String,
-    parameter_name: String,
+    full_arn: String,
 }
 
 impl TryFrom<&SettingsInput> for SsmArn {
@@ -459,29 +470,31 @@ impl TryFrom<&SettingsInput> for SsmArn {
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
         use resolver_error::*;
 
-        // 1) Scheme check
-        ensure!(
-            input.input.as_str().starts_with("arn:aws:ssm:"),
-            SsmArnSnafu {
-                input_source: input.input.clone()
-            }
-        );
-
         // 2) Delegate the rest to our Arn parser
         let arn = Arn::parse(input.input.as_str())?;
 
-        // (optional) enforce service name
+        //enforce proper format for SSM
+        ensure!(
+            arn.parts == 6,
+            InvalidArnFormatSnafu {
+                input_source: input.input.clone(),
+                reason: format!(
+                    "expected 5 ':' separators (6 parts), found {}",
+                    arn.parts
+                ),
+            }
+        );
+
+        // enforce service name
         ensure!(
             arn.service == "ssm",
-            SsmArnSnafu {
-                input_source: input.input.clone()
-            }
+            SsmArnSnafu { input_source: input.input.clone() }
         );
 
         // 3) Construct
         Ok(SsmArn {
-            region: arn.region,
-            parameter_name: input.input.to_string(), // still use the full `/parameter/...` segment
+            region:         arn.region,
+            full_arn: input.input.to_string(), 
         })
     }
 }
@@ -490,7 +503,7 @@ impl TryFrom<&SettingsInput> for SsmArn {
 impl UriResolver for SsmArn {
     async fn resolve(&self) -> ResolverResult<String> {
         use resolver_error::*;
-        // 1) Load default config, then override region & credentials
+        // 1) Load default config, then override region
         let cfg = aws_config::defaults(aws_config::BehaviorVersion::latest())
             .region(aws_sdk_ssm::config::Region::new(self.region.clone()))
             .load()
@@ -501,12 +514,12 @@ impl UriResolver for SsmArn {
         // 2) Fetch the parameter with decryption
         let resp = client
             .get_parameter()
-            .name(self.parameter_name.clone())
+            .name(self.full_arn.clone())
             .with_decryption(true)
             .send()
             .await
             .context(SsmGetParameterSnafu {
-                parameter_name: self.parameter_name.clone(),
+                parameter_name: self.full_arn.clone(),
             })?;
 
         // 3) Extract the string value
@@ -514,7 +527,7 @@ impl UriResolver for SsmArn {
             .parameter
             .and_then(|p| p.value().map(|v| v.to_string()))
             .context(SsmParameterMissingSnafu {
-                parameter_name: self.parameter_name.clone(),
+                parameter_name: self.full_arn.clone(),
             })?;
 
         Ok(value)
@@ -556,7 +569,6 @@ impl TryFrom<&SettingsInput> for SsmUri {
 #[async_trait]
 impl UriResolver for SsmUri {
     async fn resolve(&self) -> ResolverResult<String> {
-        // use default region chain
         let config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
         let client = ssm::Client::new(&config);
         use resolver_error::*;
@@ -572,7 +584,6 @@ impl UriResolver for SsmUri {
                 parameter_name: self.parameter_name.clone(),
             })?;
 
-        // extract the string value
         let value = resp
             .parameter
             .and_then(|p| p.value().map(|v| v.to_string()))
@@ -587,15 +598,19 @@ impl UriResolver for SsmUri {
 #[derive(Debug, Snafu)]
 #[snafu(module)]
 pub enum ResolverError {
+
+    //Arn
     #[snafu(display("Invalid ARN '{}': {}", input_source, reason))]
     InvalidArnFormat {
         input_source: String,
         reason: String,
     },
 
+    //Stdin
     #[snafu(display("Failed to read standard input: {}", source))]
     StdinRead { source: std::io::Error },
 
+    //File
     #[snafu(display("Given invalid file URI '{}'", input_source))]
     FileUri { input_source: String },
 
@@ -605,6 +620,7 @@ pub enum ResolverError {
         source: std::io::Error,
     },
 
+    //HTTP(S)
     #[snafu(display("Given invalid HTTP(S) URI '{}'", input_source))]
     InvalidHTTPUri { input_source: String },
 
@@ -629,6 +645,7 @@ pub enum ResolverError {
     #[snafu(display("Failed to read HTTP response body from '{}': {}", uri, source))]
     HttpBody { uri: String, source: reqwest::Error },
 
+    //S3
     #[snafu(display("Failed to HEAD S3 object s3://{bucket}/{key}"))]
     S3Head {
         source: aws_sdk_s3::error::SdkError<
@@ -678,6 +695,7 @@ pub enum ResolverError {
     #[snafu(display("No Content-Length for S3 object {bucket}/{key}"))]
     S3MissingContentLength { bucket: String, key: String },
 
+    //Secrets Manager
     #[snafu(display(
         "Invalid Secrets Manager URI scheme for '{}', expected secretsmanager://",
         input_source
@@ -705,6 +723,7 @@ pub enum ResolverError {
     ))]
     SecretsManagerArn { input_source: String },
 
+    //SSM
     #[snafu(display(
         "Invalid SSM ARN scheme for '{}', expected arn:aws:ssm:…",
         input_source
@@ -733,6 +752,7 @@ pub enum ResolverError {
     #[snafu(display("SSM parameter '{}' did not return a string value", parameter_name))]
     SsmParameterMissing { parameter_name: String },
 
+    //UTF8Decode    
     #[snafu(display("Failed to decode HTTP response as UTF-8 for {uri}"))]
     Utf8Decode {
         source: std::string::FromUtf8Error,
@@ -784,6 +804,15 @@ mod parse_uri_tests {
         let _ = uri;
     }
 
+    //StdinUri negative cases
+    #[test_case(""; "empty_input")]
+    #[test_case(" -"; "leading_space")]
+    #[test_case("--"; "double_dash")]
+    fn parse_stdin_fail(input: &str) {
+        let settings = SettingsInput::new(input);
+        assert!(StdinUri::try_from(&settings).is_err(), "only `-` should parse as stdin");
+    }
+
     //FileUri
     #[test_case("file:///tmp/foo", "/tmp/foo"; "file_ok")]
     fn parse_file(input: &str, expected_path: &str) {
@@ -796,6 +825,14 @@ mod parse_uri_tests {
         );
     }
 
+    //FileUri negative cases
+    #[test_case("file_:/"; "weird_path")]
+    #[test_case("file://no/leading/slash"; "no_leading_slash")]
+    fn parse_file_fail(input: &str) {
+        let settings = SettingsInput::new(input);
+        assert!(FileUri::try_from(&settings).is_err(), "invalid file URI should fail");
+    }
+
     //HttpUri
     #[test_case("http://example.com/foo",  "http://example.com/foo";  "http_ok")]
     #[test_case("https://example.com/bar", "https://example.com/bar"; "https_ok")]
@@ -805,6 +842,15 @@ mod parse_uri_tests {
         assert_eq!(uri.url.as_str(), expected, "HTTP URI must round‑trip");
     }
 
+    //HttpUri negative cases
+    #[test_case("ftp://example.com";           "unsupported_scheme")]
+    #[test_case("http://";                     "empty_authority")]
+    #[test_case("https:// ";                   "space_after_scheme")]
+    fn parse_http_fail(input: &str) {
+        let settings = SettingsInput::new(input);
+        assert!(HttpUri::try_from(&settings).is_err(), "invalid HTTP URI should fail");
+    }
+
     //S3Uri
     #[test_case("s3://bucket/key", "bucket", "key"; "s3_ok")]
     fn parse_s3(input: &str, exp_bucket: &str, exp_key: &str) {
@@ -812,6 +858,15 @@ mod parse_uri_tests {
         let uri = S3Uri::try_from(&settings).expect("should parse S3 URI");
         assert_eq!(uri.bucket, exp_bucket, "S3 bucket");
         assert_eq!(uri.key, exp_key, "S3 key");
+    }
+
+    //S3Uri negative cases
+    #[test_case("s3://bucket";                 "missing_key")]
+    #[test_case("s3:/bucket/key";             "malformed_scheme")]
+    #[test_case("s3://";                      "empty_bucket_and_key")]
+    fn parse_s3_fail(input: &str) {
+        let settings = SettingsInput::new(input);
+        assert!(S3Uri::try_from(&settings).is_err(), "invalid S3 URI should fail");
     }
 
     // SecretsManagerArn
@@ -824,7 +879,20 @@ mod parse_uri_tests {
         let settings = SettingsInput::new(input);
         let uri = SecretsManagerArn::try_from(&settings).expect("should parse SecretsManager ARN");
         assert_eq!(uri.region, exp_region, "SecretsManager ARN region");
-        assert_eq!(uri.secret_id, exp_id, "SecretsManager ARN secret id");
+        assert_eq!(uri.full_arn, exp_id, "SecretsManager ARN secret id");
+    }
+
+    //SecretsManagerArn negative case
+    #[test_case(
+        "arn:aws:ssm:us-west-2:123456789012:parameter/myparam";
+        "ssm_arn_not_secretsmanager"
+    )]
+    fn parse_secretsmanager_arn_fail(input: &str) {
+        let settings = SettingsInput::new(input);
+        assert!(
+            SecretsManagerArn::try_from(&settings).is_err(),
+            "SSM ARN should not parse as SecretsManagerArn"
+        );
     }
 
     //SecretsManagerUri
@@ -833,6 +901,19 @@ mod parse_uri_tests {
         let settings = SettingsInput::new(input);
         let uri = SecretsManagerUri::try_from(&settings).expect("should parse SecretsManager URI");
         assert_eq!(uri.secret_id, exp_id, "secret_id");
+    }
+
+    //SecretsManagerUri negative cases
+    #[test_case("secretsmanager:/mysecret";    "missing_double_slash")]
+    #[test_case("secretsmanager://";           "empty_secret_id")]
+    #[test_case("ssm://mysecret";              "wrong_scheme")]
+    #[test_case("arn:aws:secretsmanager:us-east-1:111122223333:secret:foo"; "arn_not_uri")]
+    fn parse_secrets_uri_fail(input: &str) {
+        let settings = SettingsInput::new(input);
+        assert!(
+            SecretsManagerUri::try_from(&settings).is_err(),
+            "invalid SecretsManager URI should fail"
+        );
     }
 
     // SsmArn
@@ -845,7 +926,20 @@ mod parse_uri_tests {
         let settings = SettingsInput::new(input);
         let uri = SsmArn::try_from(&settings).expect("should parse SSM ARN");
         assert_eq!(uri.region, exp_region, "SSM ARN region");
-        assert_eq!(uri.parameter_name, exp_param, "SSM ARN parameter");
+        assert_eq!(uri.full_arn, exp_param, "SSM ARN parameter");
+    }
+
+    //SsmArn negative case
+    #[test_case(
+        "arn:aws:secretsmanager:us-east-1:111122223333:secret:mysecret";
+        "secretsmanager_arn_not_ssm"
+    )]
+    fn parse_ssm_arn_fail(input: &str) {
+        let settings = SettingsInput::new(input);
+        assert!(
+            SsmArn::try_from(&settings).is_err(),
+            "invalid SSM ARN should fail"
+        );
     }
 
     //SsmUri
@@ -854,6 +948,19 @@ mod parse_uri_tests {
         let settings = SettingsInput::new(input);
         let uri = SsmUri::try_from(&settings).expect("should parse SSM URI");
         assert_eq!(uri.parameter_name, exp_param, "parameter name");
+    }
+
+    //SsmUri negative cases
+    #[test_case("ssm:/parameter";             "missing_double_slash")]
+    #[test_case("ssm://";                      "empty_parameter")]
+    #[test_case("secretsmanager://parameter";  "wrong_scheme")]
+    #[test_case("arn:aws:ssm:us-west-2:123:parameter/myparam"; "arn_not_uri")]
+    fn parse_ssm_uri_fail(input: &str) {
+        let settings = SettingsInput::new(input);
+        assert!(
+            SsmUri::try_from(&settings).is_err(),
+            "invalid SSM URI should fail"
+        );
     }
 }
 
@@ -873,6 +980,7 @@ mod s3_uri_tests {
     #[test_case("s3://testbucket/file@#$%^&*.json", "testbucket", "file@#$%^&*.json"; "symbols")]
     #[test_case("s3://testbucket/fileñ.json", "testbucket", "fileñ.json"; "n_tilde")]
     #[test_case("s3://testbucket/filepunc,;:`.json", "testbucket", "filepunc,;:`.json"; "punctuation")]
+    #[test_case("s3://testbucket/?question?marks?.json", "testbucket", "?question?marks?.json"; "question_marks")]
     #[test_case("s3://testbucket/fileü漢字.json", "testbucket", "fileü漢字.json"; "other_language")]
 
     fn parse_s3(input: &str, exp_bucket: &str, exp_key: &str) {

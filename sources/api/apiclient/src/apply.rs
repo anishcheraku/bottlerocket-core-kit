@@ -89,49 +89,33 @@ where
     resolver.resolve().await.context(ResolverFailureSnafu)
 }
 
+/// Macro to try multiple settings resolver types in sequence, returning the first one that succeeds.
+macro_rules! try_resolvers {
+    ($input:expr, $($resolver_type:ty),+ $(,)?) => {
+        $(
+            if let Ok(r) = <$resolver_type>::try_from($input) {
+                log::debug!("select_resolver: picked {}", stringify!($resolver_type));
+                return Ok(Box::new(r));
+            }
+        )+
+    };
+}
+
 /// Choose which UriResolver applies to `input` (stdin, file://, http(s)://, s3://, secretsmanager://, and ssm://).
 fn select_resolver(input: &SettingsInput) -> Result<Box<dyn crate::uri_resolver::UriResolver>> {
-    use crate::uri_resolver;
+    use crate::uri_resolver::*;
 
-    // stdin ("-")
-    if let Ok(r) = uri_resolver::StdinUri::try_from(input) {
-        return Ok(Box::new(r));
-    }
-
-    // file://
-    if let Ok(r) = uri_resolver::FileUri::try_from(input) {
-        return Ok(Box::new(r));
-    }
-
-    // http(s)://
-    if let Ok(r) = uri_resolver::HttpUri::try_from(input) {
-        return Ok(Box::new(r));
-    }
-
-    // s3://
-    if let Ok(r) = uri_resolver::S3Uri::try_from(input) {
-        return Ok(Box::new(r));
-    }
-
-    // secretsmanager://
-    if let Ok(r) = uri_resolver::SecretsManagerArn::try_from(input) {
-        return Ok(Box::new(r));
-    }
-
-    // secretsmanager://
-    if let Ok(r) = uri_resolver::SecretsManagerUri::try_from(input) {
-        return Ok(Box::new(r));
-    }
-
-    // arn:aws:ssm:…
-    if let Ok(r) = uri_resolver::SsmArn::try_from(input) {
-        return Ok(Box::new(r));
-    }
-
-    // ssm://
-    if let Ok(r) = uri_resolver::SsmUri::try_from(input) {
-        return Ok(Box::new(r));
-    }
+    try_resolvers!(
+        input,
+        StdinUri,
+        FileUri,
+        HttpUri,
+        S3Uri,
+        SecretsManagerArn,
+        SecretsManagerUri,
+        SsmArn,
+        SsmUri,
+    );
 
     error::NoResolverSnafu {
         input_source: input.input.clone(),
