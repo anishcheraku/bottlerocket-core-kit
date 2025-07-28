@@ -1,10 +1,8 @@
 use crate::interface_id;
+use crate::networkd;
 use snafu::Snafu;
 use std::io;
 use std::path::PathBuf;
-
-#[cfg(not(feature = "wicked"))]
-use crate::networkd;
 
 #[derive(Debug, Snafu)]
 #[snafu(visibility(pub(crate)))]
@@ -42,7 +40,6 @@ pub(crate) enum Error {
     #[snafu(display("Failed to parse network config: {}", source))]
     NetConfigParse { source: toml::de::Error },
 
-    #[cfg(not(feature = "wicked"))]
     #[snafu(display("Unable to create systemd-networkd config: {}", source))]
     NetworkDConfigCreate { source: networkd::Error },
 }

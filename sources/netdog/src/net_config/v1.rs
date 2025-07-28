@@ -4,18 +4,13 @@
 use super::{error, Error, Interfaces, Result, Validate};
 use crate::addressing::{Dhcp4ConfigV1, Dhcp4OptionsV1, Dhcp6ConfigV1, Dhcp6OptionsV1};
 use crate::interface_id::{InterfaceId, InterfaceName};
+use crate::networkd::NetworkDConfig;
 use indexmap::indexmap;
 use indexmap::IndexMap;
 use serde::Deserialize;
 use snafu::{ensure, OptionExt, ResultExt};
 use std::{collections::HashSet, str::FromStr};
 use std::{convert::TryInto, ops::Deref};
-
-#[cfg(feature = "wicked")]
-use crate::wicked::{WickedDhcp4, WickedDhcp6, WickedInterface};
-
-#[cfg(not(feature = "wicked"))]
-use crate::networkd::NetworkDConfig;
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct NetConfigV1 {
@@ -53,7 +48,6 @@ impl Interfaces for NetConfigV1 {
         !self.interfaces.is_empty()
     }
 
-    #[cfg(not(feature = "wicked"))]
     fn interfaces(&self) -> Vec<InterfaceId> {
         self.interfaces
             .keys()
@@ -61,23 +55,6 @@ impl Interfaces for NetConfigV1 {
             .collect()
     }
 
-    #[cfg(feature = "wicked")]
-    fn as_wicked_interfaces(&self) -> Vec<WickedInterface> {
-        let mut wicked_interfaces = Vec::with_capacity(self.interfaces.len());
-        for (name, config) in &self.interfaces {
-            let wicked_dhcp4 = config.dhcp4.clone().map(WickedDhcp4::from);
-            let wicked_dhcp6 = config.dhcp6.clone().map(WickedDhcp6::from);
-            let mut interface = WickedInterface::new(name.clone());
-            interface.ipv4_dhcp = wicked_dhcp4;
-            interface.ipv6_dhcp = wicked_dhcp6;
-
-            wicked_interfaces.push(interface)
-        }
-
-        wicked_interfaces
-    }
-
-    #[cfg(not(feature = "wicked"))]
     fn as_networkd_config(&self) -> Result<NetworkDConfig> {
         let devices = self.interfaces.clone().into_iter().collect();
         NetworkDConfig::new(devices).context(error::NetworkDConfigCreateSnafu)

@@ -2,15 +2,8 @@ pub(crate) mod generate_hostname;
 pub(crate) mod generate_net_config;
 pub(crate) mod node_ip;
 pub(crate) mod set_hostname;
-pub(crate) mod write_resolv_conf;
-
-#[cfg(feature = "wicked")]
-pub(crate) mod install;
-#[cfg(feature = "wicked")]
-pub(crate) mod remove;
-
-#[cfg(not(feature = "wicked"))]
 pub(crate) mod write_network_status;
+pub(crate) mod write_resolv_conf;
 
 use crate::net_config::{self, Interfaces};
 use crate::{
@@ -28,15 +21,8 @@ use std::os::unix::fs::symlink;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::{fs, io};
-pub(crate) use write_resolv_conf::WriteResolvConfArgs;
-
-#[cfg(feature = "wicked")]
-pub(crate) use install::InstallArgs;
-#[cfg(feature = "wicked")]
-pub(crate) use remove::RemoveArgs;
-
-#[cfg(not(feature = "wicked"))]
 pub(crate) use write_network_status::WriteNetworkStatusArgs;
+pub(crate) use write_resolv_conf::WriteResolvConfArgs;
 
 #[derive(Debug, PartialEq, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -158,7 +144,6 @@ where
     let mut output = String::new();
     writeln!(output, "{ipv4_rp_filter}").context(error::SysctlConfBuildSnafu)?;
 
-    #[cfg(not(feature = "wicked"))]
     // systemd-networkd implements its own RA client, and expects the kernel implementation to be
     // unused. However, various solutions that run in EC2 might "helpfully" turn it on since it's
     // required for most non-systemd-networkd systems. Guard against this by explicitly disabling
@@ -236,22 +221,16 @@ mod tests {
 /// Potential errors during netdog execution
 mod error {
     use crate::{dns, net_config};
+    use crate::{networkd, networkd_status};
     use snafu::Snafu;
     use std::ffi::OsString;
     use std::io;
     use std::path::PathBuf;
 
-    #[cfg(feature = "wicked")]
-    use crate::{lease, wicked};
-
-    #[cfg(not(feature = "wicked"))]
-    use crate::{networkd, networkd_status};
-
     #[derive(Debug, Snafu)]
     #[snafu(visibility(pub(crate)))]
     #[allow(clippy::enum_variant_names)]
     pub(crate) enum Error {
-        #[cfg(not(feature = "wicked"))]
         #[snafu(display("Unable to create directory '{}': {}", path.display(),source))]
         CreateDir { path: PathBuf, source: io::Error },
 
@@ -264,18 +243,15 @@ mod error {
         #[snafu(display("Unable to gather DNS settings: {}", source))]
         GetDnsSettings { source: dns::Error },
 
-        #[cfg(not(feature = "wicked"))]
         #[snafu(display("Unable to create interface drop-in directory '{}': {}", path.display(), source))]
         DropInDirCreate { path: PathBuf, source: io::Error },
 
-        #[cfg(not(feature = "wicked"))]
         #[snafu(display("Unable to write interface drop-in '{}': {}", path.display(), source))]
         DropInFileWrite { path: PathBuf, source: io::Error },
 
         #[snafu(display("'systemd-sysctl' failed: {}", stderr))]
         FailedSystemdSysctl { stderr: String },
 
-        #[cfg(not(feature = "wicked"))]
         #[snafu(display("'systemctl' failed: {}", stderr))]
         FailedSystemctl { stderr: String },
 
@@ -290,10 +266,6 @@ mod error {
 
         #[snafu(display("Failed to write hostname to '{}': {}", path.display(), source))]
         HostnameWriteFailed { path: PathBuf, source: io::Error },
-
-        #[cfg(feature = "wicked")]
-        #[snafu(display("Failed to write network interface configuration: {}", source))]
-        InterfaceConfigWrite { source: wicked::Error },
 
         #[snafu(display("Non-UTF8 interface name '{:?}'", name.to_string_lossy()))]
         InterfaceNameUtf8 { name: OsString },
@@ -310,14 +282,6 @@ mod error {
             source: serde_json::error::Error,
         },
 
-        #[cfg(feature = "wicked")]
-        #[snafu(display("Failed to read/parse lease data: {}", source))]
-        LeaseParseFailed { source: lease::Error },
-
-        #[cfg(feature = "wicked")]
-        #[snafu(display("No DHCP lease found for interface '{}'", interface))]
-        MissingLease { interface: String },
-
         #[snafu(display("Unable to read/parse network config from '{}': {}", path.display(), source))]
         NetConfigParse {
             path: PathBuf,
@@ -327,11 +291,9 @@ mod error {
         #[snafu(display("Unable to find an interface with MAC address '{}'", mac))]
         NonExistentMac { mac: String },
 
-        #[cfg(not(feature = "wicked"))]
         #[snafu(display("Unable to create systemd-networkd config: {}", source))]
         NetworkDConfigCreate { source: net_config::Error },
 
-        #[cfg(not(feature = "wicked"))]
         #[snafu(display("Failed to write network interface configuration: {}", source))]
         NetworkDConfigWrite { source: networkd::Error },
 
@@ -343,13 +305,6 @@ mod error {
 
         #[snafu(display("Failed to write primary interface to '{}': {}", path.display(), source))]
         PrimaryInterfaceWrite { path: PathBuf, source: io::Error },
-
-        #[cfg(feature = "wicked")]
-        #[snafu(display("Conflicting primary lease location; from wicked: '{}', generated by netdog: '{}'", wicked_path.display(), generated_path.display()))]
-        PrimaryLeaseConflict {
-            wicked_path: PathBuf,
-            generated_path: PathBuf,
-        },
 
         #[snafu(display("Failed to write resolver configuration: {}", source))]
         ResolvConfWriteFailed { source: dns::Error },
@@ -363,17 +318,14 @@ mod error {
         #[snafu(display("Failed to run 'systemd-sysctl': {}", source))]
         SystemdSysctlExecution { source: io::Error },
 
-        #[cfg(not(feature = "wicked"))]
         #[snafu(display("Failed to run 'systemctl': {}", source))]
         SystemctlExecution { source: io::Error },
 
-        #[cfg(not(feature = "wicked"))]
         #[snafu(display("Failed to retrieve networkctl status: {}", source))]
         NetworkDInterfaceStatus {
             source: networkd_status::NetworkDStatusError,
         },
 
-        #[cfg(not(feature = "wicked"))]
         #[snafu(display("Unable to determine primary interface IP Address: {}", source))]
         PrimaryInterfaceAddress {
             source: networkd_status::NetworkDStatusError,

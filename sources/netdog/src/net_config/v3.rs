@@ -4,18 +4,11 @@
 use super::devices::NetworkDeviceV1;
 use super::{error, Interfaces, Result, Validate};
 use crate::interface_id::{InterfaceId, InterfaceName};
+use crate::networkd::NetworkDConfig;
 use indexmap::IndexMap;
 use serde::Deserialize;
-use snafu::ensure;
+use snafu::{ensure, ResultExt};
 use std::collections::HashSet;
-
-#[cfg(feature = "wicked")]
-use crate::wicked::{WickedInterface, WickedLinkConfig};
-
-#[cfg(not(feature = "wicked"))]
-use crate::networkd::NetworkDConfig;
-#[cfg(not(feature = "wicked"))]
-use snafu::ResultExt;
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct NetConfigV3 {
@@ -36,41 +29,10 @@ impl Interfaces for NetConfigV3 {
         !self.net_devices.is_empty()
     }
 
-    #[cfg(not(feature = "wicked"))]
     fn interfaces(&self) -> Vec<InterfaceId> {
         self.net_devices.keys().cloned().collect()
     }
 
-    #[cfg(feature = "wicked")]
-    fn as_wicked_interfaces(&self) -> Vec<WickedInterface> {
-        let mut wicked_interfaces = Vec::new();
-        for (name, config) in &self.net_devices {
-            let interface = WickedInterface::from((name, config));
-
-            // If config is a Bond, we will generate the interface configuration for interfaces in
-            // that bond since we have all of the data and the bond consumes the device for other uses.
-            // For each interface: call WickedInterface::new(name), configure it and add that to
-            // wicked_interfaces Vec.
-            // At this point we can be sure that bonds are being configured with a name rather than
-            // a MAC address since that validation happens during deserialize/validation.
-            if let (InterfaceId::Name(name), NetworkDeviceV1::BondDevice(b)) = (name, config) {
-                for device in &b.interfaces {
-                    let mut wicked_sub_interface = WickedInterface::new(device.clone());
-                    wicked_sub_interface.link = Some(WickedLinkConfig {
-                        master: name.clone(),
-                    });
-
-                    wicked_interfaces.push(wicked_sub_interface)
-                }
-            }
-
-            wicked_interfaces.push(interface)
-        }
-
-        wicked_interfaces
-    }
-
-    #[cfg(not(feature = "wicked"))]
     fn as_networkd_config(&self) -> Result<NetworkDConfig> {
         let devices = self.net_devices.clone().into_iter().collect();
         NetworkDConfig::new(devices).context(error::NetworkDConfigCreateSnafu)
@@ -98,7 +60,7 @@ impl Validate for NetConfigV3 {
         }
 
         for (name, device) in &self.net_devices {
-            // Bonds / vlans cannot be configured via MAC address as it is unsupported in wicked
+            // Legacy alert: Bonds / vlans cannot be configured via MAC address as it was unsupported in wicked
             if let NetworkDeviceV1::BondDevice(_) | NetworkDeviceV1::VlanDevice(_) = device {
                 ensure!(
                     !matches!(name, InterfaceId::MacAddress(_)),

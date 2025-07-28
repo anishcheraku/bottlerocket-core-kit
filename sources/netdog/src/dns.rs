@@ -9,19 +9,9 @@ use std::collections::BTreeSet;
 use std::fs;
 use std::net::IpAddr;
 use std::path::Path;
-
-#[cfg(feature = "wicked")]
-use crate::lease::LeaseInfo;
-#[cfg(feature = "wicked")]
-use crate::REAL_RESOLV_CONF;
-#[cfg(feature = "wicked")]
-use std::fmt::Write;
-
-#[cfg(not(feature = "wicked"))]
 use systemd_derive::{SystemdUnit, SystemdUnitSection};
-#[cfg(not(feature = "wicked"))]
+
 static RESOLVED_CONF_DROPIN_DIR: &str = "/etc/systemd/resolved.conf.d";
-#[cfg(not(feature = "wicked"))]
 static RESOLVED_CONF_DROPIN_FILE: &str = "10-resolv.conf";
 
 static DNS_CONFIG: &str = "/etc/netdog.toml";
@@ -35,29 +25,6 @@ pub(crate) struct DnsSettings {
 }
 
 impl DnsSettings {
-    /// Create a DnsSettings from TOML config file, supplementing missing settings with settings
-    /// from DHCP lease if provided.  (In the case of static addressing, a DHCP lease won't exist)
-    #[cfg(feature = "wicked")]
-    pub(crate) fn from_config_or_lease(lease: Option<&LeaseInfo>) -> Result<Self> {
-        let mut settings = Self::from_config()?;
-        if let Some(lease) = lease {
-            settings.merge_lease(lease);
-        }
-        Ok(settings)
-    }
-
-    /// Merge missing DNS settings into `self` using DHCP lease
-    #[cfg(feature = "wicked")]
-    fn merge_lease(&mut self, lease: &LeaseInfo) {
-        if self.nameservers.is_none() {
-            self.nameservers = lease.dns_servers.clone();
-        }
-
-        if self.search.is_none() {
-            self.search = lease.dns_search.clone()
-        }
-    }
-
     /// Create a DnsSettings from TOML config file
     pub(crate) fn from_config() -> Result<Self> {
         Self::from_config_impl(DNS_CONFIG)
@@ -95,40 +62,7 @@ impl DnsSettings {
         }
     }
 
-    /// Write resolver configuration for libc.
-    #[cfg(feature = "wicked")]
-    pub(crate) fn write_resolv_conf(&self) -> Result<()> {
-        Self::write_resolv_conf_impl(self, REAL_RESOLV_CONF)
-    }
-
-    #[cfg(feature = "wicked")]
-    fn write_resolv_conf_impl<P>(&self, path: P) -> Result<()>
-    where
-        P: AsRef<Path>,
-    {
-        let path = path.as_ref();
-        let mut output = String::new();
-
-        if let Some(s) = &self.search {
-            writeln!(output, "search {}", s.join(" "))
-                .context(error::ResolvConfBuildFailedSnafu)?;
-        }
-
-        if let Some(nameservers) = &self.nameservers {
-            // Randomize name server order, for libc implementations like musl that send
-            // queries to the first N servers.
-            let mut dns_servers: Vec<IpAddr> = nameservers.clone().into_iter().collect();
-            dns_servers.shuffle(&mut thread_rng());
-            for n in dns_servers {
-                writeln!(output, "nameserver {}", n).context(error::ResolvConfBuildFailedSnafu)?;
-            }
-        }
-
-        fs::write(path, output).context(error::ResolvConfWriteFailedSnafu { path })
-    }
-
     /// Write a drop-in file for systemd-resolved
-    #[cfg(not(feature = "wicked"))]
     pub(crate) fn write_resolved_dropin(&self) -> Result<()> {
         fs::create_dir_all(RESOLVED_CONF_DROPIN_DIR).context(error::CreateDirSnafu {
             path: RESOLVED_CONF_DROPIN_DIR,
@@ -138,7 +72,6 @@ impl DnsSettings {
         Self::write_resolved_dropin_impl(self, dropin_path)
     }
 
-    #[cfg(not(feature = "wicked"))]
     fn write_resolved_dropin_impl<P>(&self, path: P) -> Result<()>
     where
         P: AsRef<Path>,
@@ -150,24 +83,20 @@ impl DnsSettings {
             .context(error::ResolvConfWriteFailedSnafu { path })
     }
 
-    #[cfg(not(feature = "wicked"))]
     pub(crate) fn has_name_servers(&self) -> bool {
         self.nameservers.is_some()
     }
 
-    #[cfg(not(feature = "wicked"))]
     pub(crate) fn has_search_domains(&self) -> bool {
         self.search.is_some()
     }
 }
 
-#[cfg(not(feature = "wicked"))]
 #[derive(Debug, SystemdUnit)]
 struct ResolvedConfDropin {
     resolve: Option<ResolveSection>,
 }
 
-#[cfg(not(feature = "wicked"))]
 #[derive(Debug, SystemdUnitSection)]
 #[systemd(section = "Resolve")]
 struct ResolveSection {
@@ -177,7 +106,6 @@ struct ResolveSection {
     domains: Vec<String>,
 }
 
-#[cfg(not(feature = "wicked"))]
 impl ResolvedConfDropin {
     fn from_dns_settings(dns: &DnsSettings) -> Self {
         let domains = if let Some(domains) = &dns.search {
@@ -210,7 +138,6 @@ mod error {
     #[derive(Debug, Snafu)]
     #[snafu(visibility(pub(crate)))]
     pub(crate) enum Error {
-        #[cfg(not(feature = "wicked"))]
         #[snafu(display("Unable to create directory '{}': {}", path.display(),source))]
         CreateDir { path: PathBuf, source: io::Error },
 
@@ -228,10 +155,6 @@ mod error {
             path: PathBuf,
             source: toml::de::Error,
         },
-
-        #[cfg(feature = "wicked")]
-        #[snafu(display("Failed to build resolver configuration: {}", source))]
-        ResolvConfBuildFailed { source: std::fmt::Error },
 
         #[snafu(display("Failed to write resolver configuration to '{}': {}", path.display(), source))]
         ResolvConfWriteFailed { path: PathBuf, source: io::Error },
@@ -277,82 +200,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "wicked")]
-    fn dns_from_lease_file() {
-        let lease_path = test_data().join("leaseinfo.eth0.dhcp.ipv4");
-        let lease = LeaseInfo::from_lease(lease_path).unwrap();
-        let mut got = DnsSettings::default();
-        got.merge_lease(&lease);
-
-        let mut nameservers = BTreeSet::new();
-        nameservers.insert("192.168.0.2".parse::<IpAddr>().unwrap());
-        let search = Some(vec!["us-west-2.compute.internal".to_string()]);
-        let expected = DnsSettings {
-            nameservers: Some(nameservers),
-            search,
-        };
-
-        assert_eq!(got, expected)
-    }
-
-    #[test]
-    #[cfg(feature = "wicked")]
-    fn write_resolv_conf_from_lease_single_nameserver() {
-        let lease_path = test_data().join("leaseinfo.eth0.dhcp.ipv4");
-        let lease = LeaseInfo::from_lease(lease_path).unwrap();
-
-        let fake_file = tempfile::NamedTempFile::new().unwrap();
-        let mut settings = DnsSettings::default();
-        settings.merge_lease(&lease);
-        settings.write_resolv_conf_impl(&fake_file).unwrap();
-
-        let expected = "search us-west-2.compute.internal\nnameserver 192.168.0.2\n";
-        assert_eq!(std::fs::read_to_string(&fake_file).unwrap(), expected);
-    }
-
-    #[test]
-    #[cfg(feature = "wicked")]
-    fn write_resolv_conf_from_lease_multiple_nameservers() {
-        let lease_path = test_data().join("leaseinfo.eth0.dhcp.ipv4.multiple-dns");
-        let lease = LeaseInfo::from_lease(lease_path).unwrap();
-
-        let fake_file = tempfile::NamedTempFile::new().unwrap();
-        let mut settings = DnsSettings::default();
-        settings.merge_lease(&lease);
-        settings.write_resolv_conf_impl(&fake_file).unwrap();
-
-        // Since we shuffle the nameservers, it's possible for the resulting file to be either of
-        // the following
-        let format1 =
-            "search us-west-2.compute.internal\nnameserver 192.168.0.2\nnameserver 1.2.3.4\n";
-        let format2 =
-            "search us-west-2.compute.internal\nnameserver 1.2.3.4\nnameserver 192.168.0.2\n";
-
-        // The resulting file must be either format 1 or 2
-        let resolv_conf = std::fs::read_to_string(&fake_file).unwrap();
-        assert_ne!(resolv_conf == format1, resolv_conf == format2)
-    }
-
-    #[test]
-    #[cfg(feature = "wicked")]
-    fn write_resolv_conf_from_config_multiple_nameservers() {
-        let fake_file = tempfile::NamedTempFile::new().unwrap();
-        let config = test_data().join("netdog.toml");
-        let settings = DnsSettings::from_config_impl(config).unwrap();
-        settings.write_resolv_conf_impl(&fake_file).unwrap();
-
-        // Since we shuffle the nameservers, it's possible for the resulting file to be either of
-        // the following
-        let format1 = "search us-west-2.compute.internal foo.bar.baz\nnameserver 1.2.3.4\nnameserver 2.3.4.5\n";
-        let format2 = "search us-west-2.compute.internal foo.bar.baz\nnameserver 2.3.4.5\nnameserver 1.2.3.4\n";
-
-        // The resulting file must be either format 1 or 2
-        let resolv_conf = std::fs::read_to_string(&fake_file).unwrap();
-        assert_ne!(resolv_conf == format1, resolv_conf == format2)
-    }
-
-    #[test]
-    #[cfg(not(feature = "wicked"))]
     fn write_resolved_dropin_single_nameserver() {
         let fake_file = tempfile::NamedTempFile::new().unwrap();
         let config = test_data().join("single_nameserver_netdog.toml");
@@ -365,7 +212,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(feature = "wicked"))]
     fn write_resolved_dropin_multiple_domains() {
         let fake_file = tempfile::NamedTempFile::new().unwrap();
         let config = test_data().join("multiple_domains_netdog.toml");
@@ -378,7 +224,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(feature = "wicked"))]
     fn write_resolved_dropin_multiple_domains_nameservers() {
         let fake_file = tempfile::NamedTempFile::new().unwrap();
         let config = test_data().join("netdog.toml");

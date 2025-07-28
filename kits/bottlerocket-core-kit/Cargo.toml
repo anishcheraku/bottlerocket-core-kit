@@ -67,7 +67,6 @@ libbpf = { path = "../../packages/libbpf" }
 libcap = { path = "../../packages/libcap" }
 libcrypto = { path = "../../packages/libcrypto" }
 libcryptsetup = { path = "../../packages/libcryptsetup" }
-libdbus = { path = "../../packages/libdbus" }
 libdevmapper = { path = "../../packages/libdevmapper" }
 libelf = { path = "../../packages/libelf" }
 libexpat = { path = "../../packages/libexpat" }
@@ -77,7 +76,6 @@ libgcc = { path = "../../packages/libgcc" }
 libglib = { path = "../../packages/libglib" }
 libinih = { path = "../../packages/libinih" }
 libisal = { path = "../../packages/libisal" }
-libiw = { path = "../../packages/libiw" }
 libmnl = { path = "../../packages/libmnl" }
 libncurses = { path = "../../packages/libncurses" }
 libnetfilter_conntrack = { path = "../../packages/libnetfilter_conntrack" }
@@ -128,5 +126,4 @@ strace = { path = "../../packages/strace" }
 systemd-252 = { path = "../../packages/systemd-252" }
 tpm2-tools = { path = "../../packages/tpm2-tools" }
 util-linux = { path = "../../packages/util-linux" }
-wicked = { path = "../../packages/wicked" }
 xfsprogs = { path = "../../packages/xfsprogs" }

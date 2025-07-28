@@ -120,7 +120,6 @@ dependencies = [
  "libcap",
  "libcrypto",
  "libcryptsetup",
- "libdbus",
  "libdevmapper",
  "libelf",
  "libexpat",
@@ -129,7 +128,6 @@ dependencies = [
  "libglib",
  "libinih",
  "libisal",
- "libiw",
  "libjson-c",
  "libmnl",
  "libncurses",
@@ -181,7 +179,6 @@ dependencies = [
  "systemd-252",
  "tpm2-tools",
  "util-linux",
- "wicked",
  "xfsprogs",
 ]
 
@@ -553,15 +550,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "libdbus"
-version = "0.1.0"
-dependencies = [
- "glibc",
- "libcap",
- "libexpat",
-]
-
-[[package]]
 name = "libdevmapper"
 version = "0.1.0"
 dependencies = [
@@ -618,13 +606,6 @@ dependencies = [
 
 [[package]]
 name = "libisal"
-version = "0.1.0"
-dependencies = [
- "glibc",
-]
-
-[[package]]
-name = "libiw"
 version = "0.1.0"
 dependencies = [
  "glibc",
@@ -1031,17 +1012,6 @@ dependencies = [
  "libncurses",
  "libselinux",
  "libxcrypt",
-]
-
-[[package]]
-name = "wicked"
-version = "0.1.0"
-dependencies = [
- "glibc",
- "libdbus",
- "libiw",
- "libnl",
- "systemd-252",
 ]
 
 [[package]]

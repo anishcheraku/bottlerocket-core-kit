@@ -57,7 +57,6 @@ members = [
   "packages/libbpf",
   "packages/libcap",
   "packages/libcrypto",
-  "packages/libdbus",
   "packages/libdevmapper",
   "packages/libelf",
   "packages/libexpat",
@@ -66,7 +65,6 @@ members = [
   "packages/libglib",
   "packages/libinih",
   "packages/libisal",
-  "packages/libiw",
   "packages/libmnl",
   "packages/libncurses",
   "packages/libnetfilter_conntrack",
@@ -117,6 +115,5 @@ members = [
   "packages/systemd-252",
   "packages/tpm2-tools",
   "packages/util-linux",
-  "packages/wicked",
   "packages/xfsprogs"
 ]

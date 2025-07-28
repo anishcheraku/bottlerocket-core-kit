@@ -10,7 +10,6 @@ exclude = ["README.md"]
 
 [features]
 default = []
-wicked = []
 
 [dependencies]
 argh.workspace = true

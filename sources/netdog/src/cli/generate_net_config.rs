@@ -1,18 +1,16 @@
 use super::{error, fetch_net_config, Result};
 use crate::interface_id::InterfaceId;
 use crate::net_config::Interfaces;
+use crate::networkd::config::{NetworkDConfigFile, NETWORKD_CONFIG_DIR};
 use crate::{KERNEL_CMDLINE, PRIMARY_INTERFACE, PRIMARY_MAC_ADDRESS};
 use argh::FromArgs;
 use snafu::{OptionExt, ResultExt};
 use std::fs;
 use std::path::Path;
 
-#[cfg(not(feature = "wicked"))]
-use crate::networkd::config::{NetworkDConfigFile, NETWORKD_CONFIG_DIR};
-
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand, name = "generate-net-config")]
-/// Generate wicked network configuration
+/// Generate network configuration
 pub(crate) struct GenerateNetConfigArgs {}
 
 /// Generate configuration for network interfaces.
@@ -66,26 +64,6 @@ fn write_primary_interface(interface_id: &InterfaceId) -> Result<()> {
     })
 }
 
-#[cfg(feature = "wicked")]
-fn write_network_config_files(net_config: Box<dyn Interfaces>, from_cmd_line: bool) -> Result<()> {
-    let mut wicked_interfaces = net_config.as_wicked_interfaces();
-    for interface in &mut wicked_interfaces {
-        // The kernel command line is too limited to fully specify an interface's configuration;
-        // fix some defaults to match legacy behavior.
-        // Note: we only allow 1 interface to be listed via kernel command line, so this will only
-        // be added to a single interface
-        if from_cmd_line {
-            interface.accept_ra();
-        }
-
-        interface
-            .write_config_file()
-            .context(error::InterfaceConfigWriteSnafu)?;
-    }
-    Ok(())
-}
-
-#[cfg(not(feature = "wicked"))]
 fn write_network_config_files(net_config: Box<dyn Interfaces>, from_cmd_line: bool) -> Result<()> {
     fs::create_dir_all(NETWORKD_CONFIG_DIR).context(error::CreateDirSnafu {
         path: NETWORKD_CONFIG_DIR,

@@ -21,12 +21,7 @@ use std::path::Path;
 use std::str::FromStr;
 pub(crate) use v1::NetConfigV1;
 
-#[cfg(feature = "wicked")]
-use crate::wicked::WickedInterface;
-
-#[cfg(not(feature = "wicked"))]
 use crate::networkd;
-#[cfg(not(feature = "wicked"))]
 pub(crate) use v1::NetInterfaceV1;
 
 static DEFAULT_INTERFACE_PREFIX: &str = "netdog.default-interface=";
@@ -39,15 +34,8 @@ pub(crate) trait Interfaces {
     /// Does the config contain any interfaces?
     fn has_interfaces(&self) -> bool;
 
-    #[cfg(not(feature = "wicked"))]
     fn interfaces(&self) -> Vec<InterfaceId>;
 
-    /// Converts the network config into a list of `WickedInterface` structs, suitable for writing
-    /// to file
-    #[cfg(feature = "wicked")]
-    fn as_wicked_interfaces(&self) -> Vec<WickedInterface>;
-
-    #[cfg(not(feature = "wicked"))]
     fn as_networkd_config(&self) -> Result<networkd::NetworkDConfig>;
 }
 
@@ -60,17 +48,10 @@ impl<I: Interfaces> Interfaces for Box<I> {
         (**self).has_interfaces()
     }
 
-    #[cfg(not(feature = "wicked"))]
     fn interfaces(&self) -> Vec<InterfaceId> {
         (**self).interfaces()
     }
 
-    #[cfg(feature = "wicked")]
-    fn as_wicked_interfaces(&self) -> Vec<WickedInterface> {
-        (**self).as_wicked_interfaces()
-    }
-
-    #[cfg(not(feature = "wicked"))]
     fn as_networkd_config(&self) -> Result<networkd::NetworkDConfig> {
         (**self).as_networkd_config()
     }
