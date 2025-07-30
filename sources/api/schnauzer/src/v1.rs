@@ -234,7 +234,7 @@ pub mod cli {
     /// Returns the value of a metadata key for a given data key, erroring if the value is not a
     /// string or is empty.
     async fn get_metadata(key: &str, meta: &str) -> Result<String> {
-        let uri = &format!("{}{}?keys={}", API_METADATA_URI_BASE, meta, key);
+        let uri = &format!("{API_METADATA_URI_BASE}{meta}?keys={key}");
         let method = "GET";
         let (code, response_body) =
             apiclient::raw_request(constants::API_SOCKET, &uri, method, None)
@@ -276,7 +276,7 @@ pub mod cli {
     /// Print usage message.
     fn usage() -> ! {
         let program_name = env::args().next().unwrap_or_else(|| "program".to_string());
-        eprintln!("Usage: {} SETTING_KEY", program_name);
+        eprintln!("Usage: {program_name} SETTING_KEY");
         process::exit(2);
     }
 
@@ -313,7 +313,7 @@ pub mod cli {
         let output = serde_json::to_string(&setting)
             .context(error::SerializeOutputSnafu { output: &setting })?;
 
-        println!("{}", output);
+        println!("{output}");
         Ok(())
     }
 }

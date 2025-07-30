@@ -28,7 +28,8 @@ impl MulticallTest {
     /// Create a symlink to the binary with the given name
     fn create_symlink(&self, name: &str) -> PathBuf {
         let link_path = self.temp_dir.path().join(name);
-        symlink(self.binary_path, &link_path).expect(&format!("Failed to create {} symlink", name));
+        symlink(self.binary_path, &link_path)
+            .unwrap_or_else(|_| panic!("Failed to create {name} symlink"));
         link_path
     }
 
@@ -37,10 +38,7 @@ impl MulticallTest {
         Command::new(binary_path)
             .args(args)
             .output()
-            .expect(&format!(
-                "Failed to execute {:?} with args {:?}",
-                binary_path, args
-            ))
+            .unwrap_or_else(|_| panic!("Failed to execute {binary_path:?} with args {args:?}"))
     }
 
     /// Check if the output contains v1-specific usage message
@@ -55,9 +53,9 @@ impl MulticallTest {
         let stdout = String::from_utf8_lossy(&output.stdout);
 
         // v2 has different usage patterns - look for v2-specific elements
-        (stderr.contains("render-file")
+        stderr.contains("render-file")
             || stderr.contains("render")
-            || stdout.contains("--log-level") && !self.is_v1_output(output))
+            || stdout.contains("--log-level") && !self.is_v1_output(output)
     }
 }
 
