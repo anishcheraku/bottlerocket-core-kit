@@ -32,6 +32,8 @@ struct Arn {
 }
 
 impl Arn {
+    /// Parse an ARN of the form:
+    ///   arn:aws:<service>:<region>:<account>:<resource…>
     fn parse(input: &str) -> ResolverResult<Self> {
         use resolver_error::InvalidArnFormatSnafu;
         ensure!(
