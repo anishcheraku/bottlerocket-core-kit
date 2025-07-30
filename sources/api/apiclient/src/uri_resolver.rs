@@ -32,8 +32,6 @@ struct Arn {
 }
 
 impl Arn {
-    /// Parse an ARN of the form:
-    ///   arn:aws:<service>:<region>:<account>:<resource…>
     fn parse(input: &str) -> ResolverResult<Self> {
         use resolver_error::InvalidArnFormatSnafu;
         ensure!(
@@ -44,7 +42,6 @@ impl Arn {
             }
         );
 
-        // split into exactly 6 parts: ["arn","aws",service,region,account,rest]
         let parts: Vec<&str> = input.split(':').collect();
         ensure!(
             parts.len() > 4,
@@ -112,7 +109,6 @@ impl TryFrom<&SettingsInput> for FileUri {
             input_source: input.input.clone(),
         })?;
 
-        // only accept file://
         ensure!(
             url.scheme() == "file",
             FileUriSnafu {
@@ -120,7 +116,6 @@ impl TryFrom<&SettingsInput> for FileUri {
             }
         );
 
-        // convert to PathBuf or error
         let path = url.to_file_path().ok().context(FileUriSnafu {
             input_source: url.to_string(),
         })?;
@@ -177,7 +172,6 @@ impl UriResolver for HttpUri {
                 uri: self.url.to_string(),
             })?;
 
-        // 2) check status
         ensure!(
             resp.status().is_success(),
             HttpStatusSnafu {
@@ -186,7 +180,7 @@ impl UriResolver for HttpUri {
             }
         );
 
-        // 3) check content length if available
+        // check content length if available
         if let Some(content_length) = resp.content_length() {
             ensure!(
                 content_length < MAX_SIZE_BYTES,
@@ -198,7 +192,7 @@ impl UriResolver for HttpUri {
             );
         }
 
-        // 4) read the body as bytes first to check size
+        // read the body as bytes first to check size
         let bytes = resp.bytes().await.context(HttpBodySnafu {
             uri: self.url.to_string(),
         })?;
@@ -257,7 +251,6 @@ impl UriResolver for S3Uri {
         let cfg = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
         let client = aws_sdk_s3::Client::new(&cfg);
 
-        // 1) check the object size using HEAD request
         let head_resp = client
             .head_object()
             .bucket(&self.bucket)
@@ -269,7 +262,6 @@ impl UriResolver for S3Uri {
                 key: self.key.clone(),
             })?;
 
-        // 2) check if the object size exceeds the limit
         if let Some(size) = head_resp.content_length {
             ensure!(
                 (size as u64) < MAX_SIZE_BYTES,
@@ -282,7 +274,6 @@ impl UriResolver for S3Uri {
             );
         }
 
-        // 3) GET the object
         let resp = client
             .get_object()
             .bucket(&self.bucket)
@@ -294,7 +285,6 @@ impl UriResolver for S3Uri {
                 key: self.key.clone(),
             })?;
 
-        // 4) COLLECT the body stream
         let bytes = resp.body.collect().await.context(S3BodySnafu {
             bucket: self.bucket.clone(),
             key: self.key.clone(),
@@ -323,10 +313,7 @@ impl TryFrom<&SettingsInput> for SecretsManagerArn {
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
         use resolver_error::*;
 
-        // 2) Delegate to Arn parser
         let arn = Arn::parse(input.input.as_str())?;
-
-        //enforce proper format for Secrets Manager
         ensure!(
             arn.parts == 7,
             InvalidArnFormatSnafu {
@@ -335,7 +322,6 @@ impl TryFrom<&SettingsInput> for SecretsManagerArn {
             }
         );
 
-        //enforce service name
         ensure!(
             arn.service == "secretsmanager",
             SecretsManagerArnSnafu {
@@ -343,10 +329,9 @@ impl TryFrom<&SettingsInput> for SecretsManagerArn {
             }
         );
 
-        // 3) Construct
         Ok(SecretsManagerArn {
             region: arn.region,
-            full_arn: input.input.to_string(), // AWS SDK will accept the full ARN as the secret_id
+            full_arn: input.input.to_string(),
         })
     }
 }
@@ -355,7 +340,6 @@ impl TryFrom<&SettingsInput> for SecretsManagerArn {
 impl UriResolver for SecretsManagerArn {
     async fn resolve(&self) -> ResolverResult<String> {
         use resolver_error::*;
-        // 1) Load default config, then override region
         let cfg = aws_config::defaults(aws_config::BehaviorVersion::latest())
             .region(aws_sdk_secretsmanager::config::Region::new(
                 self.region.clone(),
@@ -365,7 +349,6 @@ impl UriResolver for SecretsManagerArn {
 
         let client = aws_sdk_secretsmanager::Client::new(&cfg);
 
-        // 2) fetch the secret, propagating any SdkError into SecretsManagerGet
         let resp = client
             .get_secret_value()
             .secret_id(self.full_arn.clone())
@@ -375,7 +358,6 @@ impl UriResolver for SecretsManagerArn {
                 secret_id: self.full_arn.clone(),
             })?;
 
-        // 3) extract the string payload, or error if it was missing
         resp.secret_string()
             .map(str::to_string)
             .context(SecretsManagerStringMissingSnafu {
@@ -422,11 +404,9 @@ impl UriResolver for SecretsManagerUri {
     async fn resolve(&self) -> ResolverResult<String> {
         use resolver_error::*;
 
-        // 1) load AWS config (region/account via env)
         let cfg = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
         let client = aws_sdk_secretsmanager::Client::new(&cfg);
 
-        // 2) fetch the secret, propagating any SdkError into SecretsManagerGet
         let resp = client
             .get_secret_value()
             .secret_id(self.secret_id.clone())
@@ -436,7 +416,6 @@ impl UriResolver for SecretsManagerUri {
                 secret_id: self.secret_id.clone(),
             })?;
 
-        // 3) extract the string payload, or error if it was missing
         resp.secret_string()
             .map(str::to_string)
             .context(SecretsManagerStringMissingSnafu {
@@ -460,10 +439,8 @@ impl TryFrom<&SettingsInput> for SsmArn {
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
         use resolver_error::*;
 
-        // 2) Delegate the rest to our Arn parser
         let arn = Arn::parse(input.input.as_str())?;
 
-        //enforce proper format for SSM
         ensure!(
             arn.parts == 6,
             InvalidArnFormatSnafu {
@@ -472,7 +449,6 @@ impl TryFrom<&SettingsInput> for SsmArn {
             }
         );
 
-        // enforce service name
         ensure!(
             arn.service == "ssm",
             SsmArnSnafu {
@@ -480,7 +456,6 @@ impl TryFrom<&SettingsInput> for SsmArn {
             }
         );
 
-        // 3) Construct
         Ok(SsmArn {
             region: arn.region,
             full_arn: input.input.to_string(),
@@ -492,7 +467,7 @@ impl TryFrom<&SettingsInput> for SsmArn {
 impl UriResolver for SsmArn {
     async fn resolve(&self) -> ResolverResult<String> {
         use resolver_error::*;
-        // 1) Load default config, then override region
+
         let cfg = aws_config::defaults(aws_config::BehaviorVersion::latest())
             .region(aws_sdk_ssm::config::Region::new(self.region.clone()))
             .load()
@@ -500,7 +475,6 @@ impl UriResolver for SsmArn {
 
         let client = aws_sdk_ssm::Client::new(&cfg);
 
-        // 2) Fetch the parameter with decryption
         let resp = client
             .get_parameter()
             .name(self.full_arn.clone())
@@ -511,7 +485,6 @@ impl UriResolver for SsmArn {
                 parameter_name: self.full_arn.clone(),
             })?;
 
-        // 3) Extract the string value
         let value = resp
             .parameter
             .and_then(|p| p.value().map(|v| v.to_string()))
@@ -562,7 +535,6 @@ impl UriResolver for SsmUri {
         let client = ssm::Client::new(&config);
         use resolver_error::*;
 
-        // fetch the parameter, with decryption
         let resp = client
             .get_parameter()
             .name(self.parameter_name.clone())
