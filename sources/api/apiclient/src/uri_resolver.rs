@@ -14,7 +14,8 @@ use std::any::Any;
 use std::convert::TryFrom;
 use std::path::PathBuf;
 use tokio::io::AsyncReadExt;
-const MAX_SIZE_BYTES: u64 = 100 * 1024 * 1024; /// Maximum allowed object size for S3 and HTTP(S) resolvers (100 MiB).
+const MAX_SIZE_BYTES: u64 = 100 * 1024 * 1024;
+/// Maximum allowed object size for S3 and HTTP(S) resolvers (100 MiB).
 
 /// Anything that can fetch itself as a UTF-8 `String`.
 #[async_trait]
@@ -26,7 +27,7 @@ pub trait UriResolver: Any {
 // A minimal AWS ARN parser for our resolvers.
 struct Arn {
     service: String,
-    region:  String,
+    region: String,
     parts: i8,
 }
 
@@ -49,23 +50,19 @@ impl Arn {
             parts.len() > 4,
             InvalidArnFormatSnafu {
                 input_source: input.to_string(),
-                reason: format!(
-                    "expected at least 4 ':' separators, found {}",
-                    parts.len()
-                ),
+                reason: format!("expected at least 4 ':' separators, found {}", parts.len()),
             }
         );
         let service = parts[2];
-        let region  = parts[3];
+        let region = parts[3];
 
         Ok(Arn {
-            service:  service.to_string(),
-            region:   region.to_string(),
-            parts:    parts.len() as i8,
+            service: service.to_string(),
+            region: region.to_string(),
+            parts: parts.len() as i8,
         })
     }
 }
-
 
 /// Uri Resolver that reads from standard input.
 ///
@@ -111,15 +108,11 @@ impl TryFrom<&SettingsInput> for FileUri {
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
         use resolver_error::*;
 
-        let url = {
-            if let None = &input.parsed_url {
-                log::debug!("Failed to parse HTTP URI '{}'", input.input);
-            }
-            input.parsed_url.clone()
-        }.context(FileUriSnafu {
-            input_source: input.input.as_str(),
+        let url = input.parsed_url.clone().context(FileUriSnafu {
+            input_source: input.input.clone(),
         })?;
 
+        // only accept file://
         ensure!(
             url.scheme() == "file",
             FileUriSnafu {
@@ -161,12 +154,7 @@ impl TryFrom<&SettingsInput> for HttpUri {
     type Error = ResolverError;
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
         use resolver_error::*;
-        let url = {
-            if let None = &input.parsed_url {
-                log::debug!("Failed to parse HTTP URI '{}'", input.input);
-            }
-            input.parsed_url.clone()
-        }.context(InvalidHTTPUriSnafu {
+        let url = input.parsed_url.clone().context(InvalidHTTPUriSnafu {
             input_source: input.input.clone(),
         })?;
         ensure!(
@@ -190,7 +178,9 @@ impl UriResolver for HttpUri {
             })?;
 
         // 2) check status
-        ensure!(resp.status().is_success(), HttpStatusSnafu {
+        ensure!(
+            resp.status().is_success(),
+            HttpStatusSnafu {
                 uri: self.url.to_string(),
                 status: resp.status(),
             }
@@ -198,11 +188,14 @@ impl UriResolver for HttpUri {
 
         // 3) check content length if available
         if let Some(content_length) = resp.content_length() {
-            ensure!(content_length < MAX_SIZE_BYTES, HttpObjectTooLargeSnafu {
-                size: content_length,
-                max_size: MAX_SIZE_BYTES,
-                uri: self.url.to_string(),
-            });
+            ensure!(
+                content_length < MAX_SIZE_BYTES,
+                HttpObjectTooLargeSnafu {
+                    size: content_length,
+                    max_size: MAX_SIZE_BYTES,
+                    uri: self.url.to_string(),
+                }
+            );
         }
 
         // 4) read the body as bytes first to check size
@@ -310,8 +303,6 @@ impl UriResolver for S3Uri {
         String::from_utf8(bytes.to_vec()).context(Utf8DecodeSnafu {
             uri: format!("s3://{}/{}", self.bucket, self.key),
         })
-
-
     }
 }
 
@@ -340,22 +331,21 @@ impl TryFrom<&SettingsInput> for SecretsManagerArn {
             arn.parts == 7,
             InvalidArnFormatSnafu {
                 input_source: input.input.clone(),
-                reason: format!(
-                    "expected 6 ':' separators (7 parts), found {}",
-                    arn.parts
-                ),
+                reason: format!("expected 6 ':' separators (7 parts), found {}", arn.parts),
             }
         );
 
         //enforce service name
         ensure!(
             arn.service == "secretsmanager",
-            SecretsManagerArnSnafu { input_source: input.input.clone() }
+            SecretsManagerArnSnafu {
+                input_source: input.input.clone()
+            }
         );
 
         // 3) Construct
         Ok(SecretsManagerArn {
-            region:    arn.region,
+            region: arn.region,
             full_arn: input.input.to_string(), // AWS SDK will accept the full ARN as the secret_id
         })
     }
@@ -478,23 +468,22 @@ impl TryFrom<&SettingsInput> for SsmArn {
             arn.parts == 6,
             InvalidArnFormatSnafu {
                 input_source: input.input.clone(),
-                reason: format!(
-                    "expected 5 ':' separators (6 parts), found {}",
-                    arn.parts
-                ),
+                reason: format!("expected 5 ':' separators (6 parts), found {}", arn.parts),
             }
         );
 
         // enforce service name
         ensure!(
             arn.service == "ssm",
-            SsmArnSnafu { input_source: input.input.clone() }
+            SsmArnSnafu {
+                input_source: input.input.clone()
+            }
         );
 
         // 3) Construct
         Ok(SsmArn {
-            region:         arn.region,
-            full_arn: input.input.to_string(), 
+            region: arn.region,
+            full_arn: input.input.to_string(),
         })
     }
 }
@@ -598,7 +587,6 @@ impl UriResolver for SsmUri {
 #[derive(Debug, Snafu)]
 #[snafu(module)]
 pub enum ResolverError {
-
     //Arn
     #[snafu(display("Invalid ARN '{}': {}", input_source, reason))]
     InvalidArnFormat {
@@ -752,7 +740,7 @@ pub enum ResolverError {
     #[snafu(display("SSM parameter '{}' did not return a string value", parameter_name))]
     SsmParameterMissing { parameter_name: String },
 
-    //UTF8Decode    
+    //UTF8Decode
     #[snafu(display("Failed to decode HTTP response as UTF-8 for {uri}"))]
     Utf8Decode {
         source: std::string::FromUtf8Error,
@@ -810,7 +798,10 @@ mod parse_uri_tests {
     #[test_case("--"; "double_dash")]
     fn parse_stdin_fail(input: &str) {
         let settings = SettingsInput::new(input);
-        assert!(StdinUri::try_from(&settings).is_err(), "only `-` should parse as stdin");
+        assert!(
+            StdinUri::try_from(&settings).is_err(),
+            "only `-` should parse as stdin"
+        );
     }
 
     //FileUri
@@ -830,7 +821,10 @@ mod parse_uri_tests {
     #[test_case("file://no/leading/slash"; "no_leading_slash")]
     fn parse_file_fail(input: &str) {
         let settings = SettingsInput::new(input);
-        assert!(FileUri::try_from(&settings).is_err(), "invalid file URI should fail");
+        assert!(
+            FileUri::try_from(&settings).is_err(),
+            "invalid file URI should fail"
+        );
     }
 
     //HttpUri
@@ -848,7 +842,10 @@ mod parse_uri_tests {
     #[test_case("https:// ";                   "space_after_scheme")]
     fn parse_http_fail(input: &str) {
         let settings = SettingsInput::new(input);
-        assert!(HttpUri::try_from(&settings).is_err(), "invalid HTTP URI should fail");
+        assert!(
+            HttpUri::try_from(&settings).is_err(),
+            "invalid HTTP URI should fail"
+        );
     }
 
     //S3Uri
@@ -866,7 +863,10 @@ mod parse_uri_tests {
     #[test_case("s3://";                      "empty_bucket_and_key")]
     fn parse_s3_fail(input: &str) {
         let settings = SettingsInput::new(input);
-        assert!(S3Uri::try_from(&settings).is_err(), "invalid S3 URI should fail");
+        assert!(
+            S3Uri::try_from(&settings).is_err(),
+            "invalid S3 URI should fail"
+        );
     }
 
     // SecretsManagerArn

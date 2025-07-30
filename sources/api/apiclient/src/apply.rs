@@ -74,7 +74,13 @@ pub struct SettingsInput {
 impl SettingsInput {
     pub(crate) fn new(input: impl Into<String>) -> Self {
         let input = input.into();
-        let parsed_url = Url::parse(&input).ok();
+        let parsed_url = match Url::parse(&input) {
+            Ok(url) => Some(url),
+            Err(err) => {
+                log::debug!("URL parse failed for '{}': {}", input, err);
+                None
+            }
+        };
         SettingsInput { input, parsed_url }
     }
 }
