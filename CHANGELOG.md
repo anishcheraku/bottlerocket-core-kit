@@ -1,3 +1,11 @@
+# v10.0.1 (2025-07-31)
+
+## Orchestrator Changes
+### Kubernetes
+- Backport a patch to fix kubelet drop-in config merge behavior in kubernetes-1.28 ([#613])
+
+[#613]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/613
+
 # v10.0.0 (2025-07-25)
 
 ## OS Changes
