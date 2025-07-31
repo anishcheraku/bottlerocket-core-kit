@@ -68,6 +68,9 @@ Source102: pod-infra-container-image
 
 Source1000: clarify.toml
 
+# Backport patch for config drop-in merge behavior parity with k8s-1.29+
+Patch1001: 1001-cmd-kubelet-fix-overriding-default-KubeletConfig-fie.patch
+
 BuildRequires: git
 BuildRequires: rsync
 BuildRequires: %{_cross_os}glibc-devel
