@@ -399,6 +399,7 @@ dependencies = [
  "aws-config",
  "aws-lc-rs",
  "aws-sdk-s3",
+ "aws-sdk-secretsmanager",
  "aws-smithy-types",
  "base64 0.22.1",
  "constants",
@@ -833,6 +834,29 @@ dependencies = [
  "sha2",
  "tracing",
  "url",
+]
+
+[[package]]
+name = "aws-sdk-secretsmanager"
+version = "1.55.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "30bde1b6dfc07710a45e8ba12c821637bf756bca9f49b3571990419fb7a72f26"
+dependencies = [
+ "aws-credential-types",
+ "aws-runtime",
+ "aws-smithy-async",
+ "aws-smithy-http",
+ "aws-smithy-json",
+ "aws-smithy-runtime",
+ "aws-smithy-runtime-api",
+ "aws-smithy-types",
+ "aws-types",
+ "bytes",
+ "fastrand",
+ "http 0.2.12",
+ "once_cell",
+ "regex-lite",
+ "tracing",
 ]
 
 [[package]]
