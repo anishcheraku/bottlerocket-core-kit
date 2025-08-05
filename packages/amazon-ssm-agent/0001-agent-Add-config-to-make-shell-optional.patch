@@ -1,9 +1,10 @@
-From af0299d3f9ffb36b1f10b3c608b68301af664b1e Mon Sep 17 00:00:00 2001
+From 096dad878552ea342ddad9f3132453fd7cc4e08b Mon Sep 17 00:00:00 2001
 From: Kush Upadhyay <kushupad@amazon.com>
 Date: Mon, 7 Oct 2024 09:13:38 +0000
 Subject: [PATCH] agent: Add config to make shell optional
 
 Signed-off-by: Kush Upadhyay <kushupad@amazon.com>
+Signed-off-by: Yutong Sun <yutongsu@amazon.com>
 ---
  agent/appconfig/appconfig.go         |  1 +
  agent/appconfig/contracts.go         |  2 ++
@@ -11,22 +12,22 @@ Signed-off-by: Kush Upadhyay <kushupad@amazon.com>
  3 files changed, 28 insertions(+), 11 deletions(-)
 
 diff --git a/agent/appconfig/appconfig.go b/agent/appconfig/appconfig.go
-index 021d9f2..867f9e0 100644
+index 6b278f50..2013cf92 100644
 --- a/agent/appconfig/appconfig.go
 +++ b/agent/appconfig/appconfig.go
-@@ -119,6 +119,7 @@ func DefaultConfig() SsmagentConfig {
- 		SessionLogsDestination:                SessionLogsDestinationNone,
+@@ -120,6 +120,7 @@ func DefaultConfig() SsmagentConfig {
  		PluginLocalOutputCleanup:              DefaultPluginOutputRetention,
  		OrchestrationDirectoryCleanup:         DefaultOrchestrationDirCleanup,
+ 		SessionHandshakeTimeoutSeconds:        DefaultSessionHandshakeTimeoutSeconds,
 +		UseShell:                              false,
  	}
- 	var agent = AgentInfo{
+ 	agent := AgentInfo{
  		Name:                                    "amazon-ssm-agent",
 diff --git a/agent/appconfig/contracts.go b/agent/appconfig/contracts.go
-index 687aed2..dcb8412 100644
+index 69501310..bf42380f 100644
 --- a/agent/appconfig/contracts.go
 +++ b/agent/appconfig/contracts.go
-@@ -50,6 +50,8 @@ type SsmCfg struct {
+@@ -55,6 +55,8 @@ type SsmCfg struct {
  	PluginLocalOutputCleanup string
  	// Configure only when it is safe to delete orchestration folder after document execution. This config overrides PluginLocalOutputCleanup when set.
  	OrchestrationDirectoryCleanup string
@@ -36,10 +37,10 @@ index 687aed2..dcb8412 100644
  
  // AgentInfo represents metadata for amazon-ssm-agent
 diff --git a/agent/plugins/runscript/runscript.go b/agent/plugins/runscript/runscript.go
-index 48be5e7..d8cbcf1 100644
+index c89bf92a..b56e973a 100644
 --- a/agent/plugins/runscript/runscript.go
 +++ b/agent/plugins/runscript/runscript.go
-@@ -174,23 +174,37 @@ func (p *Plugin) runCommands(pluginID string, pluginInput RunScriptPluginInput,
+@@ -177,23 +177,37 @@ func (p *Plugin) runCommands(pluginID string, pluginInput RunScriptPluginInput,
  		return
  	}
  
@@ -89,5 +90,5 @@ index 48be5e7..d8cbcf1 100644
  	exitCode, err := p.CommandExecuter.NewExecute(p.Context, workingDir, output.GetStdoutWriter(), output.GetStderrWriter(), cancelFlag, executionTimeout, commandName, commandArguments, pluginInput.Environment)
  
 -- 
-2.40.1
+2.47.0
 
