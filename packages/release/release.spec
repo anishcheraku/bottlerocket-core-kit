@@ -202,7 +202,7 @@ install -d %{buildroot}%{_cross_libdir}/systemd/network
 install -p -m 0644 %{S:1200} %{buildroot}%{_cross_libdir}/systemd/network/80-release.link
 
 install -d %{buildroot}%{_cross_libdir}/systemd/logind.conf.d
-install -p -m 0644 %{S:1103} %{buildroot}%{_cross_libdir}/systemd/logind.conf.d/systemd-logind.conf
+install -p -m 0644 %{S:1103} %{buildroot}%{_cross_libdir}/systemd/logind.conf.d/80-inhibit-maxdelay.conf
 
 cat >%{buildroot}%{_cross_libdir}/os-release <<EOF
 NAME=Bottlerocket
@@ -302,7 +302,7 @@ ln -s preconfigured.target %{buildroot}%{_cross_unitdir}/default.target
 %{_cross_libdir}/os-release
 %dir %{_cross_libdir}/repart.d
 %{_cross_libdir}/repart.d/80-local.conf
-%{_cross_libdir}/systemd/logind.conf.d/systemd-logind.conf
+%{_cross_libdir}/systemd/logind.conf.d/80-inhibit-maxdelay.conf
 %{_cross_libdir}/systemd/network/80-release.link
 %{_cross_libdir}/systemd/networkd.conf.d/80-release.conf
 %{_cross_libdir}/systemd/system.conf.d/80-release.conf
