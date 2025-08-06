@@ -157,6 +157,167 @@ pub fn build_template_registry() -> Result<handlebars::Handlebars<'static>> {
     Ok(template_registry)
 }
 
+pub mod cli {
+    //! CLI module for schnauzer v1
+    use snafu::{ensure, OptionExt, ResultExt};
+    use std::collections::HashMap;
+    use std::string::String;
+    use std::{env, process};
+
+    const API_METADATA_URI_BASE: &str = "/metadata/";
+
+    pub mod error {
+        use http::StatusCode;
+        use snafu::Snafu;
+
+        #[derive(Debug, Snafu)]
+        #[snafu(visibility(pub))]
+        pub enum Error {
+            #[snafu(display("Error {}ing to {}: {}", method, uri, source))]
+            APIRequest {
+                method: String,
+                uri: String,
+                #[snafu(source(from(apiclient::Error, Box::new)))]
+                source: Box<apiclient::Error>,
+            },
+
+            #[snafu(display("Error {} when {}ing to '{}': {}", code, method, uri, response_body))]
+            Response {
+                method: String,
+                uri: String,
+                code: StatusCode,
+                response_body: String,
+            },
+
+            #[snafu(display("Error deserializing to JSON: {}", source))]
+            DeserializeJson { source: serde_json::error::Error },
+
+            #[snafu(display("Error serializing to JSON '{}': {}", output, source))]
+            SerializeOutput {
+                output: String,
+                source: serde_json::error::Error,
+            },
+
+            #[snafu(display("Missing metadata {} for key: {}", meta, key))]
+            MissingMetadata { meta: String, key: String },
+
+            #[snafu(display("Metadata {} expected to be {}, got: {}", meta, expected, value))]
+            MetadataWrongType {
+                meta: String,
+                expected: String,
+                value: String,
+            },
+
+            #[snafu(display("Failed to build template registry: {}", source))]
+            BuildTemplateRegistry { source: crate::v1::Error },
+
+            #[snafu(display("Failed to get settings from API: {}", source))]
+            GetSettings { source: crate::v1::Error },
+
+            #[snafu(display(
+                "Failed to render setting '{}' from template '{}': {}",
+                setting_name,
+                template,
+                source
+            ))]
+            RenderTemplate {
+                setting_name: String,
+                template: String,
+                #[snafu(source(from(handlebars::RenderError, Box::new)))]
+                source: Box<handlebars::RenderError>,
+            },
+        }
+    }
+    pub use error::Error;
+    type Result<T> = std::result::Result<T, error::Error>;
+
+    /// Returns the value of a metadata key for a given data key, erroring if the value is not a
+    /// string or is empty.
+    async fn get_metadata(key: &str, meta: &str) -> Result<String> {
+        let uri = &format!("{API_METADATA_URI_BASE}{meta}?keys={key}");
+        let method = "GET";
+        let (code, response_body) =
+            apiclient::raw_request(constants::API_SOCKET, &uri, method, None)
+                .await
+                .context(error::APIRequestSnafu { method, uri })?;
+        ensure!(
+            code.is_success(),
+            error::ResponseSnafu {
+                method,
+                uri,
+                code,
+                response_body
+            }
+        );
+
+        // Metadata responses are of the form `{"data_key": METADATA}` so we pull out the value.
+        let mut response_map: HashMap<String, serde_json::Value> =
+            serde_json::from_str(&response_body).context(error::DeserializeJsonSnafu)?;
+        let response_val = response_map
+            .remove(key)
+            .context(error::MissingMetadataSnafu { meta, key })?;
+
+        // Ensure it's a non-empty string
+        let response_str =
+            response_val
+                .as_str()
+                .with_context(|| error::MetadataWrongTypeSnafu {
+                    meta,
+                    expected: "string",
+                    value: response_val.to_string(),
+                })?;
+        ensure!(
+            !response_str.is_empty(),
+            error::MissingMetadataSnafu { meta, key }
+        );
+        Ok(response_str.to_string())
+    }
+
+    /// Print usage message.
+    fn usage() -> ! {
+        let program_name = env::args().next().unwrap_or_else(|| "program".to_string());
+        eprintln!("Usage: {program_name} SETTING_KEY");
+        process::exit(2);
+    }
+
+    /// Parses args for the setting key name.
+    fn parse_args(mut args: env::Args) -> String {
+        let arg = args.nth(1).unwrap_or_else(|| "--help".to_string());
+        if arg == "--help" || arg == "-h" {
+            usage()
+        }
+        arg
+    }
+
+    /// Main CLI entry point for schnauzer v1
+    pub async fn run() -> Result<()> {
+        let setting_name = parse_args(env::args());
+
+        let registry =
+            crate::v1::build_template_registry().context(error::BuildTemplateRegistrySnafu)?;
+        let template = get_metadata(&setting_name, "templates").await?;
+        let settings = crate::v1::get_settings(constants::API_SOCKET)
+            .await
+            .context(error::GetSettingsSnafu)?;
+
+        let setting =
+            registry
+                .render_template(&template, &settings)
+                .context(error::RenderTemplateSnafu {
+                    setting_name,
+                    template,
+                })?;
+
+        // sundog expects JSON-serialized output so that many types can be represented, allowing the
+        // API model to use more accurate types.
+        let output = serde_json::to_string(&setting)
+            .context(error::SerializeOutputSnafu { output: &setting })?;
+
+        println!("{output}");
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use handlebars::Handlebars;

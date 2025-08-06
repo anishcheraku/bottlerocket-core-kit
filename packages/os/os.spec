@@ -595,7 +595,7 @@ install -d %{buildroot}%{_cross_bindir}
 install -d %{buildroot}%{_cross_fips_bindir}
 for p in \
   apiserver \
-  sundog schnauzer schnauzer-v2 bork \
+  sundog schnauzer bork \
   corndog thar-be-settings thar-be-updates host-containers \
   storewolf settings-committer \
   migrator prairiedog certdog \
@@ -609,6 +609,9 @@ for p in \
 ; do
   install -p -m 0755 %{__cargo_outdir}/${p} %{buildroot}%{_cross_bindir}
 done
+
+# Create symlink for schnauzer-v2 to enable multicall behavior
+ln -s schnauzer %{buildroot}%{_cross_bindir}/schnauzer-v2
 
 ln -s brush %{buildroot}%{_cross_bindir}/sh
 install -d %{buildroot}%{_cross_libexecdir}/brush/allowed-programs
