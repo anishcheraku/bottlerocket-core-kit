@@ -14,7 +14,7 @@ path = "../packages.rs"
 package-name = "kubernetes-1.32"
 
 [[package.metadata.build-package.external-files]]
-url = "https://distro.eks.amazonaws.com/kubernetes-1-32/releases/16/artifacts/kubernetes/v1.32.5/kubernetes-src.tar.gz"
+url = "https://distro.eks.amazonaws.com/kubernetes-1-32/releases/18/artifacts/kubernetes/v1.32.5/kubernetes-src.tar.gz"
 sha512 = "613445413f80a5ca0a7266bb086830154d77c7f0106e676c6d7d49f2bb9628e6ad8360e5399b02888d2d9a6fa25ea6ef1e4dbc5d690e8a9faa944374d240bfeb"
 
 [build-dependencies]
