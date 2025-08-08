@@ -22,6 +22,7 @@ sha512 = "7aa972c146e0dfaacc8faaef9b9ebbe419f7cbc5814d1fb978b35a4972d384aabe2e6e
 [build-dependencies]
 glibc = { path = "../glibc" }
 iptables = { path = "../iptables" }
+libjansson = { path = "../libjansson" }
 libmnl = { path = "../libmnl" }
 libnftnl = { path = "../libnftnl" }
 readline = { path = "../readline" }
