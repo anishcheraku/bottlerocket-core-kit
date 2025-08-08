@@ -10,12 +10,6 @@ Summary: System and Service Manager
 License: GPL-2.0-or-later AND GPL-2.0-only AND LGPL-2.1-or-later
 URL: https://www.freedesktop.org/wiki/Software/systemd
 Source0: https://github.com/systemd/systemd-stable/archive/v%{version}/systemd-stable-%{version}.tar.gz
-Source1: systemd-tmpfiles.conf
-Source2: systemd-modules-load.conf
-Source3: journald.conf
-Source4: issue
-Source5: systemd-journald.conf
-Source6: systemd-sysusers.conf
 
 # Backport of upstream patches that make the netlink default timeout
 # configurable.  Bottlerocket carries this patch and configures the timeout in
@@ -333,21 +327,6 @@ CONFIGURE_OPTS=(
 %install
 %cross_meson_install
 
-install -d %{buildroot}%{_cross_tmpfilesdir}
-install -p -m 0644 %{S:1} %{buildroot}%{_cross_tmpfilesdir}/systemd-tmpfiles.conf
-
-install -d %{buildroot}%{_cross_libdir}/modules-load.d
-install -p -m 0644 %{S:2} %{buildroot}%{_cross_libdir}/modules-load.d/nf_conntrack.conf
-
-install -d %{buildroot}%{_cross_libdir}/systemd/journald.conf.d
-install -p -m 0644 %{S:3} %{buildroot}%{_cross_libdir}/systemd/journald.conf.d/journald.conf
-
-install -d %{buildroot}%{_cross_unitdir}/systemd-journald.service.d
-install -p -m 0644 %{S:5} %{buildroot}%{_cross_unitdir}/systemd-journald.service.d/systemd-journald.conf
-
-install -d %{buildroot}%{_cross_unitdir}/systemd-sysusers.service.d
-install -p -m 0644 %{S:6} %{buildroot}%{_cross_unitdir}/systemd-sysusers.service.d/systemd-sysusers.conf
-
 # Remove all stock network configurations, as they can interfere
 # with container networking by attempting to manage veth devices.
 rm -f %{buildroot}%{_cross_libdir}/systemd/network/*
@@ -364,9 +343,6 @@ rm -f %{buildroot}%{_cross_libdir}/systemd/{system,user}/graphical.target
 ln -s  ../proc-sys-fs-binfmt_misc.mount \
   %{buildroot}%{_cross_unitdir}/sysinit.target.wants/proc-sys-fs-binfmt_misc.mount
 
-# Add art to the console
-install -d %{buildroot}%{_cross_factorydir}%{_cross_sysconfdir}
-install -p -m 0644 %{S:4} %{buildroot}%{_cross_factorydir}%{_cross_sysconfdir}/issue
 
 # Remove any README files.
 find %{buildroot} -type f -name README -print -delete
@@ -442,14 +418,10 @@ find %{buildroot} -type f -name README -print -delete
 %dir %{_cross_libdir}/systemd/system-shutdown
 %dir %{_cross_libdir}/systemd/system-sleep
 
-%dir %{_cross_libdir}/systemd/journald.conf.d
-%{_cross_libdir}/systemd/journald.conf.d/journald.conf
 
 %dir %{_cross_libdir}/modprobe.d
 %{_cross_libdir}/modprobe.d/systemd.conf
 
-%dir %{_cross_libdir}/modules-load.d
-%{_cross_libdir}/modules-load.d/nf_conntrack.conf
 
 %dir %{_cross_sysctldir}
 %{_cross_sysctldir}/50-default.conf
@@ -543,8 +515,6 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_unitdir}/systemd-journald-dev-log.socket
 %{_cross_unitdir}/systemd-journald-varlink@.socket
 %{_cross_unitdir}/systemd-journald.service
-%dir %{_cross_unitdir}/systemd-journald.service.d
-%{_cross_unitdir}/systemd-journald.service.d/systemd-journald.conf
 %{_cross_unitdir}/systemd-journald.socket
 %{_cross_unitdir}/systemd-journald@.service
 %{_cross_unitdir}/systemd-journald@.socket
@@ -562,8 +532,6 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_unitdir}/systemd-suspend.service
 %{_cross_unitdir}/systemd-sysctl.service
 %{_cross_unitdir}/systemd-sysusers.service
-%dir %{_cross_unitdir}/systemd-sysusers.service.d
-%{_cross_unitdir}/systemd-sysusers.service.d/systemd-sysusers.conf
 %{_cross_unitdir}/systemd-tmpfiles-clean.service
 %{_cross_unitdir}/systemd-tmpfiles-clean.timer
 %{_cross_unitdir}/systemd-tmpfiles-setup-dev.service
@@ -688,7 +656,6 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_tmpfilesdir}/static-nodes-permissions.conf
 %{_cross_tmpfilesdir}/systemd-pstore.conf
 %{_cross_tmpfilesdir}/systemd-tmp.conf
-%{_cross_tmpfilesdir}/systemd-tmpfiles.conf
 %{_cross_tmpfilesdir}/systemd.conf
 %{_cross_tmpfilesdir}/tmp.conf
 %{_cross_tmpfilesdir}/var.conf
@@ -700,7 +667,7 @@ find %{buildroot} -type f -name README -print -delete
 %exclude %{_cross_datadir}/dbus-1/system-services
 
 %dir %{_cross_factorydir}
-%{_cross_factorydir}%{_cross_sysconfdir}/issue
+%exclude %{_cross_factorydir}%{_cross_sysconfdir}/issue
 %{_cross_factorydir}%{_cross_sysconfdir}/locale.conf
 %exclude %{_cross_factorydir}%{_cross_sysconfdir}/nsswitch.conf
 %exclude %{_cross_factorydir}%{_cross_sysconfdir}/pam.d
