@@ -6,7 +6,7 @@
 %global rpmver %{gover}
 %global gitrev 05044ec0a9a75232cad458027ca83437aae3f4da
 
-%global package_priority_epoch 1
+%global package_priority_epoch 2
 %global _dwz_low_mem_die_limit 0
 
 Name: %{_cross_os}%{gorepo}-1.7
