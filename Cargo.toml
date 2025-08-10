@@ -16,6 +16,7 @@ members = [
   "packages/conntrack-tools",
   "packages/containerd-1.7",
   "packages/containerd-2.0",
+  "packages/containerd-2.1",
   "packages/coreutils",
   "packages/libcryptsetup",
   "packages/dbus-broker",
