@@ -20,7 +20,10 @@ async fn main() -> Result<()> {
         .fetch_hostname()
         .await
         .context(error::ImdsSnafu)?
-        .context(error::NoHostnameSnafu)?;
+        .context(error::NoHostnameSnafu)?
+        // the IMDS client returns a lowercase hostname anyway, but there's some
+        // symmetry in having both helpers lowercase the result always
+        .to_ascii_lowercase();
     println!("{hostname}");
     Ok(())
 }

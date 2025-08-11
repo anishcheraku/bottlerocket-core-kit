@@ -242,8 +242,8 @@ impl ImdsClient {
         Ok(self.fetch_string(&hostname_target).await?.and_then(|h| {
             h.split_whitespace()
                 .next()
-                .map(|h| h.trim_end_matches('.'))
-                .map(String::from)
+                // trim any trailing dots and lowercase the result
+                .map(|h| h.trim_end_matches('.').to_ascii_lowercase())
         }))
     }
 
@@ -842,8 +842,9 @@ mod test {
         let base_uri = format!("http://{}", server.addr());
         let token = "some+token";
         let response_code = 200;
+        // should always lowercase the response
         let response_body =
-            r#"ip-10-0-13-37.example.com. ip-10-0-13-37.eu-central-1.compute.internal"#;
+            r#"ip-10-0-13-37.EXAMPLE.com. ip-10-0-13-37.eu-central-1.compute.internal"#;
         server.expect(
             Expectation::matching(request::method_path("PUT", "/latest/api/token"))
                 .times(1)

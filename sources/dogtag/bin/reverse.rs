@@ -25,7 +25,8 @@ async fn main() -> Result<()> {
         .await
         .map_err(|e| error::Error::Lookup {
             source: Box::new(e),
-        })?;
+        })?
+        .to_ascii_lowercase();
     println!("{hostname}");
     Ok(())
 }
