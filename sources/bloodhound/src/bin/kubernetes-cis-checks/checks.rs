@@ -1,5 +1,6 @@
-use std::{collections::HashSet, fs::File, path::Path};
+use std::collections::HashSet;
 
+use bloodhound::system_access::SystemAccess;
 use bloodhound::{
     check_file_not_mode, ensure_file_owner_and_group_root,
     results::{CheckStatus, Checker, CheckerMetadata, CheckerResult, Mode},
@@ -19,9 +20,9 @@ pub const KUBEPROXY_CONF_FILE: &str = "/etc/kubernetes/kube-proxy/kube-proxy.con
 pub struct K8S04010100Checker {}
 
 impl Checker for K8S04010100Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let no_x_xwr_xwr = S_IXUSR | S_IRWXG | S_IRWXO;
-        check_file_not_mode(KUBELET_SERVICE_FILE, no_x_xwr_xwr)
+        check_file_not_mode(sac, KUBELET_SERVICE_FILE, no_x_xwr_xwr)
     }
 
     fn metadata(&self) -> CheckerMetadata {
@@ -40,8 +41,8 @@ impl Checker for K8S04010100Checker {
 pub struct K8S04010200Checker {}
 
 impl Checker for K8S04010200Checker {
-    fn execute(&self) -> CheckerResult {
-        ensure_file_owner_and_group_root(KUBELET_SERVICE_FILE)
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
+        ensure_file_owner_and_group_root(sac, KUBELET_SERVICE_FILE)
     }
 
     fn metadata(&self) -> CheckerMetadata {
@@ -60,9 +61,9 @@ impl Checker for K8S04010200Checker {
 pub struct K8S04010500Checker {}
 
 impl Checker for K8S04010500Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let no_x_xwr_xwr = S_IXUSR | S_IRWXG | S_IRWXO;
-        check_file_not_mode(KUBELET_KUBECONFIG_FILE, no_x_xwr_xwr)
+        check_file_not_mode(sac, KUBELET_KUBECONFIG_FILE, no_x_xwr_xwr)
     }
 
     fn metadata(&self) -> CheckerMetadata {
@@ -81,8 +82,8 @@ impl Checker for K8S04010500Checker {
 pub struct K8S04010600Checker {}
 
 impl Checker for K8S04010600Checker {
-    fn execute(&self) -> CheckerResult {
-        ensure_file_owner_and_group_root(KUBELET_KUBECONFIG_FILE)
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
+        ensure_file_owner_and_group_root(sac, KUBELET_KUBECONFIG_FILE)
     }
 
     fn metadata(&self) -> CheckerMetadata {
@@ -102,9 +103,9 @@ impl Checker for K8S04010600Checker {
 pub struct K8S04010700Checker {}
 
 impl Checker for K8S04010700Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let no_x_xw_xw = S_IXUSR | S_IXGRP | S_IWGRP | S_IXOTH | S_IWOTH;
-        check_file_not_mode(KUBELET_CLIENT_CA_FILE, no_x_xw_xw)
+        check_file_not_mode(sac, KUBELET_CLIENT_CA_FILE, no_x_xw_xw)
     }
 
     fn metadata(&self) -> CheckerMetadata {
@@ -123,8 +124,8 @@ impl Checker for K8S04010700Checker {
 pub struct K8S04010800Checker {}
 
 impl Checker for K8S04010800Checker {
-    fn execute(&self) -> CheckerResult {
-        ensure_file_owner_and_group_root(KUBELET_CLIENT_CA_FILE)
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
+        ensure_file_owner_and_group_root(sac, KUBELET_CLIENT_CA_FILE)
     }
 
     fn metadata(&self) -> CheckerMetadata {
@@ -145,9 +146,9 @@ impl Checker for K8S04010800Checker {
 pub struct K8S04010900Checker {}
 
 impl Checker for K8S04010900Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let no_x_xwr_xwr = S_IXUSR | S_IRWXG | S_IRWXO;
-        check_file_not_mode(KUBELET_CONF_FILE, no_x_xwr_xwr)
+        check_file_not_mode(sac, KUBELET_CONF_FILE, no_x_xwr_xwr)
     }
 
     fn metadata(&self) -> CheckerMetadata {
@@ -166,8 +167,8 @@ impl Checker for K8S04010900Checker {
 pub struct K8S04011000Checker {}
 
 impl Checker for K8S04011000Checker {
-    fn execute(&self) -> CheckerResult {
-        ensure_file_owner_and_group_root(KUBELET_CONF_FILE)
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
+        ensure_file_owner_and_group_root(sac, KUBELET_CONF_FILE)
     }
 
     fn metadata(&self) -> CheckerMetadata {
@@ -187,7 +188,7 @@ impl Checker for K8S04011000Checker {
 pub struct K8S04020100Checker {}
 
 impl Checker for K8S04020100Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         #[derive(Deserialize)]
         struct Anonymous {
             enabled: bool,
@@ -205,7 +206,7 @@ impl Checker for K8S04020100Checker {
 
         let mut result = CheckerResult::default();
 
-        if let Ok(kubelet_file) = File::open(KUBELET_CONF_FILE) {
+        if let Ok(kubelet_file) = sac.open(KUBELET_CONF_FILE) {
             if let Ok(config) = serde_yaml::from_reader::<_, KubeletConfig>(kubelet_file) {
                 if config.authentication.anonymous.enabled {
                     result.error = "anonymous authentication is configured".to_string();
@@ -239,7 +240,7 @@ impl Checker for K8S04020100Checker {
 pub struct K8S04020200Checker {}
 
 impl Checker for K8S04020200Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         #[derive(Deserialize)]
         struct Authorization {
             mode: String,
@@ -252,7 +253,7 @@ impl Checker for K8S04020200Checker {
 
         let mut result = CheckerResult::default();
 
-        if let Ok(kubelet_file) = File::open(KUBELET_CONF_FILE) {
+        if let Ok(kubelet_file) = sac.open(KUBELET_CONF_FILE) {
             if let Ok(config) = serde_yaml::from_reader::<_, KubeletConfig>(kubelet_file) {
                 if config.authorization.mode == "AlwaysAllow" {
                     result.error = "AlwaysAllow authorization is configured".to_string();
@@ -287,7 +288,7 @@ impl Checker for K8S04020200Checker {
 pub struct K8S04020300Checker {}
 
 impl Checker for K8S04020300Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         #[derive(Deserialize)]
         struct X509 {
             #[serde(rename = "clientCAFile")]
@@ -306,10 +307,10 @@ impl Checker for K8S04020300Checker {
 
         let mut result = CheckerResult::default();
 
-        if let Ok(kubelet_file) = File::open(KUBELET_CONF_FILE) {
+        if let Ok(kubelet_file) = sac.open(KUBELET_CONF_FILE) {
             if let Ok(config) = serde_yaml::from_reader::<_, KubeletConfig>(kubelet_file) {
                 if !config.authentication.x509.client_ca_file.is_empty()
-                    && Path::new(&config.authentication.x509.client_ca_file).exists()
+                    && sac.exists(&config.authentication.x509.client_ca_file)
                 {
                     result.status = CheckStatus::PASS;
                 } else {
@@ -342,7 +343,7 @@ impl Checker for K8S04020300Checker {
 pub struct K8S04020400Checker {}
 
 impl Checker for K8S04020400Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         #[derive(Deserialize)]
         struct KubeletConfig {
             #[serde(rename = "readOnlyPort")]
@@ -351,7 +352,7 @@ impl Checker for K8S04020400Checker {
 
         let mut result = CheckerResult::default();
 
-        if let Ok(kubelet_file) = File::open(KUBELET_CONF_FILE) {
+        if let Ok(kubelet_file) = sac.open(KUBELET_CONF_FILE) {
             if let Ok(config) = serde_yaml::from_reader::<_, KubeletConfig>(kubelet_file) {
                 if config.read_only_port != 0 {
                     result.error = "Kubelet readOnlyPort not set to 0".to_string();
@@ -385,7 +386,7 @@ impl Checker for K8S04020400Checker {
 pub struct K8S04020500Checker {}
 
 impl Checker for K8S04020500Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         #[derive(Deserialize)]
         struct KubeletConfig {
             #[serde(rename = "streamingConnectionIdleTimeout")]
@@ -394,7 +395,7 @@ impl Checker for K8S04020500Checker {
 
         let mut result = CheckerResult::default();
 
-        if let Ok(kubelet_file) = File::open(KUBELET_CONF_FILE) {
+        if let Ok(kubelet_file) = sac.open(KUBELET_CONF_FILE) {
             if let Ok(config) = serde_yaml::from_reader::<_, KubeletConfig>(kubelet_file) {
                 if config.streaming_connection_idle_timeout == 0 {
                     result.error = "Kubelet streamingConnectionIdleTimeout is set to 0".to_string();
@@ -430,7 +431,7 @@ impl Checker for K8S04020500Checker {
 pub struct K8S04020600Checker {}
 
 impl Checker for K8S04020600Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         #[derive(Deserialize)]
         struct KubeletConfig {
             #[serde(rename = "makeIPTablesUtilChains")]
@@ -439,7 +440,7 @@ impl Checker for K8S04020600Checker {
 
         let mut result = CheckerResult::default();
 
-        if let Ok(kubelet_file) = File::open(KUBELET_CONF_FILE) {
+        if let Ok(kubelet_file) = sac.open(KUBELET_CONF_FILE) {
             if let Ok(config) = serde_yaml::from_reader::<_, KubeletConfig>(kubelet_file) {
                 if !config.make_iptables_util_chains {
                     result.error = "Kubelet makeIPTablesUtilChains is disabled".to_string();
@@ -475,7 +476,7 @@ impl Checker for K8S04020600Checker {
 pub struct K8S04020900Checker {}
 
 impl Checker for K8S04020900Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         #[derive(Deserialize)]
         struct KubeletConfig {
             #[serde(rename = "tlsCertFile")]
@@ -486,11 +487,11 @@ impl Checker for K8S04020900Checker {
 
         let mut result = CheckerResult::default();
 
-        if let Ok(kubelet_file) = File::open(KUBELET_CONF_FILE) {
+        if let Ok(kubelet_file) = sac.open(KUBELET_CONF_FILE) {
             if let Ok(config) = serde_yaml::from_reader::<_, KubeletConfig>(kubelet_file) {
-                if (!config.tls_cert_file.is_empty() && Path::new(&config.tls_cert_file).exists())
+                if (!config.tls_cert_file.is_empty() && sac.exists(&config.tls_cert_file))
                     && (!config.tls_private_key_file.is_empty()
-                        && Path::new(&config.tls_private_key_file).exists())
+                        && sac.exists(&config.tls_private_key_file))
                 {
                     result.status = CheckStatus::PASS;
                 } else {
@@ -526,7 +527,7 @@ pub struct K8S04021000Checker {}
 // Not actually applicable for Bottlerocket, but leaving logic here in case we
 // make any changes in the future.
 impl Checker for K8S04021000Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         #[derive(Deserialize)]
         struct KubeletConfig {
             #[serde(rename = "rotateCertificates")]
@@ -535,7 +536,7 @@ impl Checker for K8S04021000Checker {
 
         let mut result = CheckerResult::default();
 
-        if let Ok(kubelet_file) = File::open(KUBELET_CONF_FILE) {
+        if let Ok(kubelet_file) = sac.open(KUBELET_CONF_FILE) {
             if let Ok(config) = serde_yaml::from_reader::<_, KubeletConfig>(kubelet_file) {
                 if !config.rotate_certificates {
                     result.error = "Kubelet rotateCertificates is disabled".to_string();
@@ -571,7 +572,7 @@ impl Checker for K8S04021000Checker {
 pub struct K8S04021100Checker {}
 
 impl Checker for K8S04021100Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         #[derive(Deserialize)]
         struct FeatureGates {
             #[serde(rename = "RotateKubeletServerCertificate")]
@@ -586,7 +587,7 @@ impl Checker for K8S04021100Checker {
 
         let mut result = CheckerResult::default();
 
-        if let Ok(kubelet_file) = File::open(KUBELET_CONF_FILE) {
+        if let Ok(kubelet_file) = sac.open(KUBELET_CONF_FILE) {
             if let Ok(config) = serde_yaml::from_reader::<_, KubeletConfig>(kubelet_file) {
                 if !config.feature_gates.rotate_kubelet_server_certificate {
                     result.error = "Kubelet RotateKubeletServerCertificate is disabled".to_string();
@@ -622,7 +623,7 @@ impl Checker for K8S04021100Checker {
 pub struct K8S04021200Checker {}
 
 impl Checker for K8S04021200Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let allowed_suites: HashSet<&str> = vec![
             "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
             "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
@@ -644,7 +645,7 @@ impl Checker for K8S04021200Checker {
 
         let mut result = CheckerResult::default();
 
-        if let Ok(kubelet_file) = File::open(KUBELET_CONF_FILE) {
+        if let Ok(kubelet_file) = sac.open(KUBELET_CONF_FILE) {
             if let Ok(config) = serde_yaml::from_reader::<_, KubeletConfig>(kubelet_file) {
                 let configured_suites: HashSet<&str> = config
                     .tls_cipher_suites
@@ -684,7 +685,7 @@ impl Checker for K8S04021200Checker {
 pub struct K8S04021300Checker {}
 
 impl Checker for K8S04021300Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         #[derive(Deserialize)]
         struct KubeletConfig {
             #[serde(rename = "podPidsLimit")]
@@ -693,7 +694,7 @@ impl Checker for K8S04021300Checker {
 
         let mut result = CheckerResult::default();
 
-        if let Ok(kubelet_file) = File::open(KUBELET_CONF_FILE) {
+        if let Ok(kubelet_file) = sac.open(KUBELET_CONF_FILE) {
             if let Ok(config) = serde_yaml::from_reader::<_, KubeletConfig>(kubelet_file) {
                 if config.pod_pids_limit <= 0 {
                     result.error = "podPidsLimit is unrestricted".to_string();
@@ -729,7 +730,7 @@ impl Checker for K8S04021300Checker {
 pub struct K8S04021400Checker {}
 
 impl Checker for K8S04021400Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         #[derive(Deserialize)]
         struct KubeletConfig {
             #[serde(rename = "seccompDefault")]
@@ -738,7 +739,7 @@ impl Checker for K8S04021400Checker {
 
         let mut result = CheckerResult::default();
 
-        if let Ok(kubelet_file) = File::open(KUBELET_CONF_FILE) {
+        if let Ok(kubelet_file) = sac.open(KUBELET_CONF_FILE) {
             if let Ok(config) = serde_yaml::from_reader::<_, KubeletConfig>(kubelet_file) {
                 if !config.seccomp_default {
                     result.error = "Kubelet seccompDefault is not set to true".to_string();
@@ -773,7 +774,7 @@ impl Checker for K8S04021400Checker {
 
 pub struct K8S04030100Checker {}
 impl Checker for K8S04030100Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         #[derive(Deserialize)]
         struct KubeProxyConfig {
             #[serde(rename = "metricsBindAddress")]
@@ -781,7 +782,7 @@ impl Checker for K8S04030100Checker {
         }
         let mut result = CheckerResult::default();
 
-        if let Ok(kubelet_file) = File::open(KUBEPROXY_CONF_FILE) {
+        if let Ok(kubelet_file) = sac.open(KUBEPROXY_CONF_FILE) {
             if let Ok(config) = serde_yaml::from_reader::<_, KubeProxyConfig>(kubelet_file) {
                 if config.metrics_bind_address.contains("0.0.0.0")
                     || config.metrics_bind_address.contains("[::]")
@@ -816,9 +817,9 @@ impl Checker for K8S04030100Checker {
 
 pub struct K8S04010300Checker {}
 impl Checker for K8S04010300Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let no_x_xwr_xwr = S_IXUSR | S_IRWXG | S_IRWXO;
-        check_file_not_mode(KUBEPROXY_CONF_FILE, no_x_xwr_xwr)
+        check_file_not_mode(sac, KUBEPROXY_CONF_FILE, no_x_xwr_xwr)
     }
     fn metadata(&self) -> CheckerMetadata {
         CheckerMetadata {
@@ -835,8 +836,8 @@ impl Checker for K8S04010300Checker {
 
 pub struct K8S04010400Checker {}
 impl Checker for K8S04010400Checker {
-    fn execute(&self) -> CheckerResult {
-        ensure_file_owner_and_group_root(KUBEPROXY_CONF_FILE)
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
+        ensure_file_owner_and_group_root(sac, KUBEPROXY_CONF_FILE)
     }
     fn metadata(&self) -> CheckerMetadata {
         CheckerMetadata {
@@ -847,5 +848,927 @@ impl Checker for K8S04010400Checker {
             name: "k8s04010400".to_string(),
             mode: Mode::Automatic,
         }
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bloodhound::results::{CheckStatus, Checker};
+    use bloodhound::system_access::UnitTestSystemAccess;
+
+    // K8S04010100Checker tests - kubelet service file permissions
+    #[test]
+    pub fn test_k8s04010100checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_SERVICE_FILE, "", 0o600, 0, 0);
+        let checker = K8S04010100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04010100checker_fail_too_permissive() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_SERVICE_FILE, "", 0o755, 0, 0);
+        let checker = K8S04010100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04010100checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04010100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04010200Checker tests - kubelet service file ownership
+    #[test]
+    pub fn test_k8s04010200checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_SERVICE_FILE, "", 0o600, 0, 0);
+        let checker = K8S04010200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04010200checker_fail_wrong_owner() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_SERVICE_FILE, "", 0o600, 1000, 1000);
+        let checker = K8S04010200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04010200checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04010200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04010300Checker tests - proxy kubeconfig file permissions
+    #[test]
+    pub fn test_k8s04010300checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBEPROXY_CONF_FILE, "", 0o600, 0, 0);
+        let checker = K8S04010300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04010300checker_fail_too_permissive() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBEPROXY_CONF_FILE, "", 0o644, 0, 0);
+        let checker = K8S04010300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04010300checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04010300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04010400Checker tests - proxy kubeconfig file ownership
+    #[test]
+    pub fn test_k8s04010400checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBEPROXY_CONF_FILE, "", 0o600, 0, 0);
+        let checker = K8S04010400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04010400checker_fail_wrong_owner() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBEPROXY_CONF_FILE, "", 0o600, 500, 500);
+        let checker = K8S04010400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04010400checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04010400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04010500Checker tests - kubelet kubeconfig file permissions
+    #[test]
+    pub fn test_k8s04010500checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_KUBECONFIG_FILE, "", 0o600, 0, 0);
+        let checker = K8S04010500Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04010500checker_fail_too_permissive() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_KUBECONFIG_FILE, "", 0o777, 0, 0);
+        let checker = K8S04010500Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04010500checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04010500Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04010600Checker tests - kubelet kubeconfig file ownership
+    #[test]
+    pub fn test_k8s04010600checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_KUBECONFIG_FILE, "", 0o600, 0, 0);
+        let checker = K8S04010600Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04010600checker_fail_wrong_owner() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_KUBECONFIG_FILE, "", 0o600, 1001, 0);
+        let checker = K8S04010600Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04010600checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04010600Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04010700Checker tests - certificate authorities file permissions
+    #[test]
+    pub fn test_k8s04010700checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_CLIENT_CA_FILE, "", 0o644, 0, 0);
+        let checker = K8S04010700Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04010700checker_fail_too_permissive() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_CLIENT_CA_FILE, "", 0o666, 0, 0);
+        let checker = K8S04010700Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04010700checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04010700Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04010800Checker tests - certificate authorities file ownership
+    #[test]
+    pub fn test_k8s04010800checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_CLIENT_CA_FILE, "", 0o644, 0, 0);
+        let checker = K8S04010800Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04010800checker_fail_wrong_owner() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_CLIENT_CA_FILE, "", 0o644, 0, 100);
+        let checker = K8S04010800Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04010800checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04010800Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04010900Checker tests - kubelet config file permissions
+    #[test]
+    pub fn test_k8s04010900checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_CONF_FILE, "", 0o600, 0, 0);
+        let checker = K8S04010900Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04010900checker_fail_too_permissive() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_CONF_FILE, "", 0o666, 0, 0);
+        let checker = K8S04010900Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04010900checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04010900Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04011000Checker tests - kubelet config file ownership
+    #[test]
+    pub fn test_k8s04011000checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_CONF_FILE, "", 0o600, 0, 0);
+        let checker = K8S04011000Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04011000checker_fail_wrong_owner() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file_with_metadata(KUBELET_CONF_FILE, "", 0o600, 1000, 1000);
+        let checker = K8S04011000Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04011000checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04011000Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+    // K8S04020100Checker tests - anonymous authentication
+    #[test]
+    pub fn test_k8s04020100checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+authentication:
+  anonymous:
+    enabled: false
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04020100checker_fail_anonymous_enabled() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+authentication:
+  anonymous:
+    enabled: true
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04020100checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04020100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    #[test]
+    pub fn test_k8s04020100checker_invalid_config() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(KUBELET_CONF_FILE, "invalid yaml content");
+        let checker = K8S04020100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04020200Checker tests - authorization mode
+    #[test]
+    pub fn test_k8s04020200checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+authorization:
+  mode: Webhook
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04020200checker_fail_always_allow() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+authorization:
+  mode: AlwaysAllow
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04020200checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04020200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    #[test]
+    pub fn test_k8s04020200checker_invalid_config() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(KUBELET_CONF_FILE, "invalid: yaml: content:");
+        let checker = K8S04020200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04020300Checker tests - client CA file
+    #[test]
+    pub fn test_k8s04020300checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+authentication:
+  x509:
+    clientCAFile: /etc/kubernetes/pki/ca.crt
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        // Register the CA file to simulate it exists
+        sac.register_file("/etc/kubernetes/pki/ca.crt", "dummy ca content");
+        let checker = K8S04020300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04020300checker_fail_ca_file_missing() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+authentication:
+  x509:
+    clientCAFile: /nonexistent/ca.crt
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04020300checker_fail_empty_ca_file() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+authentication:
+  x509:
+    clientCAFile: ""
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04020300checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04020300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04020400Checker tests - read only port
+    #[test]
+    pub fn test_k8s04020400checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+readOnlyPort: 0
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04020400checker_fail_port_not_zero() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+readOnlyPort: 10255
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04020400checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04020400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    #[test]
+    pub fn test_k8s04020400checker_invalid_config() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(KUBELET_CONF_FILE, "invalid yaml");
+        let checker = K8S04020400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04020500Checker tests - streaming connection idle timeout
+    #[test]
+    pub fn test_k8s04020500checker_pass_timeout_set() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+streamingConnectionIdleTimeout: 300
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020500Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04020500checker_pass_timeout_not_present() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+someOtherSetting: value
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020500Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04020500checker_fail_timeout_zero() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+streamingConnectionIdleTimeout: 0
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020500Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04020500checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04020500Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04020600Checker tests - make iptables util chains
+    #[test]
+    pub fn test_k8s04020600checker_pass_enabled() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+makeIPTablesUtilChains: true
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020600Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04020600checker_pass_not_present() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+someOtherSetting: value
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020600Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04020600checker_fail_disabled() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+makeIPTablesUtilChains: false
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020600Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04020600checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04020600Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+    // K8S04020900Checker tests - TLS cert and key files
+    #[test]
+    pub fn test_k8s04020900checker_pass_with_files() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+tlsCertFile: /etc/kubernetes/pki/kubelet.crt
+tlsPrivateKeyFile: /etc/kubernetes/pki/kubelet.key
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        sac.register_file("/etc/kubernetes/pki/kubelet.crt", "dummy cert");
+        sac.register_file("/etc/kubernetes/pki/kubelet.key", "dummy key");
+        let checker = K8S04020900Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04020900checker_pass_without_files() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+someOtherSetting: value
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020900Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04020900checker_fail_cert_missing() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+tlsCertFile: /nonexistent/kubelet.crt
+tlsPrivateKeyFile: /etc/kubernetes/pki/kubelet.key
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        sac.register_file("/etc/kubernetes/pki/kubelet.key", "dummy key");
+        let checker = K8S04020900Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04020900checker_fail_key_missing() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+tlsCertFile: /etc/kubernetes/pki/kubelet.crt
+tlsPrivateKeyFile: /nonexistent/kubelet.key
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        sac.register_file("/etc/kubernetes/pki/kubelet.crt", "dummy cert");
+        let checker = K8S04020900Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04020900checker_fail_empty_paths() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+tlsCertFile: ""
+tlsPrivateKeyFile: ""
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04020900Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04020900checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04020900Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04021000Checker tests - rotate certificates
+    #[test]
+    pub fn test_k8s04021000checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+rotateCertificates: true
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021000Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04021000checker_fail_disabled() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+rotateCertificates: false
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021000Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04021000checker_fail_not_present() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+someOtherSetting: value
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021000Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04021000checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04021000Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04021100Checker tests - rotate kubelet server certificate
+    #[test]
+    pub fn test_k8s04021100checker_pass_enabled() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+featureGates:
+  RotateKubeletServerCertificate: true
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04021100checker_pass_not_present() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+someOtherSetting: value
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04021100checker_fail_disabled() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+featureGates:
+  RotateKubeletServerCertificate: false
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04021100checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04021100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04021200Checker tests - TLS cipher suites
+    #[test]
+    pub fn test_k8s04021200checker_pass_allowed_suites() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+tlsCipherSuites:
+  - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+  - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04021200checker_fail_disallowed_suites() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+tlsCipherSuites:
+  - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+  - TLS_RSA_WITH_RC4_128_SHA
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04021200checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04021200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    #[test]
+    pub fn test_k8s04021200checker_invalid_config() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(KUBELET_CONF_FILE, "invalid yaml");
+        let checker = K8S04021200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04021300Checker tests - pod PIDs limit
+    #[test]
+    pub fn test_k8s04021300checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+podPidsLimit: 1024
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04021300checker_fail_zero_limit() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+podPidsLimit: 0
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04021300checker_fail_negative_limit() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+podPidsLimit: -1
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04021300checker_fail_not_configured() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+someOtherSetting: value
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04021300checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04021300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // K8S04021400Checker tests - seccomp default
+    #[test]
+    pub fn test_k8s04021400checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+seccompDefault: true
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04021400checker_fail_disabled() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+seccompDefault: false
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04021400checker_fail_not_configured() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+someOtherSetting: value
+"#;
+        sac.register_file(KUBELET_CONF_FILE, config);
+        let checker = K8S04021400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04021400checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04021400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+    // K8S04030100Checker tests - kube-proxy metrics bind address
+    #[test]
+    pub fn test_k8s04030100checker_pass_localhost() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+metricsBindAddress: 127.0.0.1:10249
+"#;
+        sac.register_file(KUBEPROXY_CONF_FILE, config);
+        let checker = K8S04030100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04030100checker_pass_not_configured() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+someOtherSetting: value
+"#;
+        sac.register_file(KUBEPROXY_CONF_FILE, config);
+        let checker = K8S04030100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_k8s04030100checker_fail_all_interfaces_ipv4() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+metricsBindAddress: 0.0.0.0:10249
+"#;
+        sac.register_file(KUBEPROXY_CONF_FILE, config);
+        let checker = K8S04030100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04030100checker_fail_all_interfaces_ipv6() {
+        let mut sac = UnitTestSystemAccess::default();
+        let config = r#"
+metricsBindAddress: "[::]:10249"
+"#;
+        sac.register_file(KUBEPROXY_CONF_FILE, config);
+        let checker = K8S04030100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_k8s04030100checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = K8S04030100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
     }
 }

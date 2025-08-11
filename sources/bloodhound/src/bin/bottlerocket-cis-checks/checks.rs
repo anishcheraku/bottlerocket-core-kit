@@ -1,7 +1,7 @@
 use bloodhound::results::{CheckStatus, Checker, CheckerMetadata, CheckerResult, Mode};
 use bloodhound::*;
 use std::os::unix::fs::PermissionsExt;
-use std::process::Command;
+use system_access::SystemAccess;
 use walkdir::WalkDir;
 
 const PROC_MODULES_FILE: &str = "/proc/modules";
@@ -21,11 +21,11 @@ const IP6TABLES_CMD: &str = "/usr/sbin/ip6tables";
 pub struct BR01010101Checker {}
 
 impl Checker for BR01010101Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let mut module_result = CheckerResult::default();
 
         // Make sure UDF isn't already loaded
-        if let Ok(found) = look_for_word_in_file(PROC_MODULES_FILE, "udf") {
+        if let Ok(found) = look_for_word_in_file(sac, PROC_MODULES_FILE, "udf") {
             if found {
                 module_result.error = "udf is currently loaded".to_string();
                 module_result.status = CheckStatus::FAIL;
@@ -39,8 +39,9 @@ impl Checker for BR01010101Checker {
 
         // Make sure the ability to load UDF is disabled
         check_output_contains!(
+            sac,
             MODPROBE_CMD,
-            ["-n", "-v", "udf"],
+            &["-n", "-v", "udf"],
             &["install /bin/true"],
             "unable to parse modprobe output to check if udf is enabled",
             "modprobe for udf is not disabled"
@@ -63,8 +64,9 @@ impl Checker for BR01010101Checker {
 pub struct BR01030100Checker {}
 
 impl Checker for BR01030100Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         check_file_contains!(
+            sac,
             PROC_CMDLINE_FILE,
             &[
                 "dm-mod.create=root,,,ro,0",
@@ -92,10 +94,11 @@ impl Checker for BR01030100Checker {
 pub struct BR01040100Checker {}
 
 impl Checker for BR01040100Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         check_output_contains!(
+            sac,
             SYSCTL_CMD,
-            ["fs.suid_dumpable"],
+            &["fs.suid_dumpable"],
             &["fs.suid_dumpable = 0"],
             "unable to verify fs.suid_dumpable setting",
             "setuid core dumps are not disabled"
@@ -118,10 +121,11 @@ impl Checker for BR01040100Checker {
 pub struct BR01040200Checker {}
 
 impl Checker for BR01040200Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         check_output_contains!(
+            sac,
             SYSCTL_CMD,
-            ["kernel.randomize_va_space"],
+            &["kernel.randomize_va_space"],
             &["kernel.randomize_va_space = 2"],
             "unable to verify kernel.randomize_va_space setting",
             "Address space layout randomization is not enabled"
@@ -144,10 +148,11 @@ impl Checker for BR01040200Checker {
 pub struct BR01040300Checker {}
 
 impl Checker for BR01040300Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         check_output_contains!(
+            sac,
             SYSCTL_CMD,
-            ["kernel.unprivileged_bpf_disabled"],
+            &["kernel.unprivileged_bpf_disabled"],
             &["kernel.unprivileged_bpf_disabled = 1"],
             "unable to verify kernel.unprivileged_bpf_disabled setting",
             "unprivileged eBPF is not disabled"
@@ -170,10 +175,11 @@ impl Checker for BR01040300Checker {
 pub struct BR01040400Checker {}
 
 impl Checker for BR01040400Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         check_output_contains!(
+            sac,
             SYSCTL_CMD,
-            ["user.max_user_namespaces"],
+            &["user.max_user_namespaces"],
             &["user.max_user_namespaces = 0"],
             "unable to verify user.max_user_namespaces setting",
             "user namespaces are not disabled"
@@ -196,7 +202,7 @@ impl Checker for BR01040400Checker {
 pub struct BR01050100Checker {}
 
 impl Checker for BR01050100Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let mut result = CheckerResult::default();
 
         // Trying to avoid bringing in regex for now
@@ -210,7 +216,7 @@ impl Checker for BR01050100Checker {
             ("Memory protection checking: ", " actual (secure)"),
         ];
 
-        if let Ok(output) = Command::new(SESTATUS_CMD).output() {
+        if let Ok(output) = sac.command_output(SESTATUS_CMD, &[]) {
             let mut matched = 0;
 
             if output.status.success() {
@@ -254,8 +260,9 @@ impl Checker for BR01050100Checker {
 pub struct BR01050200Checker {}
 
 impl Checker for BR01050200Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         check_file_contains!(
+            sac,
             LOCKDOWN_FILE,
             &["[integrity]"],
             "unable to verify lockdown mode",
@@ -279,8 +286,9 @@ impl Checker for BR01050200Checker {
 pub struct BR02010101Checker {}
 
 impl Checker for BR02010101Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let result = check_file_contains!(
+            sac,
             CHRONY_CONF_FILE,
             &["pool"],
             "unable to verify time-servers setting",
@@ -293,8 +301,9 @@ impl Checker for BR02010101Checker {
         }
 
         check_output_contains!(
+            sac,
             SYSTEMCTL_CMD,
-            ["show", "--property", "ActiveState", "chronyd"],
+            &["show", "--property", "ActiveState", "chronyd"],
             &["ActiveState=active"],
             "unable to verify chronyd service enabled",
             "chronyd NTP service is not enabled"
@@ -317,7 +326,7 @@ impl Checker for BR02010101Checker {
 pub struct BR03010100Checker {}
 
 impl Checker for BR03010100Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let settings = [
             "net.ipv4.conf.all.send_redirects",
             "net.ipv4.conf.default.send_redirects",
@@ -329,8 +338,9 @@ impl Checker for BR03010100Checker {
         ];
 
         check_output_contains!(
+            sac,
             SYSCTL_CMD,
-            settings,
+            &settings,
             &output,
             "unable to verify redirect settings",
             "redirects not disabled"
@@ -353,7 +363,7 @@ impl Checker for BR03010100Checker {
 pub struct BR03020100Checker {}
 
 impl Checker for BR03020100Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let settings = [
             "net.ipv4.conf.all.accept_source_route",
             "net.ipv4.conf.default.accept_source_route",
@@ -369,8 +379,9 @@ impl Checker for BR03020100Checker {
         ];
 
         check_output_contains!(
+            sac,
             SYSCTL_CMD,
-            settings,
+            &settings,
             &output,
             "unable to verify source route settings",
             "accept source route not disabled"
@@ -393,7 +404,7 @@ impl Checker for BR03020100Checker {
 pub struct BR03020200Checker {}
 
 impl Checker for BR03020200Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let settings = [
             "net.ipv4.conf.all.accept_redirects",
             "net.ipv4.conf.default.accept_redirects",
@@ -409,8 +420,9 @@ impl Checker for BR03020200Checker {
         ];
 
         check_output_contains!(
+            sac,
             SYSCTL_CMD,
-            settings,
+            &settings,
             &output,
             "unable to verify redirect settings",
             "accept redirects not disabled"
@@ -433,7 +445,7 @@ impl Checker for BR03020200Checker {
 pub struct BR03020300Checker {}
 
 impl Checker for BR03020300Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let settings = [
             "net.ipv4.conf.all.secure_redirects",
             "net.ipv4.conf.default.secure_redirects",
@@ -445,8 +457,9 @@ impl Checker for BR03020300Checker {
         ];
 
         check_output_contains!(
+            sac,
             SYSCTL_CMD,
-            settings,
+            &settings,
             &output,
             "unable to verify secure redirect settings",
             "secure redirects not disabled"
@@ -469,7 +482,7 @@ impl Checker for BR03020300Checker {
 pub struct BR03020400Checker {}
 
 impl Checker for BR03020400Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let settings = [
             "net.ipv4.conf.all.log_martians",
             "net.ipv4.conf.default.log_martians",
@@ -481,8 +494,9 @@ impl Checker for BR03020400Checker {
         ];
 
         check_output_contains!(
+            sac,
             SYSCTL_CMD,
-            settings,
+            &settings,
             &output,
             "unable to verify martian packet logging settings",
             "martian packet logging not enabled"
@@ -505,10 +519,11 @@ impl Checker for BR03020400Checker {
 pub struct BR03020500Checker {}
 
 impl Checker for BR03020500Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         check_output_contains!(
+            sac,
             SYSCTL_CMD,
-            ["net.ipv4.icmp_echo_ignore_broadcasts"],
+            &["net.ipv4.icmp_echo_ignore_broadcasts"],
             &["net.ipv4.icmp_echo_ignore_broadcasts = 1"],
             "unable to verify broadcast ICMP requests setting",
             "broadcast ICMP requests not ignored"
@@ -531,10 +546,11 @@ impl Checker for BR03020500Checker {
 pub struct BR03020600Checker {}
 
 impl Checker for BR03020600Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         check_output_contains!(
+            sac,
             SYSCTL_CMD,
-            ["net.ipv4.icmp_ignore_bogus_error_responses"],
+            &["net.ipv4.icmp_ignore_bogus_error_responses"],
             &["net.ipv4.icmp_ignore_bogus_error_responses = 1"],
             "unable to verify bogus ICMP bogus requests setting",
             "ignore bogus ICMP requests not ignored"
@@ -557,10 +573,11 @@ impl Checker for BR03020600Checker {
 pub struct BR03020700Checker {}
 
 impl Checker for BR03020700Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         check_output_contains!(
+            sac,
             SYSCTL_CMD,
-            ["net.ipv4.tcp_syncookies"],
+            &["net.ipv4.tcp_syncookies"],
             &["net.ipv4.tcp_syncookies = 1"],
             "unable to verify SYN flood cookie protection setting",
             "SYN flood cookie protection not enabled"
@@ -583,11 +600,11 @@ impl Checker for BR03020700Checker {
 pub struct BR03030100Checker {}
 
 impl Checker for BR03030100Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let mut result = CheckerResult::default();
 
         // Make sure sctp isn't already loaded
-        if let Ok(found) = look_for_word_in_file(PROC_MODULES_FILE, "sctp") {
+        if let Ok(found) = look_for_word_in_file(sac, PROC_MODULES_FILE, "sctp") {
             if found {
                 result.error = "sctp is currently loaded".to_string();
                 result.status = CheckStatus::FAIL;
@@ -599,8 +616,9 @@ impl Checker for BR03030100Checker {
         }
 
         check_output_contains!(
+            sac,
             MODPROBE_CMD,
-            ["-n", "-v", "sctp"],
+            &["-n", "-v", "sctp"],
             &["install /bin/true"],
             "unable to parse modprobe output to check if sctp is enabled",
             "modprobe for sctp is not disabled"
@@ -623,7 +641,7 @@ impl Checker for BR03030100Checker {
 pub struct BR03040101Checker {}
 
 impl Checker for BR03040101Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let output = &[
             "Chain INPUT (policy DROP)",
             "Chain FORWARD (policy DROP)",
@@ -631,8 +649,9 @@ impl Checker for BR03040101Checker {
         ];
 
         check_output_contains!(
+            sac,
             IPTABLES_CMD,
-            ["-L"],
+            &["-L"],
             output,
             "unable to verify iptables settings",
             "unable to find expected iptables values"
@@ -655,7 +674,7 @@ impl Checker for BR03040101Checker {
 pub struct BR03040102Checker {}
 
 impl Checker for BR03040102Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let mut result = CheckerResult::default();
 
         // Order matters here, so need to find the first one, then look for the second one
@@ -665,10 +684,7 @@ impl Checker for BR03040102Checker {
         );
         let second = ("DROP", "--  *      *       127.0.0.0/8          0.0.0.0/0");
 
-        if let Ok(output) = Command::new(IPTABLES_CMD)
-            .args(["-L", "INPUT", "-v", "-n"])
-            .output()
-        {
+        if let Ok(output) = sac.command_output(IPTABLES_CMD, &["-L", "INPUT", "-v", "-n"]) {
             let mut first_found = false;
             let mut second_found = false;
 
@@ -699,8 +715,9 @@ impl Checker for BR03040102Checker {
         }
 
         if let Some(found) = look_for_string_in_output(
+            sac,
             IPTABLES_CMD,
-            ["-L", "OUTPUT", "-v", "-n"],
+            &["-L", "OUTPUT", "-v", "-n"],
             "ACCEPT     all  --  *      lo      0.0.0.0/0            0.0.0.0/0",
         ) {
             if !found {
@@ -733,7 +750,7 @@ impl Checker for BR03040102Checker {
 pub struct BR03040201Checker {}
 
 impl Checker for BR03040201Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let output = &[
             "Chain INPUT (policy DROP)",
             "Chain FORWARD (policy DROP)",
@@ -741,8 +758,9 @@ impl Checker for BR03040201Checker {
         ];
 
         check_output_contains!(
+            sac,
             IP6TABLES_CMD,
-            ["-L"],
+            &["-L"],
             output,
             "unable to verify ip6tables settings",
             "unable to find expected ip6tables values"
@@ -765,17 +783,14 @@ impl Checker for BR03040201Checker {
 pub struct BR03040202Checker {}
 
 impl Checker for BR03040202Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         let mut result = CheckerResult::default();
 
         // Order matters here, so need to find the first one, then look for the second one
         let first = ("ACCEPT", "--  lo     *       ::/0                 ::/0");
         let second = ("DROP", "--  *      *       ::1                  ::/0");
 
-        if let Ok(output) = Command::new(IP6TABLES_CMD)
-            .args(["-L", "INPUT", "-v", "-n"])
-            .output()
-        {
+        if let Ok(output) = sac.command_output(IP6TABLES_CMD, &["-L", "INPUT", "-v", "-n"]) {
             let mut first_found = false;
             let mut second_found = false;
 
@@ -806,8 +821,9 @@ impl Checker for BR03040202Checker {
         }
 
         if let Some(found) = look_for_string_in_output(
+            sac,
             IP6TABLES_CMD,
-            ["-L", "OUTPUT", "-v", "-n"],
+            &["-L", "OUTPUT", "-v", "-n"],
             "ACCEPT     all  --  *      lo      ::/0                 ::/0",
         ) {
             if !found {
@@ -840,8 +856,9 @@ impl Checker for BR03040202Checker {
 pub struct BR04010101Checker {}
 
 impl Checker for BR04010101Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
         check_file_contains!(
+            sac,
             JOURNALD_CONF_FILE,
             &["Storage=persistent"],
             "unable to verify journald settings",
@@ -865,7 +882,7 @@ impl Checker for BR04010101Checker {
 pub struct BR04010200Checker {}
 
 impl Checker for BR04010200Checker {
-    fn execute(&self) -> CheckerResult {
+    fn execute(&self, _: &dyn SystemAccess) -> CheckerResult {
         // Default the result to report success
         let mut result = {
             CheckerResult {
@@ -903,5 +920,1103 @@ impl Checker for BR04010200Checker {
             name: "br04010200".to_string(),
             mode: Mode::Automatic,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use crate::checks::*;
+    use bloodhound::results::{CheckStatus, Checker};
+    use bloodhound::system_access::UnitTestSystemAccess;
+    use std::process::{ExitStatus, Output};
+
+    // BR01010101Checker tests
+    #[test]
+    pub fn test_br01010101checker_proc_modules_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = BR01010101Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    #[test]
+    pub fn test_br01010101checker_udf_loaded() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(PROC_MODULES_FILE, "udf\n");
+        let checker = BR01010101Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br01010101checker_udf_not_loaded_loading_not_blocked() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(PROC_MODULES_FILE, "other\nmodules\n");
+        sac.register_command(
+            MODPROBE_CMD,
+            &["-n", "-v", "udf"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "insmod /lib/modules/kernel/fs/udf/udf.ko".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01010101Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br01010101checker_udf_not_loaded_loading_blocked() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(PROC_MODULES_FILE, "other\nmodules\n");
+        sac.register_command(
+            MODPROBE_CMD,
+            &["-n", "-v", "udf"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "install /bin/true".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01010101Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    // BR01030100Checker tests
+    #[test]
+    pub fn test_br01030100checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(
+            PROC_CMDLINE_FILE,
+            "dm-mod.create=root,,,ro,0 root=/dev/dm-0 restart_on_corruption other_param=value",
+        );
+        let checker = BR01030100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01030100checker_missing_params() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(PROC_CMDLINE_FILE, "root=/dev/sda1 other_param=value");
+        let checker = BR01030100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br01030100checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = BR01030100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // BR01040100Checker tests
+    #[test]
+    pub fn test_br01040100checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["fs.suid_dumpable"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "fs.suid_dumpable = 0".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01040100checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["fs.suid_dumpable"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "fs.suid_dumpable = 1".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR01040200Checker tests
+    #[test]
+    pub fn test_br01040200checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["kernel.randomize_va_space"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "kernel.randomize_va_space = 2".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01040200checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["kernel.randomize_va_space"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "kernel.randomize_va_space = 0".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR01040300Checker tests
+    #[test]
+    pub fn test_br01040300checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["kernel.unprivileged_bpf_disabled"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "kernel.unprivileged_bpf_disabled = 1".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01040300checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["kernel.unprivileged_bpf_disabled"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "kernel.unprivileged_bpf_disabled = 0".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR01040400Checker tests
+    #[test]
+    pub fn test_br01040400checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["user.max_user_namespaces"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "user.max_user_namespaces = 0".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01040400checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["user.max_user_namespaces"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "user.max_user_namespaces = 1000".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+    // BR01050100Checker tests
+    #[test]
+    pub fn test_br01050100checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SESTATUS_CMD,
+            &[],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "SELinux status: enabled\n",
+                    "Loaded policy name: fortified\n",
+                    "Current mode: enforcing\n",
+                    "Mode from config file: enforcing\n",
+                    "Policy MLS status: enabled\n",
+                    "Policy deny_unknown status: denied\n",
+                    "Memory protection checking: actual (secure)\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01050100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01050100checker_fail_missing_values() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SESTATUS_CMD,
+            &[],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "SELinux status: disabled\n",
+                    "Loaded policy name: fortified\n",
+                    "Current mode: permissive\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01050100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br01050100checker_command_fail() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = BR01050100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // BR01050200Checker tests
+    #[test]
+    pub fn test_br01050200checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(LOCKDOWN_FILE, "[integrity] confidentiality");
+        let checker = BR01050200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01050200checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(LOCKDOWN_FILE, "none [confidentiality]");
+        let checker = BR01050200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br01050200checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = BR01050200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // BR02010101Checker tests
+    #[test]
+    pub fn test_br02010101checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(
+            CHRONY_CONF_FILE,
+            "pool 2.amazon.pool.ntp.org iburst\nserver time.nist.gov",
+        );
+        sac.register_command(
+            SYSTEMCTL_CMD,
+            &["show", "--property", "ActiveState", "chronyd"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "ActiveState=active".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR02010101Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br02010101checker_fail_no_pool() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(
+            CHRONY_CONF_FILE,
+            "server time.nist.gov\ndriftfile /var/lib/chrony/drift",
+        );
+        let checker = BR02010101Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br02010101checker_fail_service_inactive() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(CHRONY_CONF_FILE, "pool 2.amazon.pool.ntp.org iburst");
+        sac.register_command(
+            SYSTEMCTL_CMD,
+            &["show", "--property", "ActiveState", "chronyd"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "ActiveState=inactive".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR02010101Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br02010101checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = BR02010101Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+    // BR03010100Checker tests
+    #[test]
+    pub fn test_br03010100checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &[
+                "net.ipv4.conf.all.send_redirects",
+                "net.ipv4.conf.default.send_redirects",
+            ],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "net.ipv4.conf.all.send_redirects = 0\n",
+                    "net.ipv4.conf.default.send_redirects = 0\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03010100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br03010100checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &[
+                "net.ipv4.conf.all.send_redirects",
+                "net.ipv4.conf.default.send_redirects",
+            ],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "net.ipv4.conf.all.send_redirects = 1\n",
+                    "net.ipv4.conf.default.send_redirects = 0\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03010100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR03020100Checker tests
+    #[test]
+    pub fn test_br03020100checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &[
+                "net.ipv4.conf.all.accept_source_route",
+                "net.ipv4.conf.default.accept_source_route",
+                "net.ipv6.conf.all.accept_source_route",
+                "net.ipv6.conf.default.accept_source_route",
+            ],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "net.ipv4.conf.all.accept_source_route = 0\n",
+                    "net.ipv4.conf.default.accept_source_route = 0\n",
+                    "net.ipv6.conf.all.accept_source_route = 0\n",
+                    "net.ipv6.conf.default.accept_source_route = 0\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03020100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br03020100checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &[
+                "net.ipv4.conf.all.accept_source_route",
+                "net.ipv4.conf.default.accept_source_route",
+                "net.ipv6.conf.all.accept_source_route",
+                "net.ipv6.conf.default.accept_source_route",
+            ],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "net.ipv4.conf.all.accept_source_route = 1\n",
+                    "net.ipv4.conf.default.accept_source_route = 0\n",
+                    "net.ipv6.conf.all.accept_source_route = 0\n",
+                    "net.ipv6.conf.default.accept_source_route = 0\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03020100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR03020200Checker tests
+    #[test]
+    pub fn test_br03020200checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &[
+                "net.ipv4.conf.all.accept_redirects",
+                "net.ipv4.conf.default.accept_redirects",
+                "net.ipv6.conf.all.accept_redirects",
+                "net.ipv6.conf.default.accept_redirects",
+            ],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "net.ipv4.conf.all.accept_redirects = 0\n",
+                    "net.ipv4.conf.default.accept_redirects = 0\n",
+                    "net.ipv6.conf.all.accept_redirects = 0\n",
+                    "net.ipv6.conf.default.accept_redirects = 0\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03020200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br03020200checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &[
+                "net.ipv4.conf.all.accept_redirects",
+                "net.ipv4.conf.default.accept_redirects",
+                "net.ipv6.conf.all.accept_redirects",
+                "net.ipv6.conf.default.accept_redirects",
+            ],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "net.ipv4.conf.all.accept_redirects = 0\n",
+                    "net.ipv4.conf.default.accept_redirects = 1\n",
+                    "net.ipv6.conf.all.accept_redirects = 0\n",
+                    "net.ipv6.conf.default.accept_redirects = 0\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03020200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR03020300Checker tests
+    #[test]
+    pub fn test_br03020300checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &[
+                "net.ipv4.conf.all.secure_redirects",
+                "net.ipv4.conf.default.secure_redirects",
+            ],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "net.ipv4.conf.all.secure_redirects = 0\n",
+                    "net.ipv4.conf.default.secure_redirects = 0\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03020300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br03020300checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &[
+                "net.ipv4.conf.all.secure_redirects",
+                "net.ipv4.conf.default.secure_redirects",
+            ],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "net.ipv4.conf.all.secure_redirects = 1\n",
+                    "net.ipv4.conf.default.secure_redirects = 0\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03020300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR03020400Checker tests
+    #[test]
+    pub fn test_br03020400checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &[
+                "net.ipv4.conf.all.log_martians",
+                "net.ipv4.conf.default.log_martians",
+            ],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "net.ipv4.conf.all.log_martians = 1\n",
+                    "net.ipv4.conf.default.log_martians = 1\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03020400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br03020400checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &[
+                "net.ipv4.conf.all.log_martians",
+                "net.ipv4.conf.default.log_martians",
+            ],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "net.ipv4.conf.all.log_martians = 0\n",
+                    "net.ipv4.conf.default.log_martians = 1\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03020400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+    // BR03020500Checker tests
+    #[test]
+    pub fn test_br03020500checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["net.ipv4.icmp_echo_ignore_broadcasts"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "net.ipv4.icmp_echo_ignore_broadcasts = 1".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03020500Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br03020500checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["net.ipv4.icmp_echo_ignore_broadcasts"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "net.ipv4.icmp_echo_ignore_broadcasts = 0".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03020500Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR03020600Checker tests
+    #[test]
+    pub fn test_br03020600checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["net.ipv4.icmp_ignore_bogus_error_responses"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "net.ipv4.icmp_ignore_bogus_error_responses = 1".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03020600Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br03020600checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["net.ipv4.icmp_ignore_bogus_error_responses"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "net.ipv4.icmp_ignore_bogus_error_responses = 0".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03020600Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR03020700Checker tests
+    #[test]
+    pub fn test_br03020700checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["net.ipv4.tcp_syncookies"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "net.ipv4.tcp_syncookies = 1".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03020700Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br03020700checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["net.ipv4.tcp_syncookies"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "net.ipv4.tcp_syncookies = 0".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03020700Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR03030100Checker tests
+    #[test]
+    pub fn test_br03030100checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(PROC_MODULES_FILE, "other\nmodules\n");
+        sac.register_command(
+            MODPROBE_CMD,
+            &["-n", "-v", "sctp"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "install /bin/true".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03030100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br03030100checker_fail_sctp_loaded() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(
+            PROC_MODULES_FILE,
+            "sctp 139264 0 - Live 0xffffffffc05e1000\n",
+        );
+        let checker = BR03030100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br03030100checker_fail_sctp_not_blocked() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(PROC_MODULES_FILE, "other\nmodules\n");
+        sac.register_command(
+            MODPROBE_CMD,
+            &["-n", "-v", "sctp"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "insmod /lib/modules/kernel/net/sctp/sctp.ko".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03030100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br03030100checker_proc_modules_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = BR03030100Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+    // BR03040101Checker tests
+    #[test]
+    pub fn test_br03040101checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            IPTABLES_CMD,
+            &["-L"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "Chain INPUT (policy DROP)\n",
+                    "Chain FORWARD (policy DROP)\n",
+                    "Chain OUTPUT (policy DROP)\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03040101Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br03040101checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            IPTABLES_CMD,
+            &["-L"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "Chain INPUT (policy ACCEPT)\n",
+                    "Chain FORWARD (policy DROP)\n",
+                    "Chain OUTPUT (policy DROP)\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03040101Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR03040102Checker tests
+    #[test]
+    pub fn test_br03040102checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            IPTABLES_CMD,
+            &["-L", "INPUT", "-v", "-n"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "Chain INPUT (policy DROP 0 packets, 0 bytes)\n",
+                    " pkts bytes target     prot opt in     out     source               destination\n",
+                    "    0     0 ACCEPT     all  --  lo     *       0.0.0.0/0            0.0.0.0/0\n",
+                    "    0     0 DROP       all  --  *      *       127.0.0.0/8          0.0.0.0/0\n"
+                ).into(),
+                stderr: vec![],
+            },
+        );
+        sac.register_command(
+            IPTABLES_CMD,
+            &["-L", "OUTPUT", "-v", "-n"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "Chain OUTPUT (policy DROP 0 packets, 0 bytes)\n",
+                    " pkts bytes target     prot opt in     out     source               destination\n",
+                    "    0     0 ACCEPT     all  --  *      lo      0.0.0.0/0            0.0.0.0/0\n"
+                ).into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03040102Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br03040102checker_fail_missing_input_rules() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            IPTABLES_CMD,
+            &["-L", "INPUT", "-v", "-n"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "Chain INPUT (policy DROP 0 packets, 0 bytes)\n",
+                    " pkts bytes target     prot opt in     out     source               destination\n"
+                ).into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03040102Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br03040102checker_fail_missing_output_rule() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            IPTABLES_CMD,
+            &["-L", "INPUT", "-v", "-n"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "Chain INPUT (policy DROP 0 packets, 0 bytes)\n",
+                    " pkts bytes target     prot opt in     out     source               destination\n",
+                    "    0     0 ACCEPT     all  --  lo     *       0.0.0.0/0            0.0.0.0/0\n",
+                    "    0     0 DROP       all  --  *      *       127.0.0.0/8          0.0.0.0/0\n"
+                ).into(),
+                stderr: vec![],
+            },
+        );
+        sac.register_command(
+            IPTABLES_CMD,
+            &["-L", "OUTPUT", "-v", "-n"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "Chain OUTPUT (policy DROP 0 packets, 0 bytes)\n",
+                    " pkts bytes target     prot opt in     out     source               destination\n"
+                ).into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03040102Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR03040201Checker tests
+    #[test]
+    pub fn test_br03040201checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            IP6TABLES_CMD,
+            &["-L"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "Chain INPUT (policy DROP)\n",
+                    "Chain FORWARD (policy DROP)\n",
+                    "Chain OUTPUT (policy DROP)\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03040201Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br03040201checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            IP6TABLES_CMD,
+            &["-L"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "Chain INPUT (policy ACCEPT)\n",
+                    "Chain FORWARD (policy DROP)\n",
+                    "Chain OUTPUT (policy DROP)\n"
+                )
+                .into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03040201Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR03040202Checker tests
+    #[test]
+    pub fn test_br03040202checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            IP6TABLES_CMD,
+            &["-L", "INPUT", "-v", "-n"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "Chain INPUT (policy DROP 0 packets, 0 bytes)\n",
+                    " pkts bytes target     prot opt in     out     source               destination\n",
+                    "    0     0 ACCEPT     all  --  lo     *       ::/0                 ::/0\n",
+                    "    0     0 DROP       all  --  *      *       ::1                  ::/0\n"
+                ).into(),
+                stderr: vec![],
+            },
+        );
+        sac.register_command(
+            IP6TABLES_CMD,
+            &["-L", "OUTPUT", "-v", "-n"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "Chain OUTPUT (policy DROP 0 packets, 0 bytes)\n",
+                    " pkts bytes target     prot opt in     out     source               destination\n",
+                    "    0     0 ACCEPT     all  --  *      lo      ::/0                 ::/0\n"
+                ).into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03040202Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br03040202checker_fail_missing_input_rules() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            IP6TABLES_CMD,
+            &["-L", "INPUT", "-v", "-n"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "Chain INPUT (policy DROP 0 packets, 0 bytes)\n",
+                    " pkts bytes target     prot opt in     out     source               destination\n"
+                ).into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03040202Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br03040202checker_fail_missing_output_rule() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            IP6TABLES_CMD,
+            &["-L", "INPUT", "-v", "-n"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "Chain INPUT (policy DROP 0 packets, 0 bytes)\n",
+                    " pkts bytes target     prot opt in     out     source               destination\n",
+                    "    0     0 ACCEPT     all  --  lo     *       ::/0                 ::/0\n",
+                    "    0     0 DROP       all  --  *      *       ::1                  ::/0\n"
+                ).into(),
+                stderr: vec![],
+            },
+        );
+        sac.register_command(
+            IP6TABLES_CMD,
+            &["-L", "OUTPUT", "-v", "-n"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: concat!(
+                    "Chain OUTPUT (policy DROP 0 packets, 0 bytes)\n",
+                    " pkts bytes target     prot opt in     out     source               destination\n"
+                ).into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR03040202Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+    // BR04010101Checker tests
+    #[test]
+    pub fn test_br04010101checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(
+            JOURNALD_CONF_FILE,
+            "Storage=persistent\nCompress=yes\nSeal=yes",
+        );
+        let checker = BR04010101Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br04010101checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(
+            JOURNALD_CONF_FILE,
+            "Storage=volatile\nCompress=yes\nSeal=yes",
+        );
+        let checker = BR04010101Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br04010101checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = BR04010101Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
     }
 }
