@@ -1,3 +1,35 @@
+# v10.1.0 (2025-08-11)
+
+## OS Changes
+- Add `libjansson` package to enable JSON support for nftables ([#614])
+- Refactor `schnauzer` to multicall binary for v1 and v2 ([#561])
+- Fix `logind` service ordering in release package ([#609]) - Thanks @115100
+- Lowercase hostnames provided by the hostname helpers ([#619]) - Thanks @tzneal
+
+### Third Party Package Updates
+- Update `amazon-ssm-agent`, `docker-engine`, and `ecs-agent` packages ([#616])
+- Update to latest versions for `aws-iam-authenticator`, `aws-otel-collector`, `aws-signing-helper`, `nvidia-k8s-device-plugin`, `ecr-credential-provider`, and `kubernetes` packages ([#611])
+
+## Orchestrator Changes
+
+### ECS
+- Fix ECS_DISABLE_PRIVILEGED in `ecs-agent`([#610]) - Thanks @vermdeep
+
+## Build Changes
+- Inject a trait into check execution to allow unit testing ([#601]) - Thanks @tzneal
+
+## Tools
+- Add Amazon Q development rules and Git formatting guidelines ([#561])
+
+[#561]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/561
+[#601]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/601
+[#609]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/609
+[#610]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/610
+[#611]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/611
+[#614]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/614
+[#616]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/616
+[#619]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/619
+
 # v10.0.1 (2025-07-31)
 
 ## Orchestrator Changes
