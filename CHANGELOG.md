@@ -1,3 +1,10 @@
+# v10.1.1 (2025-08-13)
+
+## OS Changes
+* Fix `containerd-2.0` settings for `max_concurrent_downloads` ([#623])
+
+[#623]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/623
+
 # v10.1.0 (2025-08-11)
 
 ## OS Changes
@@ -50,11 +57,11 @@
 
 ## Orchestrator Changes
 ### Kubernetes
-- Add soci-snapshotter support 
+- Add soci-snapshotter support
   - Configure soci-snapshotter for parallel pull unpack feature ([#569])
   - Optionally configure containerd and kubelet with soci-snapshotter via drop-in configuration files ([#576])
   - Extend selinux-policy to cover soci-snapshotter ([#579])
-  - Add `configure-snapshotter.service` to reset state directories of snapshotters on boot when selected snapshotter changes ([#582]) 
+  - Add `configure-snapshotter.service` to reset state directories of snapshotters on boot when selected snapshotter changes ([#582])
   - Apply upstream patches to soci-snapshotter ([#599])
   - Drop CLI from `soci-snapshotter` ([#569])
 - Support extending kubelet configuration via drop-in files ([#576])

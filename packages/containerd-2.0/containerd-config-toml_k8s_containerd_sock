@@ -19,8 +19,12 @@ imports = ["/etc/containerd/config.d/*.toml"]
 [grpc]
 address = "/run/containerd/containerd.sock"
 
-# Pause container image is specified here, shares the same image as kubelet's pod-infra-container-image
 [plugins."io.containerd.cri.v1.images"]
+{{#if settings.container-runtime.max-concurrent-downloads}}
+max_concurrent_downloads = {{settings.container-runtime.max-concurrent-downloads}}
+{{/if}}
+
+# Pause container image is specified here, shares the same image as kubelet's pod-infra-container-image
 [plugins."io.containerd.cri.v1.images".pinned_images]
 sandbox = "localhost/kubernetes/pause:0.1.0"
 
@@ -29,9 +33,6 @@ device_ownership_from_security_context = {{default false settings.kubernetes.dev
 enable_selinux = true
 {{#if settings.container-runtime.max-container-log-line-size}}
 max_container_log_line_size = {{settings.container-runtime.max-container-log-line-size}}
-{{/if}}
-{{#if settings.container-runtime.max-concurrent-downloads}}
-max_concurrent_downloads = {{settings.container-runtime.max-concurrent-downloads}}
 {{/if}}
 {{#if settings.container-runtime.enable-unprivileged-ports}}
 enable_unprivileged_ports = {{settings.container-runtime.enable-unprivileged-ports}}
