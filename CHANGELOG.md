@@ -1,3 +1,10 @@
+# v10.1.2 (2025-08-14)
+
+### Third Party Package Updates
+- Revert `ecs-agent` update ([#625])
+
+[#625]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/625
+
 # v10.1.1 (2025-08-13)
 
 ## OS Changes
