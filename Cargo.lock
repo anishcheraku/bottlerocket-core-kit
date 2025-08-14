@@ -113,6 +113,7 @@ dependencies = [
  "kubernetes-1_31",
  "kubernetes-1_32",
  "kubernetes-1_33",
+ "kubernetes-1_34",
  "libacl",
  "libaio",
  "libattr",
@@ -487,6 +488,13 @@ dependencies = [
 
 [[package]]
 name = "kubernetes-1_33"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+]
+
+[[package]]
+name = "kubernetes-1_34"
 version = "0.1.0"
 dependencies = [
  "glibc",
