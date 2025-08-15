@@ -121,7 +121,7 @@ impl RemoveUpdateArgs {
         if let Some(current) = manifest.updates.first() {
             info!(
                 "Update {}-{}-{} removed. Current maximum version: {}",
-                self.arch, self.variant, self.image_version, current.version
+                self.arch, self.variant, self.image_version, current.max_version
             );
         } else {
             info!(
