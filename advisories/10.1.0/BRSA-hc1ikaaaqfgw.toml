@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-hc1ikaaaqfgw"
+title = "amazon-ssm-agent CVE-2025-22870"
+cve = "CVE-2025-22870"
+severity = "moderate"
+description = "A flaw was found in amazon-ssm-agent dependency golang.org/x/net which could lead to HTTP proxy bypass using IPv6 Zone IDs"
+
+[[advisory.products]]
+package-name = "amazon-ssm-agent"
+patched-version = "3.3.2746.0"
+patched-epoch = "1"
+
+[updateinfo]
+author = "yutongsu"
+issue-date = 2025-08-12T00:57:00Z
+arches = ["x86_64", "aarch64"]
+version = "10.1.0"
