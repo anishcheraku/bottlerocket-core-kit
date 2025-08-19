@@ -11,48 +11,45 @@ License: GPL-2.0-or-later AND GPL-2.0-only AND LGPL-2.1-or-later
 URL: https://www.freedesktop.org/wiki/Software/systemd
 Source0: https://github.com/systemd/systemd/archive/v%{version}/systemd-%{version}.tar.gz
 
-# TODO: this could potentially be submitted upstream, but needs a better
-# way to be configured at build time or during execution first.
-Patch9001: 9001-core-add-separate-timeout-for-system-shutdown.patch
 
 # Local patch to add the acquire the id for VMware
-Patch9002: 9002-machine-id-setup-generate-stable-ID-under-VM.patch
+Patch9001: 9001-machine-id-setup-generate-stable-ID-under-VM.patch
 
 # Local patch to mount additional filesystems with "noexec".
-Patch9003: 9003-mount-setup-apply-noexec-to-more-mounts.patch
+Patch9002: 9002-mount-setup-apply-noexec-to-more-mounts.patch
 
 # Local patch to handle mounting /etc with our SELinux label.
-Patch9004: 9004-mount-setup-mount-etc-with-specific-label.patch
+Patch9003: 9003-mount-setup-mount-etc-with-specific-label.patch
 
 # Local patch to stop overriding rp_filter defaults with wildcard values.
-Patch9005: 9005-sysctl-do-not-set-rp_filter-via-wildcard.patch
+Patch9004: 9004-sysctl-do-not-set-rp_filter-via-wildcard.patch
 
 # Local patch to set root's shell to /sbin/nologin rather than /bin/sh.
-Patch9006: 9006-sysusers-set-root-shell-to-sbin-nologin.patch
+Patch9005: 9005-sysusers-set-root-shell-to-sbin-nologin.patch
 
 # Local patch to conditionalize systemd-networkd calls to hostname and timezone
 # DBUS services not used in Bottlerocket
-Patch9007: 9007-systemd-networkd-Conditionalize-hostnamed-timezoned-.patch
+Patch9006: 9006-systemd-networkd-Conditionalize-hostnamed-timezoned-.patch
 
 # Local patch to adjust the default mount rate limit to 25 per second.
 # Carried as a patch so that SYSTEMD_DEFAULT_MOUNT_RATE_LIMIT_BURST can be used
 # as a kernel command line parameter to override.
-Patch9008: 9008-core-mount-increase-mount-rate-limit-burst-to-25.patch
+Patch9007: 9007-core-mount-increase-mount-rate-limit-burst-to-25.patch
 
 # Local patch to work around a potentially non-compliant Option 15 in the DHCP
 # lease in EC2.
-Patch9009: 9009-sd-dhcp-lease-parse-multiple-domains-in-option-15.patch
+Patch9008: 9008-sd-dhcp-lease-parse-multiple-domains-in-option-15.patch
 
 # Local patch to allow resolving .local domains
-Patch9010: 9010-allow-lookups-of-local-domains-using-unicast-DNS.patch
+Patch9009: 9009-allow-lookups-of-local-domains-using-unicast-DNS.patch
 
 # Do not enable OpenSSL for systemd-dissect, since AWS-LC doesn't support the
 # PKCS7_verify function it wants.
-Patch9011: 9011-dissect-image-disable-openssl-support.patch
+Patch9010: 9010-dissect-image-disable-openssl-support.patch
 
 # Have pkgconfig find "libcrypto.pc" instead of "openssl.pc" to avoid the
 # unneeded dependency on libssl.
-Patch9012: 9012-meson-replace-openssl-dependency-with-libcrypto.patch
+Patch9011: 9011-meson-replace-openssl-dependency-with-libcrypto.patch
 
 BuildRequires: gperf
 BuildRequires: intltool
