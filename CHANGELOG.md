@@ -1,3 +1,15 @@
+# v10.2.0 (2025-08-19)
+
+## Orchestrator Changes
+### Kubernetes
+* Add kubernetes-1.34 and ecr-credential-provider-1.34 packages with pre-release sources ([#627])
+
+## Build Changes
+* Update bottlerocket-sdk from 0.63.0 to 0.64.0 ([#629])
+
+[#627]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/627
+[#629]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/629
+
 # v10.1.2 (2025-08-14)
 
 ### Third Party Package Updates
