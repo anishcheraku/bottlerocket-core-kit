@@ -11,6 +11,7 @@ URL: https://github.com/bottlerocket-os/bottlerocket
 
 # Core config files.
 Source11: nsswitch.conf
+Source12: issue
 
 # Sysctl drop-ins.
 Source80: release-sysctl.conf
@@ -23,7 +24,8 @@ Source95: release-systemd-networkd.conf
 Source96: release-repart-local.conf
 Source98: release-systemd-system.conf
 Source99: release-ca-certificates-tmpfiles.conf
-Source100: release-snapshotter-tmpfiles.conf
+Source100: release-modules-load.conf
+Source101: release-systemd-journald.conf
 
 # Templates for the settings API.
 Source200: motd.template
@@ -100,6 +102,11 @@ Source1102: systemd-networkd-service-env.conf
 Source1103: systemd-logind-inhibit-maxdelay.conf
 Source1104: aws-config.conf
 Source1105: wait-for-selinux-policy.conf
+Source1106: systemd-resolved-service-private-tmp.conf
+Source1107: systemd-journald-compat.conf
+Source1108: systemd-sysusers-selinux.conf
+Source1109: modprobe-no-exit.conf
+Source1110: tmp-mount-noexec.conf
 
 # network link rules
 Source1200: 80-release.link
@@ -174,13 +181,12 @@ Requires: (%{name}-fips if %{_cross_os}image-feature(fips))
 
 %install
 install -d %{buildroot}%{_cross_factorydir}%{_cross_sysconfdir}
-install -p -m 0644 %{S:11} %{buildroot}%{_cross_factorydir}%{_cross_sysconfdir}
+install -p -m 0644 %{S:11} %{S:12} %{buildroot}%{_cross_factorydir}%{_cross_sysconfdir}
 
 install -d %{buildroot}%{_cross_tmpfilesdir}
 install -p -m 0644 %{S:93} %{buildroot}%{_cross_tmpfilesdir}/release.conf
 install -p -m 0644 %{S:99} %{buildroot}%{_cross_tmpfilesdir}/release-ca-certificates.conf
 install -p -m 0644 %{S:94} %{buildroot}%{_cross_tmpfilesdir}/release-fips.conf
-install -p -m 0644 %{S:100} %{buildroot}%{_cross_tmpfilesdir}/release-snapshotter.conf
 
 install -d %{buildroot}%{_cross_libdir}/systemd/networkd.conf.d
 install -p -m 0644 %{S:95} %{buildroot}%{_cross_libdir}/systemd/networkd.conf.d/80-release.conf
@@ -197,6 +203,12 @@ install -p -m 0644 %{S:1104} %{buildroot}%{_cross_unitdir}/service.d/00-aws-conf
 
 install -d %{buildroot}%{_cross_libdir}/systemd/system.conf.d
 install -p -m 0644 %{S:98} %{buildroot}%{_cross_libdir}/systemd/system.conf.d/80-release.conf
+
+install -d %{buildroot}%{_cross_libdir}/modules-load.d
+install -p -m 0644 %{S:100} %{buildroot}%{_cross_libdir}/modules-load.d/nf_conntrack.conf
+
+install -d %{buildroot}%{_cross_libdir}/systemd/journald.conf.d
+install -p -m 0644 %{S:101} %{buildroot}%{_cross_libdir}/systemd/journald.conf.d/journald.conf
 
 install -d %{buildroot}%{_cross_libdir}/systemd/network
 install -p -m 0644 %{S:1200} %{buildroot}%{_cross_libdir}/systemd/network/80-release.link
@@ -229,10 +241,32 @@ install -p -m 0644 %{S:1100} \
 install -d %{buildroot}%{_cross_unitdir}/systemd-resolved.service.d
 install -p -m 0644 %{S:1101} \
   %{buildroot}%{_cross_unitdir}/systemd-resolved.service.d/00-env.conf
+install -p -m 0644 %{S:1106} \
+  %{buildroot}%{_cross_unitdir}/systemd-resolved.service.d/10-private-tmp.conf
 
 install -d %{buildroot}%{_cross_unitdir}/systemd-networkd.service.d
 install -p -m 0644 %{S:1102} \
   %{buildroot}%{_cross_unitdir}/systemd-networkd.service.d/00-env.conf
+
+install -d %{buildroot}%{_cross_unitdir}/systemd-udev-trigger.service.d/
+install -p -m 0644 %{S:1105} \
+  %{buildroot}%{_cross_unitdir}/systemd-udev-trigger.service.d/00-selinux.conf
+
+install -d %{buildroot}%{_cross_unitdir}/systemd-journald.service.d
+install -p -m 0644 %{S:1107} \
+  %{buildroot}%{_cross_unitdir}/systemd-journald.service.d/50-systemd-journald.conf
+
+install -d %{buildroot}%{_cross_unitdir}/systemd-sysusers.service.d
+install -p -m 0644 %{S:1108} \
+  %{buildroot}%{_cross_unitdir}/systemd-sysusers.service.d/50-systemd-sysusers.conf
+
+install -d %{buildroot}%{_cross_unitdir}/modprobe@.service.d
+install -p -m 0644 %{S:1109} \
+  %{buildroot}%{_cross_unitdir}/modprobe@.service.d/10-remain-after-exit.conf
+
+install -d %{buildroot}%{_cross_unitdir}/tmp.mount.d
+install -p -m 0644 %{S:1110} \
+  %{buildroot}%{_cross_unitdir}/tmp.mount.d/10-no-exec.conf
 
 # Empty (but packaged) directory. The FIPS packages for kernels will add drop-ins to
 # this directory to arrange for the right modules to be loaded before the check runs.
@@ -280,9 +314,6 @@ install -p -m 0644 %{S:208} %{buildroot}%{_cross_templatedir}/modules-load
 install -p -m 0644 %{S:209} %{buildroot}%{_cross_templatedir}/log4j-hotpatch-enabled
 install -p -m 0644 %{S:210} %{buildroot}%{_cross_templatedir}/selected-snapshotter
 
-install -d %{buildroot}%{_cross_unitdir}/systemd-udev-trigger.service.d/
-install -p -m 0644 %{S:1105} %{buildroot}%{_cross_unitdir}/systemd-udev-trigger.service.d/00-selinux.conf
-
 install -d %{buildroot}%{_cross_udevrulesdir}
 install -p -m 0644 %{S:1300} %{buildroot}%{_cross_udevrulesdir}/61-mount-cdrom.rules
 
@@ -296,6 +327,7 @@ ln -s preconfigured.target %{buildroot}%{_cross_unitdir}/default.target
 
 %files
 %{_cross_factorydir}%{_cross_sysconfdir}/nsswitch.conf
+%{_cross_factorydir}%{_cross_sysconfdir}/issue
 %{_cross_sysctldir}/80-release.conf
 %{_cross_tmpfilesdir}/release.conf
 %{_cross_tmpfilesdir}/release-ca-certificates.conf
@@ -306,6 +338,8 @@ ln -s preconfigured.target %{buildroot}%{_cross_unitdir}/default.target
 %{_cross_libdir}/systemd/network/80-release.link
 %{_cross_libdir}/systemd/networkd.conf.d/80-release.conf
 %{_cross_libdir}/systemd/system.conf.d/80-release.conf
+%{_cross_libdir}/modules-load.d/nf_conntrack.conf
+%{_cross_libdir}/systemd/journald.conf.d/journald.conf
 %{_cross_unitdir}/configured.target
 %{_cross_unitdir}/preconfigured.target
 %{_cross_unitdir}/multi-user.target
@@ -346,12 +380,21 @@ ln -s preconfigured.target %{buildroot}%{_cross_unitdir}/default.target
 %{_cross_unitdir}/service.d/00-aws-config.conf
 %dir %{_cross_unitdir}/systemd-resolved.service.d
 %{_cross_unitdir}/systemd-resolved.service.d/00-env.conf
+%{_cross_unitdir}/systemd-resolved.service.d/10-private-tmp.conf
 %dir %{_cross_unitdir}/systemd-networkd.service.d
 %{_cross_unitdir}/systemd-networkd.service.d/00-env.conf
 %dir %{_cross_unitdir}/systemd-tmpfiles-setup.service.d
 %{_cross_unitdir}/systemd-tmpfiles-setup.service.d/00-debug.conf
 %dir %{_cross_unitdir}/systemd-udev-trigger.service.d
 %{_cross_unitdir}/systemd-udev-trigger.service.d/00-selinux.conf
+%dir %{_cross_unitdir}/systemd-sysusers.service.d
+%{_cross_unitdir}/systemd-sysusers.service.d/50-systemd-sysusers.conf
+%dir %{_cross_unitdir}/systemd-journald.service.d
+%{_cross_unitdir}/systemd-journald.service.d/50-systemd-journald.conf
+%dir %{_cross_unitdir}/modprobe@.service.d
+%{_cross_unitdir}/modprobe@.service.d/10-remain-after-exit.conf
+%dir %{_cross_unitdir}/tmp.mount.d
+%{_cross_unitdir}/tmp.mount.d/10-no-exec.conf
 %dir %{_cross_templatedir}
 %{_cross_templatedir}/modprobe-conf
 %{_cross_templatedir}/netdog-toml
@@ -367,7 +410,6 @@ ln -s preconfigured.target %{buildroot}%{_cross_unitdir}/default.target
 %{_cross_datadir}/logdog.d/logdog.common.conf
 %{_cross_unitdir}/configure-snapshotter.service
 %{_cross_templatedir}/selected-snapshotter
-%{_cross_tmpfilesdir}/release-snapshotter.conf
 
 %files fips
 %{_cross_bootconfigdir}/10-fips.conf

@@ -1,92 +1,58 @@
 # Skip check-rpaths since we expect them for systemd.
 %global __brp_check_rpaths %{nil}
 
-%global package_priority_epoch 1
+%global package_priority_epoch 0
 
-Name: %{_cross_os}systemd-252
-Version: 252.22
+Name: %{_cross_os}systemd-257
+Version: 257.7
 Release: 1%{?dist}
 Summary: System and Service Manager
 License: GPL-2.0-or-later AND GPL-2.0-only AND LGPL-2.1-or-later
 URL: https://www.freedesktop.org/wiki/Software/systemd
-Source0: https://github.com/systemd/systemd-stable/archive/v%{version}/systemd-stable-%{version}.tar.gz
-
-# Backport of upstream patches that make the netlink default timeout
-# configurable.  Bottlerocket carries this patch and configures the timeout in
-# an effort to avoid a situation where a network link becomes unusable if the
-# system is under load and doesn't process the RTM_NEWROUTE acknowledgement
-# within the default timeout of 25 seconds.
-# Reference issue: github.com/systemd/systemd/issues/25441
-Patch1001: 1001-sd-netlink-make-calc_elapse-return-USEC_INFINITY-whe.patch
-Patch1002: 1002-sd-netlink-make-the-default-timeout-configurable-by-.patch
-
-# Backport of upstream patch to speed up `systemctl daemon-reload`.
-Patch1003: 1003-serialize-don-t-allocate-1M-on-the-stack-just-like-t.patch
-
-# Local patch to work around the fact that /var is a bind mount from
-# /local/var, and we want the /local/var/run symlink to point to /run.
-Patch9001: 9001-use-absolute-path-for-var-run-symlink.patch
+Source0: https://github.com/systemd/systemd/archive/v%{version}/systemd-%{version}.tar.gz
 
 # TODO: this could potentially be submitted upstream, but needs a better
 # way to be configured at build time or during execution first.
-Patch9002: 9002-core-add-separate-timeout-for-system-shutdown.patch
+Patch9001: 9001-core-add-separate-timeout-for-system-shutdown.patch
 
-# TODO: this could be submitted upstream as well, but needs to account for
-# the dom0 case first, where the UUID is all zeroes and hence not unique.
-Patch9003: 9003-machine-id-setup-generate-stable-ID-under-Xen-and-VM.patch
-
-# Local patch to mount /tmp with "noexec".
-Patch9004: 9004-units-mount-tmp-with-noexec.patch
+# Local patch to add the acquire the id for VMware
+Patch9002: 9002-machine-id-setup-generate-stable-ID-under-VM.patch
 
 # Local patch to mount additional filesystems with "noexec".
-Patch9005: 9005-mount-setup-apply-noexec-to-more-mounts.patch
+Patch9003: 9003-mount-setup-apply-noexec-to-more-mounts.patch
 
 # Local patch to handle mounting /etc with our SELinux label.
-Patch9006: 9006-mount-setup-mount-etc-with-specific-label.patch
-
-# We need `prefix` to be configurable for our own packaging so we can avoid
-# dependencies on the host OS.
-Patch9007: 9007-pkg-config-stop-hardcoding-prefix-to-usr.patch
+Patch9004: 9004-mount-setup-mount-etc-with-specific-label.patch
 
 # Local patch to stop overriding rp_filter defaults with wildcard values.
-Patch9008: 9008-sysctl-do-not-set-rp_filter-via-wildcard.patch
+Patch9005: 9005-sysctl-do-not-set-rp_filter-via-wildcard.patch
 
 # Local patch to set root's shell to /sbin/nologin rather than /bin/sh.
-Patch9009: 9009-sysusers-set-root-shell-to-sbin-nologin.patch
-
-# Local patch to keep modprobe units running to avoid repeated log entries.
-Patch9010: 9010-units-keep-modprobe-service-units-running.patch
+Patch9006: 9006-sysusers-set-root-shell-to-sbin-nologin.patch
 
 # Local patch to conditionalize systemd-networkd calls to hostname and timezone
 # DBUS services not used in Bottlerocket
-Patch9011: 9011-systemd-networkd-Conditionalize-hostnamed-timezoned-.patch
+Patch9007: 9007-systemd-networkd-Conditionalize-hostnamed-timezoned-.patch
 
 # Local patch to adjust the default mount rate limit to 25 per second.
 # Carried as a patch so that SYSTEMD_DEFAULT_MOUNT_RATE_LIMIT_BURST can be used
 # as a kernel command line parameter to override.
-Patch9012: 9012-core-mount-increase-mount-rate-limit-burst-to-25.patch
+Patch9008: 9008-core-mount-increase-mount-rate-limit-burst-to-25.patch
 
 # Local patch to work around a potentially non-compliant Option 15 in the DHCP
 # lease in EC2.
-Patch9013: 9013-sd-dhcp-lease-parse-multiple-domains-in-option-15.patch
-
-# Local patch that allows to deselect systemd-gpt-auto-generator. We deselect
-# it since prairiedog mounts /boot depending on the partition bank in use.
-Patch9014: 9014-meson-make-gpt-auto-generator-selectable-at-build-ti.patch
+Patch9009: 9009-sd-dhcp-lease-parse-multiple-domains-in-option-15.patch
 
 # Local patch to allow resolving .local domains
-Patch9015: 9015-allow-lookups-of-local-domains-using-unicast-DNS.patch
-
-# Do not enable OpenSSL for systemd-resolved, to keep DNSSEC disabled.
-Patch9016: 9016-meson-always-set-HAVE_OPENSSL_OR_GCRYPT-to-false.patch
+Patch9010: 9010-allow-lookups-of-local-domains-using-unicast-DNS.patch
 
 # Do not enable OpenSSL for systemd-dissect, since AWS-LC doesn't support the
 # PKCS7_verify function it wants.
-Patch9017: 9017-dissect-image-disable-openssl-support.patch
+Patch9011: 9011-dissect-image-disable-openssl-support.patch
 
 # Have pkgconfig find "libcrypto.pc" instead of "openssl.pc" to avoid the
 # unneeded dependency on libssl.
-Patch9018: 9018-meson-replace-openssl-dependency-with-libcrypto.patch
+Patch9012: 9012-meson-replace-openssl-dependency-with-libcrypto.patch
 
 BuildRequires: gperf
 BuildRequires: intltool
@@ -97,13 +63,10 @@ BuildRequires: %{_cross_os}libacl-devel
 BuildRequires: %{_cross_os}libattr-devel
 BuildRequires: %{_cross_os}libblkid-devel
 BuildRequires: %{_cross_os}libcap-devel
-BuildRequires: %{_cross_os}libcrypto-devel
-BuildRequires: %{_cross_os}libcryptsetup-devel
 BuildRequires: %{_cross_os}libfdisk-devel
 BuildRequires: %{_cross_os}libmount-devel
 BuildRequires: %{_cross_os}libseccomp-devel
 BuildRequires: %{_cross_os}libselinux-devel
-BuildRequires: %{_cross_os}libtss2-devel
 BuildRequires: %{_cross_os}libuuid-devel
 BuildRequires: %{_cross_os}libxcrypt-devel
 
@@ -112,13 +75,10 @@ Requires: %{_cross_os}libacl
 Requires: %{_cross_os}libattr
 Requires: %{_cross_os}libblkid
 Requires: %{_cross_os}libcap
-Requires: %{_cross_os}libcrypto
-Requires: %{_cross_os}libcryptsetup
 Requires: %{_cross_os}libfdisk
 Requires: %{_cross_os}libmount
 Requires: %{_cross_os}libseccomp
 Requires: %{_cross_os}libselinux
-Requires: %{_cross_os}libtss2
 Requires: %{_cross_os}libuuid
 Requires: %{_cross_os}libxcrypt
 
@@ -170,16 +130,13 @@ Provides: %{_cross_os}systemd-resolved = %{package_priority_epoch}:
 %{summary}.
 
 %prep
-%autosetup -n systemd-stable-%{version} -p1
+%autosetup -n systemd-%{version} -p1
 
 %build
 CONFIGURE_OPTS=(
  -Dmode=release
 
- -Dsplit-usr=false
  -Dsplit-bin=true
- -Drootprefix='%{_cross_prefix}'
- -Drootlibdir='%{_cross_libdir}'
  -Dlink-udev-shared=true
  -Dlink-systemctl-shared=true
  -Dlink-networkd-shared=false
@@ -198,10 +155,9 @@ CONFIGURE_OPTS=(
  -Dldconfig=true
  -Dresolve=true
  -Defi=true
- -Dtpm=true
  -Denvironment-d=false
  -Dbinfmt=true
- -Drepart=true
+ -Drepart=enabled
  -Dcoredump=false
  -Dpstore=true
  -Doomd=false
@@ -211,16 +167,16 @@ CONFIGURE_OPTS=(
  -Dmachined=false
  -Dportabled=false
  -Dsysext=false
- -Dsysupdate=false
+ -Dsysupdate=disabled
  -Duserdb=false
- -Dhomed=false
+ -Dhomed=disabled
  -Dnetworkd=true
  -Dtimedated=false
  -Dtimesyncd=false
- -Dremote=false
+ -Dremote=disabled
  -Dnss-myhostname=false
- -Dnss-mymachines=false
- -Dnss-resolve=true
+ -Dnss-mymachines=disabled
+ -Dnss-resolve=disabled
  -Dnss-systemd=false
  -Dfirstboot=false
  -Drandomseed=true
@@ -229,21 +185,18 @@ CONFIGURE_OPTS=(
  -Dquotacheck=false
  -Dsysusers=true
  -Dtmpfiles=true
- -Dimportd=false
+ -Dimportd=disabled
  -Dhwdb=false
  -Drfkill=false
  -Dxdg-autostart=false
- -Dman=false
- -Dhtml=false
+ -Dman=disabled
+ -Dhtml=disabled
  -Dtranslations=false
- -Dgpt-auto-generator=false
- -Dlog-message-verification=false
+ -Dlog-message-verification=disabled
 
  -Dcertificate-root='%{_cross_sysconfdir}/ssl'
  -Dpkgconfigdatadir='%{_cross_pkgconfigdir}'
  -Dpkgconfiglibdir='%{_cross_pkgconfigdir}'
-
- -Ddefault-hierarchy=unified
 
  -Dadm-group=false
  -Dwheel-group=false
@@ -261,46 +214,42 @@ CONFIGURE_OPTS=(
 
  -Dseccomp=auto
  -Dselinux=auto
- -Dapparmor=false
+ -Dapparmor=disabled
  -Dsmack=false
- -Dpolkit=false
+ -Dpolkit=disabled
  -Dima=false
 
- -Dacl=true
- -Daudit=false
- -Dblkid=true
- -Dfdisk=true
- -Dkmod=true
- -Dpam=false
- -Dpwquality=false
- -Dmicrohttpd=false
- -Dlibcryptsetup=true
- -Dlibcryptsetup-plugins=true
- -Dlibcurl=false
+ -Dacl=enabled
+ -Daudit=disabled
+ -Dblkid=enabled
+ -Dfdisk=enabled
+ -Dkmod=enabled
+ -Dpam=disabled
+ -Dpasswdqc=disabled
+ -Dpwquality=disabled
+ -Dmicrohttpd=disabled
+ -Dlibcurl=disabled
  -Didn=false
- -Dlibidn2=false
- -Dlibidn=false
- -Dlibiptc=false
- -Dqrencode=false
- -Dgcrypt=false
- -Dgnutls=false
- -Dopenssl=true
- -Dp11kit=false
- -Dlibfido2=false
- -Dtpm2=true
- -Delfutils=false
- -Dzlib=false
- -Dbzip2=false
- -Dxz=false
- -Dlz4=false
- -Dzstd=false
- -Dxkbcommon=false
- -Dpcre2=false
- -Dglib=false
- -Ddbus=false
+ -Dlibidn2=disabled
+ -Dlibidn=disabled
+ -Dlibiptc=disabled
+ -Dqrencode=disabled
+ -Dgcrypt=disabled
+ -Dgnutls=disabled
+ -Dp11kit=disabled
+ -Dlibfido2=disabled
+ -Delfutils=disabled
+ -Dzlib=disabled
+ -Dbzip2=disabled
+ -Dxz=disabled
+ -Dlz4=disabled
+ -Dzstd=disabled
+ -Dxkbcommon=disabled
+ -Dpcre2=disabled
+ -Dglib=disabled
+ -Ddbus=disabled
 
- -Dgnu-efi=false
- -Defi-tpm-pcr-compat=false
+ -Dbootloader=disabled
 
  -Dbashcompletiondir=no
  -Dzshcompletiondir=no
@@ -309,6 +258,8 @@ CONFIGURE_OPTS=(
  -Dslow-tests=false
  -Dfuzz-tests=false
  -Dinstall-tests=false
+ -Dintegration-tests=false
+ -Dlog-message-verification=disabled
 
  -Durlify=false
  -Dfexecve=false
@@ -318,7 +269,23 @@ CONFIGURE_OPTS=(
  -Dkernel-install=false
  -Danalyze=true
 
- -Dbpf-framework=false
+ -Dbpf-framework=disabled
+
+ -Dxenctrl=disabled
+ -Dlibarchive=disabled
+ -Dshellprofiledir=no
+ -Dsshconfdir=no
+ -Dmountfsd=false
+ -Dnsresourced=false
+ -Dvmspawn=disabled
+ -Dstoragetm=false
+ -Dukify=disabled
+
+ -Dlibcryptsetup=disabled
+ -Dlibcryptsetup-plugins=disabled
+ -Dopenssl=disabled
+ -Dtpm2=disabled
+ -Dtpm=false
 )
 
 %cross_meson "${CONFIGURE_OPTS[@]}"
@@ -343,7 +310,6 @@ rm -f %{buildroot}%{_cross_libdir}/systemd/{system,user}/graphical.target
 ln -s  ../proc-sys-fs-binfmt_misc.mount \
   %{buildroot}%{_cross_unitdir}/sysinit.target.wants/proc-sys-fs-binfmt_misc.mount
 
-
 # Remove any README files.
 find %{buildroot} -type f -name README -print -delete
 
@@ -354,6 +320,7 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_bindir}/journalctl
 %{_cross_bindir}/systemctl
 %{_cross_bindir}/systemd-analyze
+%{_cross_bindir}/systemd-ac-power
 %{_cross_bindir}/systemd-cat
 %{_cross_bindir}/systemd-cgls
 %{_cross_bindir}/systemd-cgtop
@@ -376,14 +343,20 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_bindir}/systemd-sysusers
 %{_cross_bindir}/systemd-tmpfiles
 %{_cross_bindir}/systemd-umount
+%{_cross_bindir}/systemd-vpick
 %{_cross_bindir}/udevadm
 %{_cross_bindir}/loginctl
+%{_cross_bindir}/varlinkctl
+
+%exclude %{_cross_bindir}/bootctl
+%exclude %{_cross_bindir}/run0
 
 %{_cross_sbindir}/halt
 %{_cross_sbindir}/init
 %{_cross_sbindir}/poweroff
 %{_cross_sbindir}/reboot
 %{_cross_sbindir}/shutdown
+%{_cross_sbindir}/mount.ddi
 
 %{_cross_libdir}/libsystemd.so.*
 %{_cross_libdir}/libudev.so.*
@@ -392,9 +365,9 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_libdir}/systemd/libsystemd-core-*.so
 %{_cross_libdir}/systemd/libsystemd-shared-*.so
 %{_cross_libdir}/systemd/systemd
-%{_cross_libdir}/systemd/systemd-ac-power
 %{_cross_libdir}/systemd/systemd-boot-check-no-failures
 %{_cross_libdir}/systemd/systemd-cgroups-agent
+%{_cross_libdir}/systemd/systemd-executor
 %{_cross_libdir}/systemd/systemd-fsck
 %{_cross_libdir}/systemd/systemd-growfs
 %{_cross_libdir}/systemd/systemd-journald
@@ -411,6 +384,14 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_libdir}/systemd/systemd-sysctl
 %{_cross_libdir}/systemd/systemd-sysroot-fstab-check
 %{_cross_libdir}/systemd/systemd-udevd
+%{_cross_libdir}/systemd/system-generators/systemd-tpm2-generator
+
+%exclude %{_cross_libdir}/systemd/profile.d/70-systemd-shell-extra.sh
+%exclude %{_cross_libdir}/systemd/repart/*
+%exclude %{_cross_libdir}/systemd/system-generators/systemd-ssh-generator
+%exclude %{_cross_libdir}/systemd/system-generators/systemd-gpt-auto-generator
+%exclude %{_cross_libdir}/systemd/systemd-battery-check
+%exclude %{_cross_libdir}/systemd/systemd-ssh-proxy
 
 %dir %{_cross_libdir}/systemd/system-preset
 %{_cross_libdir}/systemd/system-preset/90-systemd.preset
@@ -418,10 +399,8 @@ find %{buildroot} -type f -name README -print -delete
 %dir %{_cross_libdir}/systemd/system-shutdown
 %dir %{_cross_libdir}/systemd/system-sleep
 
-
 %dir %{_cross_libdir}/modprobe.d
 %{_cross_libdir}/modprobe.d/systemd.conf
-
 
 %dir %{_cross_sysctldir}
 %{_cross_sysctldir}/50-default.conf
@@ -468,7 +447,7 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_unitdir}/slices.target
 %{_cross_unitdir}/sockets.target
 %dir %{_cross_unitdir}/sockets.target.wants
-%{_cross_unitdir}/sockets.target.wants/systemd-journald-audit.socket
+%{_cross_unitdir}/sockets.target.wants/systemd-creds.socket
 %{_cross_unitdir}/sockets.target.wants/systemd-journald-dev-log.socket
 %{_cross_unitdir}/sockets.target.wants/systemd-journald.socket
 %{_cross_unitdir}/sockets.target.wants/systemd-udevd-control.socket
@@ -499,12 +478,15 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_unitdir}/sysinit.target.wants/systemd-repart.service
 %{_cross_unitdir}/sysinit.target.wants/systemd-sysctl.service
 %{_cross_unitdir}/sysinit.target.wants/systemd-sysusers.service
+%{_cross_unitdir}/sysinit.target.wants/systemd-tmpfiles-setup-dev-early.service
 %{_cross_unitdir}/sysinit.target.wants/systemd-tmpfiles-setup-dev.service
 %{_cross_unitdir}/sysinit.target.wants/systemd-tmpfiles-setup.service
 %{_cross_unitdir}/sysinit.target.wants/systemd-udev-trigger.service
 %{_cross_unitdir}/sysinit.target.wants/systemd-udevd.service
 %{_cross_unitdir}/syslog.socket
 %{_cross_unitdir}/systemd-boot-check-no-failures.service
+%{_cross_unitdir}/systemd-creds.socket
+%{_cross_unitdir}/systemd-creds@.service
 %{_cross_unitdir}/systemd-exit.service
 %{_cross_unitdir}/systemd-fsck-root.service
 %{_cross_unitdir}/systemd-fsck@.service
@@ -518,6 +500,7 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_unitdir}/systemd-journald.socket
 %{_cross_unitdir}/systemd-journald@.service
 %{_cross_unitdir}/systemd-journald@.socket
+%{_cross_unitdir}/systemd-journald-sync@.service
 %{_cross_unitdir}/systemd-kexec.service
 %{_cross_unitdir}/systemd-logind.service
 %{_cross_unitdir}/systemd-machine-id-commit.service
@@ -534,12 +517,14 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_unitdir}/systemd-sysusers.service
 %{_cross_unitdir}/systemd-tmpfiles-clean.service
 %{_cross_unitdir}/systemd-tmpfiles-clean.timer
+%{_cross_unitdir}/systemd-tmpfiles-setup-dev-early.service
 %{_cross_unitdir}/systemd-tmpfiles-setup-dev.service
 %{_cross_unitdir}/systemd-tmpfiles-setup.service
 %{_cross_unitdir}/systemd-udev-settle.service
 %{_cross_unitdir}/systemd-udev-trigger.service
 %{_cross_unitdir}/systemd-udevd-control.socket
 %{_cross_unitdir}/systemd-udevd-kernel.socket
+%{_cross_unitdir}/systemd-udev-load-credentials.service
 %{_cross_unitdir}/systemd-udevd.service
 %{_cross_unitdir}/time-set.target
 %{_cross_unitdir}/time-sync.target
@@ -547,8 +532,29 @@ find %{buildroot} -type f -name README -print -delete
 %dir %{_cross_unitdir}/timers.target.wants
 %{_cross_unitdir}/timers.target.wants/systemd-tmpfiles-clean.timer
 %{_cross_unitdir}/tmp.mount
+%{_cross_unitdir}/tpm2.target
 %{_cross_unitdir}/umount.target
 %{_cross_unitdir}/dbus-org.freedesktop.login1.service
+
+# Exclude growfs service used by fstab
+%exclude %{_cross_unitdir}/systemd-growfs-root.service
+%exclude %{_cross_unitdir}/systemd-growfs@.service
+
+# Exclude capsule features of systemd-run
+%exclude %{_cross_unitdir}/capsule.slice
+%exclude %{_cross_unitdir}/capsule@.service
+
+# Soft reboot of userspace is not implemented or supported
+%exclude %{_cross_unitdir}/soft-reboot.target
+%exclude %{_cross_unitdir}/systemd-soft-reboot.service
+
+# Disable the notifier service: systemd-networkd-persistent-storage.service.
+# Without this service Bottlerocket loses support for reusing DHCP leases on
+# reboot but avoids setting up a storage dependency for systemd-networkd
+%exclude %{_cross_unitdir}/systemd-networkd-persistent-storage.service
+
+# Exclude target used by ssh services
+%exclude %{_cross_unitdir}/ssh-access.target
 
 # Exclude desktop related targets.
 %exclude %{_cross_unitdir}/bluetooth.target
@@ -560,8 +566,6 @@ find %{buildroot} -type f -name README -print -delete
 # Exclude remote filesystem targets.
 %exclude %{_cross_unitdir}/remote-fs-pre.target
 %exclude %{_cross_unitdir}/remote-fs.target
-%exclude %{_cross_unitdir}/remote-cryptsetup.target
-%exclude %{_cross_unitdir}/remote-veritysetup.target
 
 # Exclude user-related functionality.
 %exclude %{_cross_unitdir}/user-runtime-dir@.service
@@ -575,7 +579,6 @@ find %{buildroot} -type f -name README -print -delete
 %exclude %{_cross_libdir}/systemd/user-preset/90-systemd.preset
 
 # Exclude units related to the initrd.
-%exclude %{_cross_unitdir}/initrd-root-device.target.wants
 %exclude %{_cross_unitdir}/initrd-root-fs.target.wants
 
 # Exclude repart service since we have custom repart logic.
@@ -605,6 +608,7 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_libdir}/udev/fido_id
 %{_cross_libdir}/udev/mtd_probe
 %{_cross_libdir}/udev/scsi_id
+%{_cross_libdir}/udev/iocost
 %exclude %{_cross_libdir}/udev/v4l_id
 
 %dir %{_cross_udevrulesdir}
@@ -612,12 +616,14 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_udevrulesdir}/60-autosuspend.rules
 %{_cross_udevrulesdir}/60-block.rules
 %{_cross_udevrulesdir}/60-cdrom_id.rules
+%{_cross_udevrulesdir}/60-dmi-id.rules
 %{_cross_udevrulesdir}/60-drm.rules
 %{_cross_udevrulesdir}/60-evdev.rules
 %{_cross_udevrulesdir}/60-fido-id.rules
 %{_cross_udevrulesdir}/60-infiniband.rules
 %{_cross_udevrulesdir}/60-input-id.rules
 %{_cross_udevrulesdir}/60-persistent-input.rules
+%{_cross_udevrulesdir}/60-persistent-storage-mtd.rules
 %{_cross_udevrulesdir}/60-persistent-storage-tape.rules
 %{_cross_udevrulesdir}/60-persistent-storage.rules
 %{_cross_udevrulesdir}/60-sensor.rules
@@ -630,6 +636,7 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_udevrulesdir}/80-drivers.rules
 %{_cross_udevrulesdir}/80-net-setup-link.rules
 %{_cross_udevrulesdir}/81-net-dhcp.rules
+%{_cross_udevrulesdir}/90-iocost.rules
 %{_cross_udevrulesdir}/99-systemd.rules
 
 # Exclude desktop-related device rules.
@@ -643,12 +650,14 @@ find %{buildroot} -type f -name README -print -delete
 %exclude %{_cross_udevrulesdir}/71-seat.rules
 %exclude %{_cross_udevrulesdir}/73-seat-late.rules
 %exclude %{_cross_udevrulesdir}/78-sound-card.rules
+%exclude %{_cross_datadir}/mime/packages/io.systemd.xml
 
 %dir %{_cross_sysusersdir}
 %{_cross_sysusersdir}/basic.conf
 %{_cross_sysusersdir}/systemd-journal.conf
 
 %dir %{_cross_tmpfilesdir}
+%{_cross_tmpfilesdir}/credstore.conf
 %{_cross_tmpfilesdir}/etc.conf
 %{_cross_tmpfilesdir}/home.conf
 %{_cross_tmpfilesdir}/journal-nocow.conf
@@ -659,6 +668,8 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_tmpfilesdir}/systemd.conf
 %{_cross_tmpfilesdir}/tmp.conf
 %{_cross_tmpfilesdir}/var.conf
+%exclude %{_cross_tmpfilesdir}/20-systemd-stub.conf
+%exclude %{_cross_tmpfilesdir}/legacy.conf
 %exclude %{_cross_tmpfilesdir}/x11.conf
 
 %{_cross_datadir}/dbus-1/services/org.freedesktop.systemd1.service
@@ -673,6 +684,7 @@ find %{buildroot} -type f -name README -print -delete
 %exclude %{_cross_factorydir}%{_cross_sysconfdir}/pam.d
 %exclude %{_cross_factorydir}%{_cross_sysconfdir}/pam.d/other
 %exclude %{_cross_factorydir}%{_cross_sysconfdir}/pam.d/system-auth
+%exclude %{_cross_factorydir}/etc/vconsole.conf
 
 %dir %{_cross_journalcatalogdir}
 %{_cross_journalcatalogdir}/systemd.catalog
@@ -700,6 +712,7 @@ find %{buildroot} -type f -name README -print -delete
 %exclude %{_cross_datadir}/polkit-1
 %exclude %{_cross_docdir}
 %exclude %{_cross_libdir}/pam.d/systemd-user
+%exclude %{_cross_libdir}/pam.d/systemd-run0
 %exclude %{_cross_sysconfdir}/systemd/
 %exclude %{_cross_sysconfdir}/udev/
 %exclude %{_cross_sysconfdir}/X11
@@ -753,7 +766,6 @@ find %{buildroot} -type f -name README -print -delete
 
 %files resolved
 %{_cross_bindir}/resolvectl
-%{_cross_libdir}/libnss_resolve.so.*
 %{_cross_libdir}/systemd/resolv.conf
 %{_cross_libdir}/systemd/systemd-resolved
 %{_cross_sysusersdir}/systemd-resolve.conf
@@ -762,23 +774,3 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_datadir}/dbus-1/system.d/org.freedesktop.resolve1.conf
 %exclude %{_cross_bindir}/systemd-resolve
 %exclude %{_cross_sbindir}/resolvconf
-
-%files cryptsetup
-%{_cross_bindir}/systemd-cryptenroll
-%{_cross_libdir}/cryptsetup/libcryptsetup-token-systemd-tpm2.so
-%{_cross_libdir}/systemd/systemd-cryptsetup
-%{_cross_libdir}/systemd/systemd-integritysetup
-%{_cross_libdir}/systemd/systemd-veritysetup
-%{_cross_systemdgeneratordir}/systemd-cryptsetup-generator
-%{_cross_systemdgeneratordir}/systemd-integritysetup-generator
-%{_cross_systemdgeneratordir}/systemd-veritysetup-generator
-%{_cross_unitdir}/cryptsetup.target
-%{_cross_unitdir}/cryptsetup-pre.target
-%{_cross_unitdir}/integritysetup.target
-%{_cross_unitdir}/integritysetup-pre.target
-%{_cross_unitdir}/veritysetup.target
-%{_cross_unitdir}/veritysetup-pre.target
-%{_cross_unitdir}/*cryptsetup.slice
-%{_cross_unitdir}/sysinit.target.wants/cryptsetup.target
-%{_cross_unitdir}/sysinit.target.wants/integritysetup.target
-%{_cross_unitdir}/sysinit.target.wants/veritysetup.target

@@ -1,0 +1,84 @@
+From e66920d0a95a3e53b24a2f270420a85d0f2395ea Mon Sep 17 00:00:00 2001
+From: Ben Cressey <bcressey@amazon.com>
+Date: Tue, 10 Mar 2020 20:30:10 +0000
+Subject: [PATCH] core: add separate timeout for system shutdown
+
+There is an existing setting for this (DefaultTimeoutStopUSec), but
+changing it has no effect because `reset_arguments()` is called just
+before `become_shutdown()`, which sets everything back to the stock
+values.
+
+It's also awkward to use a single timeout value for stopping normal
+services, and for cleaning up stray processes after most of userspace
+has gone away.
+
+Signed-off-by: Ben Cressey <bcressey@amazon.com>
+Signed-off-by: Arnaldo Garcia Rincon <agarrcia@amazon.com>
+
+[vighmah:
+Ported to work with the changes introduced in
+c9e120e06f929d8f4bbc4faaf87d641c6938dc08 and earlier.
+]
+Signed-off-by: Vighnesh Maheshwari <vighmah@amazon.com>
+
+---
+ src/basic/constants.h | 3 +++
+ src/core/main.c       | 2 +-
+ src/core/manager.c    | 1 +
+ src/core/manager.h    | 2 +-
+ 4 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/src/basic/constants.h b/src/basic/constants.h
+index 5aaf8f5..7f936dd 100644
+--- a/src/basic/constants.h
++++ b/src/basic/constants.h
+@@ -46,6 +46,9 @@
+  * should be kept lower than the watchdog timeout, because otherwise
+  * the watchdog pings will keep the loop busy. */
+ #define DEFAULT_EXIT_USEC (30*USEC_PER_SEC)
++/* The default time after which processes are killed on shutdown. */
++#define DEFAULT_TIMEOUT_SHUTDOWN_USEC (10*USEC_PER_SEC)
++
+
+ /* The default value for the net.unix.max_dgram_qlen sysctl */
+ #define DEFAULT_UNIX_MAX_DGRAM_QLEN 512
+diff --git a/src/core/main.c b/src/core/main.c
+index 4bd2d8d..9bd9bc7 100644
+--- a/src/core/main.c
++++ b/src/core/main.c
+@@ -1629,7 +1629,7 @@ static int become_shutdown(int objective, int retval) {
+         assert(objective >= 0 && objective < _MANAGER_OBJECTIVE_MAX);
+         assert(table[objective]);
+
+-        xsprintf(timeout, "--timeout=%" PRI_USEC "us", arg_defaults.timeout_stop_usec);
++        xsprintf(timeout, "--timeout=%" PRI_USEC "us", arg_defaults.timeout_shutdown_usec);
+
+         const char* command_line[11] = {
+                 SYSTEMD_SHUTDOWN_BINARY_PATH,
+diff --git a/src/core/manager.c b/src/core/manager.c
+index f21a4f7..ec6a1a0 100644
+--- a/src/core/manager.c
++++ b/src/core/manager.c
+@@ -5314,6 +5314,7 @@ void unit_defaults_init(UnitDefaults *defaults, RuntimeScope scope) {
+                 .timeout_start_usec = manager_default_timeout(scope),
+                 .timeout_stop_usec = manager_default_timeout(scope),
+                 .timeout_abort_usec = manager_default_timeout(scope),
++                .timeout_shutdown_usec = DEFAULT_TIMEOUT_SHUTDOWN_USEC,
+                 .timeout_abort_set = false,
+                 .device_timeout_usec = manager_default_timeout(scope),
+                 .start_limit = { DEFAULT_START_LIMIT_INTERVAL, DEFAULT_START_LIMIT_BURST },
+diff --git a/src/core/manager.h b/src/core/manager.h
+index e4cada8..15c1178 100644
+--- a/src/core/manager.h
++++ b/src/core/manager.h
+@@ -160,7 +160,7 @@ assert_cc((MANAGER_TEST_FULL & UINT8_MAX) == MANAGER_TEST_FULL);
+ typedef struct UnitDefaults {
+         ExecOutput std_output, std_error;
+
+-        usec_t restart_usec, timeout_start_usec, timeout_stop_usec, timeout_abort_usec, device_timeout_usec;
++        usec_t restart_usec, timeout_start_usec, timeout_stop_usec, timeout_abort_usec, device_timeout_usec, timeout_shutdown_usec;
+         bool timeout_abort_set;
+
+         RateLimit start_limit;
+--
+2.43.5

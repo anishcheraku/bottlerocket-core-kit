@@ -117,6 +117,7 @@ members = [
   "packages/strace",
   "packages/systemd-252",
   "packages/tpm2-tools",
+  "packages/systemd-257",
   "packages/util-linux",
   "packages/xfsprogs"
 ]
