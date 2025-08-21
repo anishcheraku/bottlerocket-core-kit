@@ -118,6 +118,17 @@ pub fn bind(variant: &str, dirs: Vec<String>) -> Result<()> {
         _ => format!("{RAID_DEVICE_DIR}{RAID_DEVICE_NAME}"),
     };
 
+    let dirs = if dirs.is_empty() {
+        let allowed_dirs = allowed_bind_dirs(variant);
+        allowed_dirs
+            .allowed_exact
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect()
+    } else {
+        dirs
+    };
+
     // Normalize input by trimming trailing "/"
     let dirs: Vec<String> = dirs
         .into_iter()
@@ -431,3 +442,33 @@ pub mod error {
 }
 
 pub type Result<T> = std::result::Result<T, error::Error>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_bind_with_default_dirs_k8s() {
+        let variant = "aws-k8s-1.33";
+        let allowed_dirs = allowed_bind_dirs(variant);
+
+        for dir in [
+            "/var/lib/kubelet",
+            "/var/lib/containerd",
+            "/var/lib/soci-snapshotter",
+            "/var/log/pods",
+        ] {
+            assert!(allowed_dirs.allowed_exact.contains(dir));
+        }
+    }
+
+    #[test]
+    fn test_bind_with_default_dirs_ecs() {
+        let variant = "aws-ecs-2";
+        let allowed_dirs = allowed_bind_dirs(variant);
+
+        for dir in ["/var/lib/docker", "/var/lib/containerd", "/var/log/ecs"] {
+            assert!(allowed_dirs.allowed_exact.contains(dir));
+        }
+    }
+}
