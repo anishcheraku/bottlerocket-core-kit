@@ -272,8 +272,9 @@ fn usage() -> ! {
 
         ephemeral-storage bind options:
             --dirs DIR [DIR ...]       Directories to bind to configured ephemeral storage
-                                       (e.g. /var/lib/containerd). If no ephemeral disks are found
-                                       this operation does nothing.
+                                       (e.g. /var/lib/containerd). If not specified, uses platform (k8s vs. ECS)
+                                       defaults. If no ephemeral disks are found this operation does nothing.
+
 
         ephemeral-storage list-disks options:
             -f, --format               Format of the disk listing (text or json). Default format is text.
@@ -794,9 +795,13 @@ fn parse_ephemeral_storage_init_args(args: Vec<String>) -> EphemeralStorageSubco
 
 /// Parses arguments for the 'bind' ephemeral-storage subcommand.
 fn parse_ephemeral_storage_bind_args(args: Vec<String>) -> EphemeralStorageSubcommand {
+    // If no arguments, use default directories
     if args.is_empty() {
-        usage_msg("Did not give arguments to bind")
+        return EphemeralStorageSubcommand::Bind(EphemeralStorageBindArgs {
+            targets: Vec::new(),
+        });
     }
+
     let mut targets = Vec::new();
     let mut iter = args.into_iter().peekable();
     while let Some(arg) = iter.next() {
@@ -810,6 +815,7 @@ fn parse_ephemeral_storage_bind_args(args: Vec<String>) -> EphemeralStorageSubco
             x => usage_msg(format!("Unknown argument '{x}'")),
         }
     }
+
     EphemeralStorageSubcommand::Bind(EphemeralStorageBindArgs { targets })
 }
 
