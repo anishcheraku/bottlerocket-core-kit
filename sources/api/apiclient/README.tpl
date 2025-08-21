@@ -193,6 +193,45 @@ If you want to group sets of changes yourself, pick a transaction name and appen
 For example, if you want the name "FOO", you can `PATCH` to `/settings?tx=FOO` and `POST` to `/tx/commit_and_apply?tx=FOO`.
 (Transactions are created automatically when used, and are cleaned up on reboot.)
 
+### Ephemeral storage
+
+This lets you manage ephemeral storage on instances that have local instance storage (like NVMe SSDs).
+
+#### Initialize ephemeral storage
+
+Before binding directories, you need to initialize the ephemeral storage:
+
+```shell
+apiclient ephemeral-storage init
+```
+
+This sets up the storage devices as a RAID array and formats them.
+
+#### Bind directories to ephemeral storage
+
+You can bind directories to the ephemeral storage so they persist across container restarts:
+
+```shell
+apiclient ephemeral-storage bind
+```
+
+This automatically binds the appropriate directories for your platform (Kubernetes vs ECS). For Kubernetes variants, this includes directories like `/var/lib/kubelet`, `/var/lib/containerd`, `/var/log/pods`, and `/var/lib/soci-snapshotter`. For ECS variants, it includes `/var/lib/docker`, `/var/lib/containerd`, and `/var/log/ecs`.
+
+You can also specify custom directories:
+
+```shell
+apiclient ephemeral-storage bind --dirs /var/lib/containerd /custom/path
+```
+
+#### List ephemeral storage information
+
+You can list available disks and currently bound directories:
+
+```shell
+apiclient ephemeral-storage list-disks
+apiclient ephemeral-storage list-dirs
+```
+
 ### Report mode
 
 This allows you to generate certain reports based on the current state of the system.
