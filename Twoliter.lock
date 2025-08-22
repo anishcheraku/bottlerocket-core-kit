@@ -1,5 +1,6 @@
-schema-version = 1
+schema-version = 2
 kit = []
+project-vendor = "Bottlerocket"
 
 [sdk]
 name = "bottlerocket-sdk"
