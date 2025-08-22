@@ -49,6 +49,7 @@ static PRIMARY_INTERFACE: &str = "/var/lib/netdog/primary_interface";
 static PRIMARY_MAC_ADDRESS: &str = "/var/lib/netdog/primary_mac_address";
 static DEFAULT_NET_CONFIG_FILE: &str = "/var/lib/bottlerocket/net.toml";
 static OVERRIDE_NET_CONFIG_FILE: &str = "/var/lib/netdog/net.toml";
+static USR_NET_CONFIG_FILE: &str = "/usr/share/bottlerocket/net.toml";
 static PRIMARY_SYSCTL_CONF: &str = "/etc/sysctl.d/90-primary_interface.conf";
 static SYSCTL_MARKER_FILE: &str = "/run/netdog/primary_sysctls_set";
 static SYS_CLASS_NET: &str = "/sys/class/net";
