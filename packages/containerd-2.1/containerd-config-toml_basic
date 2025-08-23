@@ -1,0 +1,17 @@
++++
+version = 3
+root = "/var/lib/containerd"
+state = "/run/containerd"
+disabled_plugins = [
+    "io.containerd.internal.v1.opt",
+    "io.containerd.internal.v1.tracing",
+    "io.containerd.snapshotter.v1.blockfile",
+    "io.containerd.snapshotter.v1.devmapper",
+    "io.containerd.snapshotter.v1.native",
+    "io.containerd.snapshotter.v1.zfs",
+    "io.containerd.grpc.v1.cri",
+    "io.containerd.tracing.processor.v1.otlp",
+]
+
+[grpc]
+address = "/run/containerd/containerd.sock"

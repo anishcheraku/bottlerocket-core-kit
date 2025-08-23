@@ -2,17 +2,16 @@
 %global gorepo containerd
 %global goimport %{goproject}/%{gorepo}
 
-%global gover 2.0.5
+%global gover 2.1.4
 %global rpmver %{gover}
-%global gitrev fb4c30d4ede3531652d86197bf3fc9515e5276d9
+%global gitrev 75cb2b7193e4e490e9fbdc236c0e811ccaba3376
 
-%global package_priority_epoch 1
+%global package_priority_epoch 0
 %global _dwz_low_mem_die_limit 0
 
-Name: %{_cross_os}%{gorepo}-2.0
+Name: %{_cross_os}%{gorepo}-2.1
 Version: %{rpmver}
 Release: 1%{?dist}
-Epoch: 1
 Summary: An industry-standard container runtime
 License: Apache-2.0
 URL: https://%{goimport}
@@ -37,7 +36,7 @@ Source201: containerd-disable-pigz.conf
 
 Source1000: clarify.toml
 
-# Patch to support moving from containerd-1.7 to 2.0
+# Patch to support moving from containerd-1.7 to 2.x
 Patch1001: 1001-Revert-Don-t-allow-io_uring-related-syscalls-in-the-.patch
 
 BuildRequires: git

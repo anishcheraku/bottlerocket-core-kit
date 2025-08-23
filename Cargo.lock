@@ -79,6 +79,7 @@ dependencies = [
  "conntrack-tools",
  "containerd-1_7",
  "containerd-2_0",
+ "containerd-2_1",
  "coreutils",
  "dbus-broker",
  "docker-cli",
@@ -233,6 +234,13 @@ dependencies = [
 
 [[package]]
 name = "containerd-2_0"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+]
+
+[[package]]
+name = "containerd-2_1"
 version = "0.1.0"
 dependencies = [
  "glibc",
