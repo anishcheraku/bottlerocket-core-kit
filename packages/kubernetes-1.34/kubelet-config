@@ -209,3 +209,4 @@ singleProcessOOMKill: {{settings.kubernetes.single-process-oom-kill}}
 {{/if}}
 featureGates:
   DynamicResourceAllocation: true
+  MutableCSINodeAllocatableCount: true
