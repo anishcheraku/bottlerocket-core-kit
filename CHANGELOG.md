@@ -1,3 +1,33 @@
+# v10.3.0 (2025-08-26)
+
+## OS Changes
+- Add default bind directories for ephemeral storage ([#632])
+- Extend netdog to look for `net.toml` under `/usr/share/bottlerocket` ([#524]) - Thanks @pb80
+- Add `containerd-2.1` package ([#621])
+  - Transfer service for image pull is now the default
+  - Multipart layer fetch support was added and has a default of 8MiB in Bottlerocket
+  - Containerd 2.1 removes the support for Schema 1 images 
+- Add `systemd-257` package ([#581])
+- Update `host-ctr` to migrate to `aws-sdk-go-v2` and bump to go 1.24 ([#642])
+
+## Orchestrator Changes
+### Kubernetes
+- Enable `MutableCSINodeAllocatableCount` feature gate on kubelet for kubernetes-1.34 ([#634]) - Thanks @torredil
+- Add support for new Kubernetes Setting `static-pods-enabled` ([#641])
+
+## Build Changes
+- Update `twoliter` to 0.12.0 ([#635])
+- Update bottlerocket-settings-models to 0.13.0 ([#641])
+
+[#524]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/524
+[#581]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/581
+[#621]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/621
+[#632]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/632
+[#634]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/634
+[#635]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/635
+[#641]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/641
+[#642]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/642
+
 # v10.2.0 (2025-08-19)
 
 ## Orchestrator Changes
