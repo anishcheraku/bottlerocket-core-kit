@@ -15,12 +15,19 @@ use crate::{
 const AMAZON_VENDOR_CODE: &str = "1d0f";
 const EFA_KEYWORD: &str = "efa";
 
+// Neuron devices specific to inf1 instance types
 lazy_static! {
-    static ref NEURON_DEVICES: HashSet<&'static str> = hashset! {
+    static ref INF1_DEVICES: HashSet<&'static str> = hashset! {
         "7064", // inf1 device id 0
         "7065", // inf1 device id 1
         "7066", // inf1 device id 2
         "7067", // inf1 device id 3
+    };
+}
+
+// Neuron device ids outside of inf1-specific devices
+lazy_static! {
+    static ref NEURON_DEVICES: HashSet<&'static str> = hashset! {
         "7164", // trn1 device id 0
         "7264", // inf2 device id 0
         "7364", // trn2 device id 0
@@ -170,6 +177,33 @@ pub(crate) fn check_neuron_attachment<T: CommandExecutor>(command_executor: T) -
         .vendor(AMAZON_VENDOR_CODE.to_string())
         .build();
     let list_device_results = call_list_devices(command_executor, list_devices_param)?;
+    Ok(list_device_results.iter().any(|device_info| {
+        NEURON_DEVICES.contains(&device_info.device.as_str())
+            || INF1_DEVICES.contains(&device_info.device.as_str())
+    }))
+}
+
+/// Call `lspci` and check if there is any inf1-specific Neuron device attached.
+/// Internal usage, adding command_executor as parameter allows us to better unit test.
+/// For external usage, check [`crate::is_inf1_instance`].
+pub(crate) fn check_inf1_attachment<T: CommandExecutor>(command_executor: T) -> Result<bool> {
+    let list_devices_param = ListDevicesParam::builder()
+        .vendor(AMAZON_VENDOR_CODE.to_string())
+        .build();
+    let list_device_results = call_list_devices(command_executor, list_devices_param)?;
+    Ok(list_device_results
+        .iter()
+        .any(|device_info| INF1_DEVICES.contains(&device_info.device.as_str())))
+}
+
+/// Call `lspci` and check if there is any inf2 or later Neuron device attached.
+/// Internal usage, adding command_executor as parameter allows us to better unit test.
+/// For external usage, check [`crate::is_inf2_instance`].
+pub(crate) fn check_inf2_attachment<T: CommandExecutor>(command_executor: T) -> Result<bool> {
+    let list_devices_param = ListDevicesParam::builder()
+        .vendor(AMAZON_VENDOR_CODE.to_string())
+        .build();
+    let list_device_results = call_list_devices(command_executor, list_devices_param)?;
     Ok(list_device_results
         .iter()
         .any(|device_info| NEURON_DEVICES.contains(&device_info.device.as_str())))
@@ -194,7 +228,7 @@ mod test {
     use crate::{ListDevicesOutput, ListDevicesParam, Result};
 
     use super::{
-        call_list_devices, check_efa_attachment, check_neuron_attachment,
+        call_list_devices, check_efa_attachment, check_inf1_attachment, check_neuron_attachment,
         parse_list_devices_output, CommandExecutor,
     };
 
@@ -385,5 +419,31 @@ mod test {
         let check_neuron_attachment_result = check_neuron_attachment(mock_pci_client);
         assert!(check_neuron_attachment_result.is_ok());
         assert!(!check_neuron_attachment_result.unwrap());
+    }
+
+    #[test]
+    fn test_is_inf1_attached() {
+        let mock_pci_client = MockPciClient {
+            // inf1 device has class code: 0880 for system peripheral, vendor 1d0f for amazon, device code 7064.
+            // Below is a mock output from lspci for inf1 device.
+            output: vec![
+                r#"00:1e.0 "0880" "1d0f" "7064" -p00 "" """#.to_string(),
+                r#"00:1e.0 "0302" "10de" "1eb8" -ra1 -p00 "10de" "12a2""#.to_string(),
+            ],
+        };
+        let check_inf1_attachment_result = check_inf1_attachment(mock_pci_client);
+        assert!(check_inf1_attachment_result.is_ok());
+        assert!(check_inf1_attachment_result.unwrap());
+    }
+
+    #[test]
+    fn test_is_inf1_attached_negative_case() {
+        let mock_pci_client = MockPciClient {
+            // Below is an actual output from lspci for trn1 device (not inf1).
+            output: vec![r#"00:1e.0 "0880" "1d0f" "7164" -p00 "" """#.to_string()],
+        };
+        let check_inf1_attachment_result = check_inf1_attachment(mock_pci_client);
+        assert!(check_inf1_attachment_result.is_ok());
+        assert!(!check_inf1_attachment_result.unwrap());
     }
 }
