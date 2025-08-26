@@ -45,7 +45,7 @@ Conflicts: (%{_cross_os}image-feature(no-fips) or %{name}-bin)
 cp -r %{_builddir}/sources/%{workspace_name}/* .
 
 %build
-export GO_MAJOR="1.23"
+export GO_MAJOR="1.24"
 
 %set_cross_go_flags
 go build -ldflags="${GOLDFLAGS}" -o host-ctr ./cmd/host-ctr

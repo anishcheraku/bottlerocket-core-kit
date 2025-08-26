@@ -13,9 +13,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ecrpublic"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/ecrpublic"
 	"github.com/awslabs/amazon-ecr-containerd-resolver/ecr"
 	"github.com/containerd/containerd"
 	"github.com/containerd/containerd/api/types/runc/options"
@@ -1247,11 +1247,14 @@ func withDynamicResolver(ctx context.Context, ref string, registryConfig *Regist
 		}
 
 		// Try to get credentials for authenticated pulls from ECR Public
-		session := session.Must(session.NewSession())
 		// The ECR Public API is only available in us-east-1 today
-		publicConfig := aws.NewConfig().WithRegion("us-east-1")
-		client := ecrpublic.New(session, publicConfig)
-		output, err := client.GetAuthorizationToken(&ecrpublic.GetAuthorizationTokenInput{})
+		cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1"))
+		if err != nil {
+			log.G(ctx).Warn("ecr-public: failed to load AWS config, falling back to default resolver (unauthenticated pull)")
+			return defaultResolver
+		}
+		client := ecrpublic.NewFromConfig(cfg)
+		output, err := client.GetAuthorizationToken(ctx, &ecrpublic.GetAuthorizationTokenInput{})
 		if err != nil {
 			log.G(ctx).Warn("ecr-public: failed to get authorization token, falling back to default resolver (unauthenticated pull)")
 			return defaultResolver
@@ -1260,7 +1263,7 @@ func withDynamicResolver(ctx context.Context, ref string, registryConfig *Regist
 			log.G(ctx).Warn("ecr-public: missing AuthorizationData in ECR Public GetAuthorizationToken response, falling back to default resolver (unauthenticated pull)")
 			return defaultResolver
 		}
-		authToken, err := base64.StdEncoding.DecodeString(aws.StringValue(output.AuthorizationData.AuthorizationToken))
+		authToken, err := base64.StdEncoding.DecodeString(aws.ToString(output.AuthorizationData.AuthorizationToken))
 		if err != nil {
 			log.G(ctx).Warn("ecr-public: unable to decode authorization token, falling back to default resolver (unauthenticated pull)")
 			return defaultResolver
