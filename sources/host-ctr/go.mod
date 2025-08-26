@@ -1,8 +1,8 @@
 module host-ctr
 
-go 1.23.0
+go 1.24
 
-toolchain go1.23.3
+toolchain go1.24.6
 
 require (
 	github.com/aws/aws-sdk-go v1.55.6
