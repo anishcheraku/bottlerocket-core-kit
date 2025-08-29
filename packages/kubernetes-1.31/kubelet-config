@@ -91,6 +91,9 @@ kubeReserved:
   {{/if}}
   {{/if}}
   ephemeral-storage: "{{default "1Gi" settings.kubernetes.kube-reserved.ephemeral-storage}}"
+  {{#if settings.kubernetes.kube-reserved.pid}}
+  pid: "{{settings.kubernetes.kube-reserved.pid}}"
+  {{/if}}
 {{#unless settings.kubernetes.reserved-cpus}}
 kubeReservedCgroup: "/runtime"
 {{/unless}}
