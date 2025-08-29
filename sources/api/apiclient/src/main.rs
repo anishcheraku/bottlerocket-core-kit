@@ -300,7 +300,7 @@ fn usage_msg<S: AsRef<str>>(msg: S) -> ! {
 // Arg parsing
 
 /// Parses user arguments into an Args structure.
-fn parse_args(args: env::Args) -> (Args, Subcommand) {
+fn parse_args(args: impl Iterator<Item = String>) -> (Args, Subcommand) {
     let mut global_args = Args::default();
     let mut subcommand = None;
     let mut subcommand_args = Vec::new();
@@ -308,6 +308,22 @@ fn parse_args(args: env::Args) -> (Args, Subcommand) {
     let mut iter = args.into_iter().skip(1);
     while let Some(arg) = iter.next() {
         match arg.as_ref() {
+            // Handle separator - only valid after exec subcommand is set
+            "--" => {
+                if subcommand.is_none() {
+                    usage_msg("'--' separator requires a subcommand to be specified first");
+                }
+                // Only do special handling for exec subcommand
+                if subcommand.as_deref() == Some("exec") {
+                    // For exec, collect all remaining args and stop processing
+                    subcommand_args.extend(iter);
+                    break;
+                } else {
+                    // For other subcommands, treat -- as a regular argument
+                    subcommand_args.push(arg);
+                }
+            }
+
             "-h" | "--help" => usage(),
 
             // Global args
@@ -1160,3 +1176,127 @@ mod error {
     }
 }
 type Result<T> = std::result::Result<T, error::Error>;
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use test_case::test_case;
+
+    // Helper macro for creating global Args with consistent formatting
+    macro_rules! global_args {
+        // Create Args with specified log_level and socket_path
+        ($log_level:expr, $socket_path:expr) => {
+            Args {
+                log_level: $log_level,
+                socket_path: $socket_path.to_string(),
+            }
+        };
+        // Create Args with just log_level (using default socket_path)
+        ($log_level:expr) => {
+            Args {
+                log_level: $log_level,
+                socket_path: constants::API_SOCKET.to_string(),
+            }
+        };
+    }
+
+    // Helper macro for creating exec subcommand
+    macro_rules! exec_cmd {
+        // For Exec subcommand with target, command args, and tty option
+        ($target:expr, [$($arg:expr),*], $tty:expr) => {
+            Subcommand::Exec(ExecArgs {
+                target: $target.to_string(),
+                command: vec![$($arg.into()),*],
+                tty: $tty,
+            })
+        };
+    }
+
+    fn parse_command_line(cmd_str: &str) -> (Args, Subcommand) {
+        let args: Vec<String> = cmd_str.split_whitespace().map(|s| s.to_string()).collect();
+        parse_args(args.into_iter())
+    }
+
+    #[test_case("apiclient exec admin -- sheltie df -h",
+        global_args!(LevelFilter::Info),
+        exec_cmd!("admin", ["sheltie", "df", "-h"], None);
+        "exec with separator")]
+    #[test_case("apiclient exec admin sheltie df",
+        global_args!(LevelFilter::Info),
+        exec_cmd!("admin", ["sheltie", "df"], None);
+        "exec without separator")]
+    #[test_case("apiclient exec -t admin -- sheltie df -h",
+        global_args!(LevelFilter::Info),
+        exec_cmd!("admin", ["sheltie", "df", "-h"], Some(true));
+        "exec with tty and separator")]
+    #[test_case("apiclient exec -T admin sheltie df",
+        global_args!(LevelFilter::Info),
+        exec_cmd!("admin", ["sheltie", "df"], Some(false));
+        "exec with no-tty")]
+    fn test_exec_parsing(cmd_str: &str, expected_args: Args, expected_subcommand: Subcommand) {
+        let (global_args, subcommand) = parse_command_line(cmd_str);
+
+        // Check the global arguments match what we expect
+        assert_eq!(global_args.log_level, expected_args.log_level);
+        assert_eq!(global_args.socket_path, expected_args.socket_path);
+
+        // Check the subcommand matches what we expect
+        match (&subcommand, &expected_subcommand) {
+            (Subcommand::Exec(actual), Subcommand::Exec(expected)) => {
+                assert_eq!(actual.target, expected.target);
+                assert_eq!(actual.tty, expected.tty);
+                assert_eq!(actual.command, expected.command);
+            }
+            _ => panic!(
+                "Expected Exec subcommand: {:?}, got: {:?}",
+                expected_subcommand, subcommand
+            ),
+        }
+    }
+
+    #[test_case("apiclient -v exec admin -- sheltie df -h",
+        global_args!(LevelFilter::Debug),
+        exec_cmd!("admin", ["sheltie", "df", "-h"], None);
+        "verbose flag with exec as global arg")]
+    #[test_case("apiclient --log-level error exec admin sheltie df",
+        global_args!(LevelFilter::Error),
+        exec_cmd!("admin", ["sheltie", "df"], None);
+        "log level with exec")]
+    #[test_case("apiclient exec admin -- sheltie -v df -h",
+        global_args!(LevelFilter::Info),
+        exec_cmd!("admin", ["sheltie", "-v", "df", "-h"], None);
+        "verbose flag after separator as command arg")]
+    #[test_case("apiclient -v exec admin -- sheltie -v df -h",
+        global_args!(LevelFilter::Debug),
+        exec_cmd!("admin", ["sheltie", "-v", "df", "-h"], None);
+        "verbose flag in both global and command positions")]
+    fn test_args_parsing_with_separator(
+        cmd_str: &str,
+        expected_args: Args,
+        expected_subcommand: Subcommand,
+    ) {
+        let (global_args, subcommand) = parse_command_line(cmd_str);
+
+        // Check the global arguments match what we expect
+        assert_eq!(
+            global_args.log_level, expected_args.log_level,
+            "Global log level should match"
+        );
+        assert_eq!(
+            global_args.socket_path, expected_args.socket_path,
+            "Socket path should match"
+        );
+
+        // Check the subcommand matches what we expect
+        match (&subcommand, &expected_subcommand) {
+            (Subcommand::Exec(actual), Subcommand::Exec(expected)) => {
+                assert_eq!(actual.target, expected.target, "Target should match");
+                assert_eq!(actual.tty, expected.tty, "TTY setting should match");
+                assert_eq!(actual.command, expected.command, "Command should match");
+            }
+            _ => panic!(
+                "Expected Exec subcommand: {:?}, got: {:?}",
+                expected_subcommand, subcommand
+            ),
+        }
+    }
+}

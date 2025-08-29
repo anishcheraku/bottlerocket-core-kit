@@ -419,6 +419,7 @@ dependencies = [
  "signal-hook",
  "simplelog",
  "snafu",
+ "test-case",
  "tokio",
  "tokio-tungstenite",
  "toml",
