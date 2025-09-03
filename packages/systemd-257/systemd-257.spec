@@ -11,6 +11,7 @@ License: GPL-2.0-or-later AND GPL-2.0-only AND LGPL-2.1-or-later
 URL: https://www.freedesktop.org/wiki/Software/systemd
 Source0: https://github.com/systemd/systemd/archive/v%{version}/systemd-%{version}.tar.gz
 
+Source1: systemd-mount-rate-bootconfig.conf
 
 # Local patch to add the acquire the id for VMware
 Patch9001: 9001-machine-id-setup-generate-stable-ID-under-VM.patch
@@ -31,25 +32,20 @@ Patch9005: 9005-sysusers-set-root-shell-to-sbin-nologin.patch
 # DBUS services not used in Bottlerocket
 Patch9006: 9006-systemd-networkd-Conditionalize-hostnamed-timezoned-.patch
 
-# Local patch to adjust the default mount rate limit to 25 per second.
-# Carried as a patch so that SYSTEMD_DEFAULT_MOUNT_RATE_LIMIT_BURST can be used
-# as a kernel command line parameter to override.
-Patch9007: 9007-core-mount-increase-mount-rate-limit-burst-to-25.patch
-
 # Local patch to work around a potentially non-compliant Option 15 in the DHCP
 # lease in EC2.
-Patch9008: 9008-sd-dhcp-lease-parse-multiple-domains-in-option-15.patch
+Patch9007: 9007-sd-dhcp-lease-parse-multiple-domains-in-option-15.patch
 
 # Local patch to allow resolving .local domains
-Patch9009: 9009-allow-lookups-of-local-domains-using-unicast-DNS.patch
+Patch9008: 9008-allow-lookups-of-local-domains-using-unicast-DNS.patch
 
 # Do not enable OpenSSL for systemd-dissect, since AWS-LC doesn't support the
 # PKCS7_verify function it wants.
-Patch9010: 9010-dissect-image-disable-openssl-support.patch
+Patch9009: 9009-dissect-image-disable-openssl-support.patch
 
 # Have pkgconfig find "libcrypto.pc" instead of "openssl.pc" to avoid the
 # unneeded dependency on libssl.
-Patch9011: 9011-meson-replace-openssl-dependency-with-libcrypto.patch
+Patch9010: 9010-meson-replace-openssl-dependency-with-libcrypto.patch
 
 BuildRequires: gperf
 BuildRequires: intltool
@@ -310,6 +306,9 @@ ln -s  ../proc-sys-fs-binfmt_misc.mount \
 # Remove any README files.
 find %{buildroot} -type f -name README -print -delete
 
+install -d %{buildroot}%{_cross_bootconfigdir}
+install -p -m 0644 %{S:1} %{buildroot}%{_cross_bootconfigdir}/20-mount-rate-limit-burst.conf
+
 %files
 %license LICENSE.GPL2 LICENSE.LGPL2.1
 %{_cross_attribution_file}
@@ -402,6 +401,9 @@ find %{buildroot} -type f -name README -print -delete
 %dir %{_cross_sysctldir}
 %{_cross_sysctldir}/50-default.conf
 %{_cross_sysctldir}/50-pid-max.conf
+
+%dir %{_cross_bootconfigdir}
+%{_cross_bootconfigdir}/20-mount-rate-limit-burst.conf
 
 %dir %{_cross_unitdir}
 %{_cross_unitdir}/basic.target
