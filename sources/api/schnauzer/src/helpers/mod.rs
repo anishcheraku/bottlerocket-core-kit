@@ -62,6 +62,7 @@ lazy_static! {
         m.insert("eu-west-1", "328549459982");
         m.insert("eu-west-2", "328549459982");
         m.insert("eu-west-3", "328549459982");
+        m.insert("eusc-de-east-1", "587143065468");
         m.insert("il-central-1", "288123944683");
         m.insert("me-central-1", "553577323255");
         m.insert("me-south-1", "509306038620");
@@ -117,6 +118,7 @@ lazy_static! {
         m.insert("us-isob-east-1", "bottlerocket-updates-us-isob-east-1.s3");
         m.insert("us-isof-east-1", "bottlerocket-updates-us-isof-east-1.s3");
         m.insert("us-isof-south-1", "bottlerocket-updates-us-isof-south-1.s3");
+        m.insert("eusc-de-east-1", "bottlerocket-updates-eusc-de-east-1.s3");
         m
     };
 }
@@ -130,6 +132,7 @@ lazy_static! {
         m.insert("cn-north-1", "aws-cn");
         m.insert("cn-northwest-1", "aws-cn");
         m.insert("eu-isoe-west-1", "aws-iso-e");
+        m.insert("eusc-de-east-1", "aws-eusc");
         m.insert("us-gov-east-1", "aws-us-gov");
         m.insert("us-gov-west-1", "aws-us-gov");
         m.insert("us-iso-west-1", "aws-iso");
@@ -1546,6 +1549,7 @@ fn ecr_registry<S: AsRef<str>>(region: S) -> String {
         "aws-iso-b" => format!("{registry_id}.dkr.ecr.{region}.sc2s.sgov.gov"),
         "aws-iso-e" => format!("{registry_id}.dkr.ecr.{region}.cloud.adc-e.uk"),
         "aws-iso-f" => format!("{registry_id}.dkr.ecr.{region}.csp.hci.ic.gov"),
+        "aws-eusc" => format!("{registry_id}.dkr.ecr.{region}.amazonaws.eu"),
         _ => {
             // Only inject the FIPS service endpoint if the variant is in FIPS mode and the
             // region supports FIPS.
@@ -1577,6 +1581,7 @@ fn tuf_repository<S: AsRef<str>>(region: S) -> String {
         "aws-iso-b" => format!("https://{endpoint}.{region}.sc2s.sgov.gov/latest"),
         "aws-iso-e" => format!("https://{endpoint}.{region}.cloud.adc-e.uk/latest"),
         "aws-iso-f" => format!("https://{endpoint}.{region}.csp.hci.ic.gov/latest"),
+        "aws-eusc" => format!("https://{endpoint}.{region}.amazonaws.eu/latest"),
         _ => format!("https://{endpoint}.{region}.amazonaws.com/latest"),
     }
 }
@@ -1769,6 +1774,10 @@ mod test_ecr_registry {
         (
             "us-isof-east-1",
             "891631471851.dkr.ecr.us-isof-east-1.csp.hci.ic.gov/bottlerocket-admin:v0.5.1",
+        ),
+        (
+            "eusc-de-east-1",
+            "587143065468.dkr.ecr.eusc-de-east-1.amazonaws.eu/bottlerocket-admin:v0.5.1",
         ),
     ];
 
