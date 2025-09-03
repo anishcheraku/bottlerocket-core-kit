@@ -12,6 +12,7 @@ URL: https://www.freedesktop.org/wiki/Software/systemd
 Source0: https://github.com/systemd/systemd/archive/v%{version}/systemd-%{version}.tar.gz
 
 Source1: systemd-mount-rate-bootconfig.conf
+Source2: systemd-cgroup-legacy-force-bootconfig.conf
 
 # Local patch to add the acquire the id for VMware
 Patch9001: 9001-machine-id-setup-generate-stable-ID-under-VM.patch
@@ -308,6 +309,7 @@ find %{buildroot} -type f -name README -print -delete
 
 install -d %{buildroot}%{_cross_bootconfigdir}
 install -p -m 0644 %{S:1} %{buildroot}%{_cross_bootconfigdir}/20-mount-rate-limit-burst.conf
+install -p -m 0644 %{S:2} %{buildroot}%{_cross_bootconfigdir}/21-cgroup-enable-legacy-force.conf
 
 %files
 %license LICENSE.GPL2 LICENSE.LGPL2.1
@@ -404,6 +406,7 @@ install -p -m 0644 %{S:1} %{buildroot}%{_cross_bootconfigdir}/20-mount-rate-limi
 
 %dir %{_cross_bootconfigdir}
 %{_cross_bootconfigdir}/20-mount-rate-limit-burst.conf
+%{_cross_bootconfigdir}/21-cgroup-enable-legacy-force.conf
 
 %dir %{_cross_unitdir}
 %{_cross_unitdir}/basic.target
