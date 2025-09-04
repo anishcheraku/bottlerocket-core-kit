@@ -106,6 +106,8 @@ struct BootstrapContainer {
     user_data: Option<ValidBase64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     essential: Option<bool>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    command: Vec<String>,
 }
 
 /// Stores user-supplied global arguments
@@ -275,6 +277,11 @@ where
     let mode = container_details.mode.clone().unwrap_or_default();
 
     let essential = container_details.essential.unwrap_or(false);
+    let command = serde_json::to_string(&container_details.command).context(
+        error::SerializeContainerCommandSnafu {
+            command: container_details.command.clone(),
+        },
+    )?;
 
     // Create the directory regardless if user data was provided for the container
     let dir = Path::new(PERSISTENT_STORAGE_DIR).join(name);
@@ -299,7 +306,7 @@ where
 
     // Write the environment file needed for the systemd service to have details
     // this specific bootstrap container
-    write_config_files(name, source, &mode, essential)?;
+    write_config_files(name, source, &mode, essential, command)?;
 
     if mode == "off" {
         // If mode is 'off', disable the container, and clean up any left over tasks
@@ -311,7 +318,7 @@ where
 
         if host_containerd_unit.is_active()? {
             debug!("Cleaning up container '{}'", name);
-            command(
+            crate::command(
                 constants::HOST_CTR_BIN,
                 [
                     "clean-up",
@@ -325,7 +332,7 @@ where
 
         // Clean up any left over tasks, before the container is enabled
         if host_containerd_unit.is_active()? && !systemd_unit.is_enabled()? {
-            command(
+            crate::command(
                 constants::HOST_CTR_BIN,
                 [
                     "clean-up",
@@ -343,11 +350,18 @@ where
 }
 
 /// Write out the EnvironmentFile that systemd uses to fill in arguments to host-ctr
-fn write_config_files<S1, S2, S3>(name: S1, source: S2, mode: S3, essential: bool) -> Result<()>
+fn write_config_files<S1, S2, S3, S4>(
+    name: S1,
+    source: S2,
+    mode: S3,
+    essential: bool,
+    command: S4,
+) -> Result<()>
 where
     S1: AsRef<str>,
     S2: AsRef<str>,
     S3: AsRef<str>,
+    S4: AsRef<str>,
 {
     let name = name.as_ref();
 
@@ -362,6 +376,11 @@ where
         },
     )?;
     writeln!(output, "CTR_MODE={}", mode.as_ref()).context(
+        error::WriteConfigurationValueSnafu {
+            value: mode.as_ref(),
+        },
+    )?;
+    writeln!(output, "CTR_COMMAND={}", command.as_ref()).context(
         error::WriteConfigurationValueSnafu {
             value: mode.as_ref(),
         },
@@ -659,6 +678,16 @@ mod error {
 
         #[snafu(display("Failed write value '{}': {}", value, source))]
         WriteConfigurationValue { value: String, source: fmt::Error },
+
+        #[snafu(display(
+            "Failed to serialize container entrypoint command {:?}: {}",
+            command,
+            source
+        ))]
+        SerializeContainerCommand {
+            command: Vec<String>,
+            source: serde_json::Error,
+        },
     }
 }
 
