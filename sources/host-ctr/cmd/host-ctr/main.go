@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
@@ -106,6 +107,7 @@ func App() *cli.App {
 		registryConfig   string
 		cType            string
 		useCachedImage   bool
+		command          string
 	)
 
 	app := cli.NewApp()
@@ -171,9 +173,29 @@ func App() *cli.App {
 					Destination: &useCachedImage,
 					Value:       false,
 				},
+				&cli.StringFlag{
+					Name:        "command",
+					Usage:       "a JSON array of commands and arguments to run as the container's entrypoint",
+					Destination: &command,
+					Value:       "[]",
+				},
 			},
 			Action: func(_ *cli.Context) error {
-				return runCtr(containerdSocket, namespace, containerID, source, superpowered, registryConfig, containerType(cType), useCachedImage)
+				var commandParts []string
+				if err := json.Unmarshal([]byte(command), &commandParts); err != nil {
+					return fmt.Errorf("failed to parse entrypoint command: %w", err)
+				}
+				return runCtr(
+					containerdSocket,
+					namespace,
+					containerID,
+					source,
+					superpowered,
+					registryConfig,
+					containerType(cType),
+					useCachedImage,
+					commandParts,
+				)
 			},
 		},
 		{
@@ -284,7 +306,7 @@ func SliceContains(s []string, v string) bool {
 	return false
 }
 
-func runCtr(containerdSocket string, namespace string, containerID string, source string, superpowered bool, registryConfigPath string, cType containerType, useCachedImage bool) error {
+func runCtr(containerdSocket string, namespace string, containerID string, source string, superpowered bool, registryConfigPath string, cType containerType, useCachedImage bool, command []string) error {
 	// Check if the containerType provided is valid
 	if !cType.IsValid() {
 		return errors.New("Invalid container type")
@@ -378,6 +400,11 @@ func runCtr(containerdSocket string, namespace string, containerID string, sourc
 			specOpts = append(specOpts, withBootstrap())
 		default:
 			specOpts = append(specOpts, withDefault())
+		}
+
+		// Override the entrypoint command, regardless of container type or other options
+		if len(command) > 0 {
+			specOpts = append(specOpts, oci.WithProcessArgs(command...))
 		}
 
 		ctrOpts := containerd.WithNewSpec(specOpts...)
@@ -733,7 +760,6 @@ func fetchECRRef(ctx context.Context, input string, specialRegions specialRegion
 	// if a valid ECR ref has not yet been returned
 	log.G(ctx).WithError(err).WithField("source", input).Error("failed to parse special ECR reference")
 	return ecr.ECRSpec{}, errors.Wrap(err, "could not parse ECR reference for special regions")
-
 }
 
 // fetchECRImage does some additional conversions before resolving the image reference and fetches the image.
