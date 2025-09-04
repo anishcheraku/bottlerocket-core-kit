@@ -113,6 +113,16 @@ mod error {
             name: String,
             source: std::io::Error,
         },
+
+        #[snafu(display(
+            "Failed to serialize container entrypoint command {:?}: {}",
+            command,
+            source
+        ))]
+        SerializeContainerCommand {
+            command: Vec<String>,
+            source: serde_json::Error,
+        },
     }
 }
 
@@ -233,10 +243,17 @@ where
 }
 
 /// Write out the EnvironmentFile that systemd uses to fill in arguments to host-ctr
-fn write_env_file<S1, S2>(name: S1, source: S2, enabled: bool, superpowered: bool) -> Result<()>
+fn write_env_file<S1, S2, S3>(
+    name: S1,
+    source: S2,
+    enabled: bool,
+    superpowered: bool,
+    command: S3,
+) -> Result<()>
 where
     S1: AsRef<str>,
     S2: AsRef<str>,
+    S3: AsRef<str>,
 {
     let name = name.as_ref();
     let filename = format!("{name}.env");
@@ -246,6 +263,8 @@ where
     writeln!(output, "CTR_SUPERPOWERED={superpowered}")
         .context(error::EnvFileBuildFailedSnafu { name })?;
     writeln!(output, "CTR_SOURCE={}", source.as_ref())
+        .context(error::EnvFileBuildFailedSnafu { name })?;
+    writeln!(output, "CTR_COMMAND={}", command.as_ref())
         .context(error::EnvFileBuildFailedSnafu { name })?;
 
     writeln!(
@@ -336,10 +355,15 @@ where
         })?;
     let enabled = image_details.enabled.unwrap_or(false);
     let superpowered = image_details.superpowered.unwrap_or(false);
+    let command = serde_json::to_string(&image_details.command).context(
+        error::SerializeContainerCommandSnafu {
+            command: image_details.command.clone(),
+        },
+    )?;
 
     info!(
-        "Host container '{}' is enabled: {}, superpowered: {}, with source: {}",
-        name, enabled, superpowered, source
+        "Host container '{}' is enabled: {}, superpowered: {}, with source: {}, entrypoint command: {}",
+        name, enabled, superpowered, source, command
     );
 
     // Create the directory regardless if user data was provided for the container
@@ -360,7 +384,7 @@ where
 
     // Write the environment file needed for the systemd service to have details about this
     // specific host container
-    write_env_file(name, source, enabled, superpowered)?;
+    write_env_file(name, source, enabled, superpowered, command)?;
 
     // Now start/stop the container according to the 'enabled' setting
     let unit_name = format!("host-containers@{name}.service");
@@ -376,13 +400,13 @@ where
     // We want to ensure the host container is running with its most recent configuration.
     if host_containerd_unit.is_active()? {
         debug!("Cleaning up host container: '{}'", unit_name);
-        command(
+        crate::command(
             constants::HOST_CTR_BIN,
             ["clean-up", "--container-id", name],
         )?;
     }
 
-    let systemd_target = command(constants::SYSTEMCTL_BIN, ["get-default"])?;
+    let systemd_target = crate::command(constants::SYSTEMCTL_BIN, ["get-default"])?;
 
     // What happens next depends on whether the system has finished booting, and whether the
     // host container is enabled.
@@ -501,6 +525,7 @@ mod test {
         enabled = true
         superpowered = true
         user-data = "Zm9vCg=="
+        command = ["sh", "-c", "echo hello"]
         "#;
 
         let temp_dir = tempfile::TempDir::new().unwrap();
@@ -517,6 +542,7 @@ mod test {
                 enabled: Some(true),
                 superpowered: Some(true),
                 user_data: Some(ValidBase64::try_from("Zm9vCg==").unwrap()),
+                command: ["sh", "-c", "echo hello"].map(String::from).into(),
             },
         );
 

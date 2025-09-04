@@ -12,6 +12,7 @@ ExecStart=/usr/bin/host-ctr run \
     --container-id='%i' \
     --source='${CTR_SOURCE}' \
     --superpowered='${CTR_SUPERPOWERED}' \
+    --command='${CTR_COMMAND}' \
     --registry-config=/etc/host-containers/host-ctr.toml
 Restart=always
 RestartSec=45

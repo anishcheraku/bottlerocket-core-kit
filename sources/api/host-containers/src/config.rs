@@ -15,4 +15,6 @@ pub(crate) struct HostContainer {
     pub(crate) enabled: Option<bool>,
     pub(crate) superpowered: Option<bool>,
     pub(crate) user_data: Option<ValidBase64>,
+    #[serde(default)]
+    pub(crate) command: Vec<String>,
 }
