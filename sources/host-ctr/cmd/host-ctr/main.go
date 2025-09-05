@@ -55,6 +55,7 @@ var ecrRefPrefixMapping = map[string]string{
 	"us-iso-east-1":   "ecr.aws/arn:aws-iso:ecr:us-iso-east-1:",
 	"us-iso-west-1":   "ecr.aws/arn:aws-iso:ecr:us-iso-west-1:",
 	"us-isob-east-1":  "ecr.aws/arn:aws-iso-b:ecr:us-isob-east-1:",
+	"us-isob-west-1":  "ecr.aws/arn:aws-iso-b:ecr:us-isob-west-1:",
 	"us-isof-south-1": "ecr.aws/arn:aws-iso-f:ecr:us-isof-south-1:",
 	"us-isof-east-1":  "ecr.aws/arn:aws-iso-f:ecr:us-isof-east-1:",
 }
