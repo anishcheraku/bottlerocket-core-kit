@@ -75,6 +75,7 @@ lazy_static! {
         m.insert("us-iso-east-1", "999945528765");
         m.insert("us-iso-west-1", "928668704122");
         m.insert("us-isob-east-1", "782457047625");
+        m.insert("us-isob-west-1", "125731337581");
         m.insert("us-isof-east-1", "891631471851");
         m.insert("us-isof-south-1", "482061074055");
         m.insert("us-northeast-1", "891377225511");
@@ -116,6 +117,7 @@ lazy_static! {
         m.insert("us-iso-east-1", "bottlerocket-updates-us-iso-east-1.s3");
         m.insert("us-iso-west-1", "bottlerocket-updates-us-iso-west-1.s3");
         m.insert("us-isob-east-1", "bottlerocket-updates-us-isob-east-1.s3");
+        m.insert("us-isob-west-1", "bottlerocket-updates-us-isob-west-1.s3");
         m.insert("us-isof-east-1", "bottlerocket-updates-us-isof-east-1.s3");
         m.insert("us-isof-south-1", "bottlerocket-updates-us-isof-south-1.s3");
         m.insert("eusc-de-east-1", "bottlerocket-updates-eusc-de-east-1.s3");
@@ -138,6 +140,7 @@ lazy_static! {
         m.insert("us-iso-west-1", "aws-iso");
         m.insert("us-iso-east-1", "aws-iso");
         m.insert("us-isob-east-1", "aws-iso-b");
+        m.insert("us-isob-west-1", "aws-iso-b");
         m.insert("us-isof-east-1", "aws-iso-f");
         m.insert("us-isof-south-1", "aws-iso-f");
         m
