@@ -204,6 +204,17 @@ func TestParseImageURIAsECR(t *testing.T) {
 		},
 		{
 			"Parse special region",
+			"777777777777.dkr.ecr.eusc-de-east-1.amazonaws.eu/my_image:latest",
+			false,
+			&parsedECR{
+				Account:  "777777777777",
+				Region:   "eusc-de-east-1",
+				RepoPath: "my_image:latest",
+				Fips:     false,
+			},
+		},
+		{
+			"Parse special region",
 			"777777777777.dkr.ecr.us-iso-east-1.c2s.ic.gov/my_image:latest",
 			false,
 			&parsedECR{
