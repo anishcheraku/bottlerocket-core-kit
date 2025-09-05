@@ -42,7 +42,7 @@ import (
 
 // ECR hostname pattern also used in the ecr-credential-provider:
 // https://github.com/kubernetes/cloud-provider-aws/blob/212135d0d7b448cd34e2e11e5e81f59e3e6c2d7a/cmd/ecr-credential-provider/main.go#L45
-var ecrRegex = regexp.MustCompile(`^(\d{12})\.dkr[\.\-]ecr(-fips)?\.([a-zA-Z0-9][a-zA-Z0-9-_]*)\.(amazonaws\.com(?:\.cn)?|on\.(?:aws|amazonwebservices\.com\.cn)|sc2s\.sgov\.gov|c2s\.ic\.gov|cloud\.adc-e\.uk|csp\.hci\.ic\.gov).*$`)
+var ecrRegex = regexp.MustCompile(`^(\d{12})\.dkr[\.\-]ecr(-fips)?\.([a-zA-Z0-9][a-zA-Z0-9-_]*)\.(amazonaws(\.com(?:\.cn)?|\.eu)|on\.(?:aws|amazonwebservices\.com\.cn)|sc2s\.sgov\.gov|c2s\.ic\.gov|cloud\.adc-e\.uk|csp\.hci\.ic\.gov).*$`)
 
 // A set of currently supported ECR regions which are not yet present in the golang SDK
 var ecrRefPrefixMapping = map[string]string{
@@ -52,9 +52,11 @@ var ecrRefPrefixMapping = map[string]string{
 	"ap-southeast-6":  "ecr.aws/arn:aws:ecr:ap-southeast-6:",
 	"us-northeast-1":  "ecr.aws/arn:aws:ecr:us-northeast-1:",
 	"eu-isoe-west-1":  "ecr.aws/arn:aws-iso-e:ecr:eu-isoe-west-1:",
+	"eusc-de-east-1":  "ecr.aws/arn:aws-eusc:ecr:eusc-de-east-1:",
 	"us-iso-east-1":   "ecr.aws/arn:aws-iso:ecr:us-iso-east-1:",
 	"us-iso-west-1":   "ecr.aws/arn:aws-iso:ecr:us-iso-west-1:",
 	"us-isob-east-1":  "ecr.aws/arn:aws-iso-b:ecr:us-isob-east-1:",
+	"us-isob-west-1":  "ecr.aws/arn:aws-iso-b:ecr:us-isob-west-1:",
 	"us-isof-south-1": "ecr.aws/arn:aws-iso-f:ecr:us-isof-south-1:",
 	"us-isof-east-1":  "ecr.aws/arn:aws-iso-f:ecr:us-isof-east-1:",
 }
