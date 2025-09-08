@@ -1,3 +1,24 @@
+# v10.4.0 (2025-09-08)
+
+## OS Changes
+* Add command field to override default entrypoint for host and bootstrap containers ([#594]) - Thanks @kasimeka
+* Update `systemd-257` to remove shutdown timeout patch, migrate mount-rate patch to bootconfig, and remove kernel cmdline requirement for `cgroupsv1` ([#636])
+* Add `containerd-2.1` setting for `concurrent-download-chunk-size` ([#645])
+* Add support for more AWS regions in `schnauzer` and `host-ctr` ([#651])
+
+## Build Changes
+* Update `bottlerocket-settings-models` to 0.14.0 ([#645])
+
+## Orchestrator Changes
+### Kubernetes
+* Update `kubernetes-1.34` and `ecr-credential-provider-1.34` packages with official sources ([#653])
+
+[#594]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/594
+[#636]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/636
+[#645]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/645
+[#651]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/651
+[#653]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/653
+
 # v10.3.0 (2025-08-26)
 
 ## OS Changes
@@ -6,7 +27,7 @@
 - Add `containerd-2.1` package ([#621])
   - Transfer service for image pull is now the default
   - Multipart layer fetch support was added and has a default of 8MiB in Bottlerocket
-  - Containerd 2.1 removes the support for Schema 1 images 
+  - Containerd 2.1 removes the support for Schema 1 images
 - Add `systemd-257` package ([#581])
 - Update `host-ctr` to migrate to `aws-sdk-go-v2` and bump to go 1.24 ([#642])
 
