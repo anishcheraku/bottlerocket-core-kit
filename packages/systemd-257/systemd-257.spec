@@ -14,6 +14,10 @@ Source0: https://github.com/systemd/systemd/archive/v%{version}/systemd-%{versio
 Source1: systemd-mount-rate-bootconfig.conf
 Source2: systemd-cgroup-legacy-force-bootconfig.conf
 
+# Backport of upstream patch to change `Failed to execute <filepath> No such file 
+# or directory` error logs to debug 
+Patch1001: 1001-exec-util-make-missing-agents-a-gracefull-handled-issues.patch
+
 # Local patch to add the acquire the id for VMware
 Patch9001: 9001-machine-id-setup-generate-stable-ID-under-VM.patch
 

@@ -1,0 +1,34 @@
+From 0d5ee894c4839b8432b530879a7cda070b29e393 Mon Sep 17 00:00:00 2001
+From: Lennart Poettering <lennart@poettering.net>
+Date: Wed, 7 May 2025 17:47:01 +0200
+Subject: [PATCH] exec-util: make missing agents a gracefull handled issues
+
+Just downgrade the log message in case of ENOENT of agent binaries to
+LOG_DEBUG. Do this in order to support distros which split off some
+agent bianries into separate optional binaries.
+
+Fixes: #37369
+
+[vighmah:
+Reworked to work with the changes between origin/main and v257-stable branches 
+]
+---
+ src/shared/exec-util.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git i/src/shared/exec-util.c w/src/shared/exec-util.c
+index 599b925a99..27a25ccb17 100644
+--- i/src/shared/exec-util.c
++++ w/src/shared/exec-util.c
+@@ -623,6 +623,9 @@ int _fork_agent(const char *name, const int except[], size_t n_except, pid_t *re
+         va_end(ap);
+
+         execv(path, l);
+-        log_error_errno(errno, "Failed to execute %s: %m", path);
++        /* Let's treat missing agent binary as a graceful issue (in order to support splitting out the Polkit
++         * or password agents into separate, optional distro packages), and not complain loudly. */
++        log_full_errno(errno == ENOENT ? LOG_DEBUG : LOG_ERR, errno,
++                       "Failed to execute %s: %m", path);
+         _exit(EXIT_FAILURE);
+ }
+
