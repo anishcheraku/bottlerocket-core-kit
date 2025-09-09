@@ -1,6 +1,6 @@
 [required-extensions]
 bootstrap-containers = "v1"
-std = { version = "v1", helpers = ["if_not_null"] }
+std = { version = "v1", helpers = ["if_not_null", "toml_encode"]}
 +++
 {{#if_not_null settings.bootstrap-containers}}
 {{#each settings.bootstrap-containers}}
@@ -16,6 +16,9 @@ user-data = "{{{this.user-data}}}"
 {{/if_not_null}}
 {{#if_not_null this.essential}}
 essential = {{this.essential}}
+{{/if_not_null}}
+{{#if_not_null this.command}}
+command = {{ toml_encode this.command }}
 {{/if_not_null}}
 {{/each}}
 {{/if_not_null}}
