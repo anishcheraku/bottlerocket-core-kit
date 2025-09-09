@@ -10,7 +10,7 @@
 %global gorepo kubernetes
 %global goimport %{goproject}/%{gorepo}
 
-%global releasever 0
+%global releasever 3
 %global gover 1.34.0
 %global rpmver %{gover}
 
@@ -33,12 +33,12 @@
 
 Name: %{_cross_os}%{gorepo}
 Version: %{rpmver}
-Release: 0.rc0%{?dist}
+Release: 1%{?dist}
 Summary: Container cluster management
 # base Apache-2.0, third_party Apache-2.0 AND BSD-3-Clause
 License: Apache-2.0 AND BSD-3-Clause
 URL: https://%{goimport}
-Source0: https://distro.eks.amazonaws.com/kubernetes-1-34/releases/2/artifacts/kubernetes/v1.34.0-rc.0/kubernetes-src.tar.gz
+Source0: https://distro.eks.amazonaws.com/kubernetes-1-34/releases/%{releasever}/artifacts/kubernetes/v%{gover}/kubernetes-src.tar.gz
 Source1: kubelet.service
 Source2: kubelet-env
 Source3: kubelet-config
