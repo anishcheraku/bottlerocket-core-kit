@@ -736,30 +736,25 @@ func parseImageURISpecialRegions(input string, specialRegions specialRegions) (e
 	return ecr.ParseRef(fmt.Sprintf("%s%s:repository/%s", ecrRefPrefix, parsedECR.Account, parsedECR.RepoPath))
 }
 
-// fetchECRRef attempts to resolve the ECR reference from an input source string
-// by first using the aws-sdk-go's ParseImageURI function. This will fail for
-// special regions that are not yet supported. If it fails for any reason,
-// attempt to parse again using parseImageURISpecialRegions in this package.
-// This uses a special region reference to build the ECR image references.
-// If both fail, an error is returned.
+// fetchECRRef attempts to resolve the ECR reference from an input source string.
+// We check special regions handling first, then fall back to standard parsing if not found.
 func fetchECRRef(ctx context.Context, input string, specialRegions specialRegions) (ecr.ECRSpec, error) {
 	var spec ecr.ECRSpec
-	spec, err := ecr.ParseImageURI(input)
+	// First check if this is a special region that needs custom handling
+	spec, err := parseImageURISpecialRegions(input, specialRegions)
 	if err == nil {
 		return spec, nil
 	}
-	log.G(ctx).WithError(err).WithField("source", input).Warn("failed to parse ECR reference")
+	log.G(ctx).WithError(err).WithField("source", input).Info("not a special ECR reference, trying standard parsing")
 
-	// The parsing might fail if the AWS region is special, parse again with special handling:
-	spec, err = parseImageURISpecialRegions(input, specialRegions)
+	// Fall back to standard aws-sdk-go-v2 parsing for other cases
+	spec, err = ecr.ParseImageURI(input)
 	if err == nil {
 		return spec, nil
 	}
 
-	// Return the error for the parseImageURISpecialRegions from this package
-	// if a valid ECR ref has not yet been returned
-	log.G(ctx).WithError(err).WithField("source", input).Error("failed to parse special ECR reference")
-	return ecr.ECRSpec{}, errors.Wrap(err, "could not parse ECR reference for special regions")
+	log.G(ctx).WithError(err).WithField("source", input).Error("failed to parse ECR reference")
+	return ecr.ECRSpec{}, errors.Wrap(err, "could not parse ECR reference")
 }
 
 // fetchECRImage does some additional conversions before resolving the image reference and fetches the image.
