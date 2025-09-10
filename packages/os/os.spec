@@ -78,6 +78,7 @@ Requires: %{_cross_os}bloodhound
 Requires: %{_cross_os}bootstrap-commands
 Requires: %{_cross_os}corndog
 Requires: %{_cross_os}certdog
+Requires: %{_cross_os}driverdog
 Requires: %{_cross_os}ghostdog
 Requires: %{_cross_os}logdog
 Requires: %{_cross_os}metricdog
@@ -103,8 +104,6 @@ Requires: (%{_cross_os}shibaken if %{_cross_os}variant-platform(aws))
 Requires: (%{_cross_os}cfsignal if %{_cross_os}variant-platform(aws))
 
 Requires: (%{_cross_os}warm-pool-wait if %{_cross_os}variant-family(aws-k8s))
-
-Requires: (%{_cross_os}driverdog if %{_cross_os}variant-flavor(nvidia))
 
 %description
 %{summary}.
