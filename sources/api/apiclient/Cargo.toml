@@ -45,5 +45,8 @@ toml.workspace = true
 unindent.workspace = true
 url.workspace = true
 
+[dev-dependencies]
+test-case.workspace = true
+
 [build-dependencies]
 generate-readme.workspace = true
