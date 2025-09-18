@@ -1,0 +1,22 @@
+[user.root]
+rules = [
+    { send_destination = "org.freedesktop.DBus", send_interface = "org.freedesktop.systemd1.Activator", allow = true },
+    { send_destination = "org.freedesktop.DBus", send_interface = "org.freedesktop.DBus.Monitoring", allow = true },
+    { send_destination = "org.freedesktop.DBus", send_interface = "org.freedesktop.DBus.Debug.Stats", allow = true }
+]
+
+[default]
+rules = [
+    { user = "*", allow = true },
+    { own = "*", allow = false },
+    { send_type = "method-call", allow = false },
+    { send_type = "signal", allow = true },
+    { receive_type = "method-call", allow = true },
+    { receive_type = "signal", allow = true },
+    { send_destination = "org.freedesktop.DBus", send_interface = "org.freedesktop.DBus", allow = true },
+    { send_destination = "org.freedesktop.DBus", send_interface = "org.freedesktop.DBus.Introspectable", allow = true },
+    { send_destination = "org.freedesktop.DBus", send_interface = "org.freedesktop.DBus.Properties", allow = true },
+    { send_destination = "org.freedesktop.DBus", send_interface = "org.freedesktop.DBus", send_member = "UpdateActivationEnvironment", allow = false },
+    { send_destination = "org.freedesktop.DBus", send_interface = "org.freedesktop.DBus.Debug.Stats", allow = false },
+    { send_destination = "org.freedesktop.DBus", send_interface = "org.freedesktop.systemd1.Activator", allow = false }
+]

@@ -26,6 +26,7 @@ source-groups = [
     "bloodhound",
     "xfscli",
     "brush",
+    "whippet",
 ]
 
 [lib]

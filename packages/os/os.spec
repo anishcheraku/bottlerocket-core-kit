@@ -33,6 +33,7 @@ Source18: bootstrap-containers-toml
 Source19: host-containers-toml
 Source20: bottlerocket-fips-checks-metadata-json
 Source21: bootstrap-commands-toml
+Source22: dbus-1-system.toml
 
 # 1xx sources: systemd units
 Source100: apiserver.service
@@ -52,6 +53,7 @@ Source121: warm-pool-wait.service
 Source122: has-boot-ever-succeeded.service
 Source123: pluto.service
 Source124: bootstrap-commands.service
+Source125: whippet.service
 
 # 2xx sources: tmpfilesd configs
 Source200: migration-tmpfiles.conf
@@ -423,6 +425,13 @@ Conflicts: %{_cross_os}bash
 %description -n %{_cross_os}brush
 %{summary}.
 
+%package -n %{_cross_os}whippet
+Summary: Custom launcher for the D-Bus message broker
+Provides: %{_cross_os}dbus-broker(launcher) = 0:
+Conflicts: %{_cross_os}dbus-broker(launcher)
+%description -n %{_cross_os}whippet
+%{summary}.
+
 %prep
 %setup -T -c
 %cargo_prep
@@ -543,6 +552,7 @@ echo "** Output from non-static builds:"
     -p shibaken \
     -p driverdog \
     -p brush \
+    -p whippet \
     %{nil}
 
 # Wait for fips builds from the background, if they're not already done.
@@ -604,7 +614,7 @@ for p in \
   bottlerocket-cis-checks \
   bottlerocket-fips-checks \
   kubernetes-cis-checks \
-  shibaken driverdog brush \
+  shibaken driverdog brush whippet \
 ; do
   install -p -m 0755 %{__cargo_outdir}/${p} %{buildroot}%{_cross_bindir}
 done
@@ -710,6 +720,7 @@ install -p -m 0644 \
   %{S:100} %{S:102} %{S:103} %{S:105} \
   %{S:106} %{S:107} %{S:110} %{S:111} %{S:112} \
   %{S:113} %{S:114} %{S:120} %{S:122} %{S:123} %{S:124} \
+  %{S:125} \
   %{buildroot}%{_cross_unitdir}
 
 install -p -m 0644 %{S:10} %{buildroot}%{_cross_templatedir}
@@ -730,6 +741,9 @@ install -d %{buildroot}%{_cross_udevrulesdir}
 install -p -m 0644 %{S:300} %{buildroot}%{_cross_udevrulesdir}/80-ephemeral-storage.rules
 install -p -m 0644 %{S:301} %{buildroot}%{_cross_udevrulesdir}/81-ebs-volumes.rules
 install -p -m 0644 %{S:302} %{buildroot}%{_cross_udevrulesdir}/82-supplemental-storage.rules
+
+install -d %{buildroot}%{_cross_datadir}/whippet/
+install -p -m 0644 %{S:22} %{buildroot}%{_cross_datadir}/whippet/system.toml
 
 %cross_scan_attribution --clarify %{_builddir}/sources/clarify.toml \
     cargo --offline --locked %{_builddir}/sources/Cargo.toml
@@ -931,5 +945,10 @@ install -p -m 0644 %{S:400} %{S:401} %{S:402} %{buildroot}%{_cross_licensedir}
 %{_cross_bindir}/brush
 %{_cross_bindir}/sh
 %dir %{_cross_libexecdir}/brush/allowed-programs
+
+%files -n %{_cross_os}whippet
+%{_cross_bindir}/whippet
+%{_cross_datadir}/whippet/system.toml
+%{_cross_unitdir}/whippet.service
 
 %changelog

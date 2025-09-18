@@ -1,0 +1,14 @@
+[user.bob]
+rules = [
+    { allow = true, send_interface = "org.example.Second" }
+]
+
+[user.alice]
+rules = [
+    { allow = true, send_interface = "org.example.SecondService" }
+]
+
+[default]
+rules = [
+    { allow = true, own = "org.example.Second" }
+]

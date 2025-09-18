@@ -77,6 +77,8 @@ members = [
     "constants",
 
     "xfscli",
+
+    "whippet",
 ]
 
 [workspace.dependencies]
@@ -183,6 +185,7 @@ serde-xml-rs = "0.6"
 serde_json = "1"
 serde_plain = "1"
 serde_yaml = "0.9"
+serde_repr = "0.1"
 shell-words = "1"
 shlex = "1"
 signal-hook = "0.3"
@@ -205,6 +208,8 @@ unindent = "0.2"
 url = "2"
 walkdir = "2.5"
 which = "4"
+zbus = { version = "5.11", default-features = false }
+zvariant = "5.7"
 x509-parser = "0.16"
 base64 = "0.22"
 
