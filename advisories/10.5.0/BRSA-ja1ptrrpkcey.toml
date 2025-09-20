@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-ja1ptrrpkcey"
+title = "libexpat CVE-2025-59375"
+cve = "CVE-2025-59375"
+severity = "high"
+description = "A memory amplification vulnerability was found in libexpat where a specially crafted small XML input can trigger excessive dynamic memory allocations which could lead to denial-of-service through memory exhaustion."
+
+[[advisory.products]]
+package-name = "libexpat"
+patched-version = "2.7.2"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2025-09-22T21:55:47Z
+arches = ["aarch64", "x86_64"]
+version = "10.5.0"
