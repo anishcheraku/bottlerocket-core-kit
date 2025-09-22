@@ -1,0 +1,19 @@
+[advisory]
+id = "BRSA-ng7athla9aog"
+title = "aws-iam-authenticator CVE-2020-8912"
+cve = "CVE-2020-8912"
+severity = "low"
+description = """
+A flaw was found in aws-iam-authenticator dependency AWS Go SDK which could lead to
+encryption downgrade attacks exposing AES-GCM authentication keys."""
+
+[[advisory.products]]
+package-name = "aws-iam-authenticator"
+patched-version = "0.7.5"
+patched-epoch = "1"
+
+[updateinfo]
+author = "yutongsu"
+issue-date = 2025-09-22T21:55:47Z
+arches = ["x86_64", "aarch64"]
+version = "10.5.0"
