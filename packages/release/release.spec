@@ -50,6 +50,7 @@ Source1006: activate-configured.service
 Source1007: activate-multi-user.service
 Source1008: set-hostname.service
 Source1009: runtime.slice
+Source1010: drivers.target
 
 # Mount units.
 Source1020: var.mount
@@ -224,7 +225,7 @@ EOF
 install -d %{buildroot}%{_cross_unitdir}
 install -p -m 0644 \
   %{S:1001} %{S:1002} %{S:1003} %{S:1004} %{S:1005} \
-  %{S:1006} %{S:1007} %{S:1008} %{S:1009} \
+  %{S:1006} %{S:1007} %{S:1008} %{S:1009} %{S:1010} \
   %{S:1020} %{S:1021} %{S:1022} %{S:1023} %{S:1024} \
   %{S:1025} %{S:1026} %{S:1027} %{S:1028} %{S:1029} \
   %{S:1040} %{S:1041} %{S:1042} %{S:1043} %{S:1044} \
@@ -341,6 +342,7 @@ ln -s preconfigured.target %{buildroot}%{_cross_unitdir}/default.target
 %{_cross_libdir}/modules-load.d/nf_conntrack.conf
 %{_cross_libdir}/systemd/journald.conf.d/journald.conf
 %{_cross_unitdir}/configured.target
+%{_cross_unitdir}/drivers.target
 %{_cross_unitdir}/preconfigured.target
 %{_cross_unitdir}/multi-user.target
 %{_cross_unitdir}/default.target
