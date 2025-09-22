@@ -10,6 +10,10 @@ Summary: System and Service Manager
 License: GPL-2.0-or-later AND GPL-2.0-only AND LGPL-2.1-or-later
 URL: https://www.freedesktop.org/wiki/Software/systemd
 Source0: https://github.com/systemd/systemd/archive/v%{version}/systemd-%{version}.tar.gz
+Source100: org.freedesktop.login1.toml
+Source101: org.freedesktop.network1.toml
+Source102: org.freedesktop.resolve1.toml
+Source103: org.freedesktop.systemd1.toml
 
 Source1: systemd-mount-rate-bootconfig.conf
 Source2: systemd-cgroup-legacy-force-bootconfig.conf
@@ -303,6 +307,9 @@ rm -f %{buildroot}%{_cross_libdir}/systemd/{system,user}/graphical.target
 # since we exclude the automount unit.
 ln -s  ../proc-sys-fs-binfmt_misc.mount \
   %{buildroot}%{_cross_unitdir}/sysinit.target.wants/proc-sys-fs-binfmt_misc.mount
+
+install -d %{buildroot}%{_cross_datadir}/whippet/policies.d
+install -p -m 0644 %{S:100} %{S:101} %{S:102} %{S:103} %{buildroot}%{_cross_datadir}/whippet/policies.d
 
 # Remove any README files.
 find %{buildroot} -type f -name README -print -delete
@@ -674,10 +681,13 @@ install -p -m 0644 %{S:2} %{buildroot}%{_cross_bootconfigdir}/21-cgroup-enable-l
 %exclude %{_cross_tmpfilesdir}/legacy.conf
 %exclude %{_cross_tmpfilesdir}/x11.conf
 
-%{_cross_datadir}/dbus-1/services/org.freedesktop.systemd1.service
 %{_cross_datadir}/dbus-1/system.d/org.freedesktop.login1.conf
 %{_cross_datadir}/dbus-1/system.d/org.freedesktop.systemd1.conf
 %exclude %{_cross_datadir}/dbus-1/system-services
+%exclude %{_cross_datadir}/dbus-1/services/org.freedesktop.systemd1.service
+
+%{_cross_datadir}/whippet/policies.d/org.freedesktop.login1.toml
+%{_cross_datadir}/whippet/policies.d/org.freedesktop.systemd1.toml
 
 %dir %{_cross_factorydir}
 %exclude %{_cross_factorydir}%{_cross_sysconfdir}/issue
@@ -765,6 +775,7 @@ install -p -m 0644 %{S:2} %{buildroot}%{_cross_bootconfigdir}/21-cgroup-enable-l
 %{_cross_unitdir}/systemd-networkd-wait-online@.service
 %{_cross_unitdir}/systemd-networkd.socket
 %{_cross_datadir}/dbus-1/system.d/org.freedesktop.network1.conf
+%{_cross_datadir}/whippet/policies.d/org.freedesktop.network1.toml
 
 %files resolved
 %{_cross_bindir}/resolvectl
@@ -774,5 +785,6 @@ install -p -m 0644 %{S:2} %{buildroot}%{_cross_bootconfigdir}/21-cgroup-enable-l
 %{_cross_tmpfilesdir}/systemd-resolve.conf
 %{_cross_unitdir}/systemd-resolved.service
 %{_cross_datadir}/dbus-1/system.d/org.freedesktop.resolve1.conf
+%{_cross_datadir}/whippet/policies.d/org.freedesktop.resolve1.toml
 %exclude %{_cross_bindir}/systemd-resolve
 %exclude %{_cross_sbindir}/resolvconf
