@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://github.com/libexpat/libexpat/releases/"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/libexpat/libexpat/releases/download/R_2_7_0/expat-2.7.0.tar.xz"
-sha512 = "69fb19c2634821b657f550f609d0bcc6e45e9d903072bbc63e9a0bfc92ef7d04c6e1408dd39eb43eaa2951f28ae93dce4f796c9769253f440905db2d5606a4c7"
+url = "https://github.com/libexpat/libexpat/releases/download/R_2_7_2/expat-2.7.2.tar.xz"
+sha512 = "da64ae6d1762388873acbad9bc0edc80094c693bccacf89ca90d1626f53866c5e87c2019276e39643963d6479fb8a6d7b1f05f38caa1be84a24ff9d603449e38"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/libexpat/libexpat/releases/download/R_2_7_0/expat-2.7.0.tar.xz.asc"
-sha512 = "ef26db65fec81067a919182705008d724a09d00fb0c7c003f2d975a75600a5153e4264555510d5dc7292ec96866f0f15c4cb931002ff0bc6021c15626fa87364"
+url = "https://github.com/libexpat/libexpat/releases/download/R_2_7_2/expat-2.7.2.tar.xz.asc"
+sha512 = "4ec8466294b3cfcce7835f6a00ec91127ec1aa830eeb34f24ae6021af0ee6fef88ae3e4c7ad466f9ff537b68c2981c8816245e57bf65ff93001ac02d23b9f57c"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
