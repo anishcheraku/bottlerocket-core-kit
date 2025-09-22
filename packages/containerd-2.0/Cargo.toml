@@ -13,8 +13,8 @@ package-name = "containerd-2.0"
 releases-url = "https://github.com/containerd/containerd/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/containerd/containerd/archive/v2.0.5/containerd-2.0.5.tar.gz"
-sha512 = "af89a5c9ad5f931c5fee33c75c13c296fc9ec966f2c64ec244897695eebb365bcb542f6b431e60d4ef7213f0ea11d3a8896d1b7f033ed445e6b521b7ddbffe6f"
+url = "https://github.com/containerd/containerd/archive/v2.0.6/containerd-2.0.6.tar.gz"
+sha512 = "85b9f606e5b2cb958351206beb7df0d615d4e405e1752d849bd92d2df90485c505c10484e588d1ac7505c3d1063bd2922175439c9e4f9dd0ad2af6852cb97a48"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
