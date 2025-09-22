@@ -58,6 +58,7 @@ enum SubCommand {
     EbsDeviceName(EbsDeviceNameArgs),
     EfaPresent(EfaPresentArgs),
     NeuronPresent(NeuronPresentArgs),
+    MatchDriver(MatchDriverArgs),
     MatchNvidiaDriver(MatchNvidiaDriverArgs),
     WriteInfinibandGuid(WriteInfinibandGuidArgs),
 }
@@ -94,6 +95,16 @@ struct EbsDeviceNameArgs {
 struct MatchNvidiaDriverArgs {
     #[argh(positional)]
     driver_name: String,
+}
+
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "match-driver")]
+/// Returns if devices on the PCI bus support the provided driver.
+struct MatchDriverArgs {
+    #[argh(positional)]
+    driver_name: String,
+    #[argh(positional)]
+    flavor_name: String,
 }
 
 #[derive(FromArgs, PartialEq, Debug)]
@@ -156,6 +167,19 @@ fn main() -> Result<()> {
             let driver_name = driver.driver_name;
             nvidia_driver_supported(&driver_name)?;
         }
+        SubCommand::MatchDriver(driver) => {
+            let driver_name = driver.driver_name;
+            let flavor_name = driver.flavor_name;
+            match driver_name.as_str() {
+                "nvidia" => nvidia_driver_supported(&flavor_name)?,
+                "neuron" => match_neuron_driver(&flavor_name)?,
+                _ => {
+                    return Err(error::Error::UnsupportedDriver {
+                        driver: driver_name.to_string(),
+                    })
+                }
+            }
+        }
         SubCommand::WriteInfinibandGuid(envfile) => {
             find_and_write_infiniband_guid(envfile.env_file)?;
         }
@@ -177,6 +201,24 @@ fn is_neuron_attached() -> Result<()> {
     } else {
         Err(error::Error::NoNeuronPresent)
     }
+}
+
+// Returns true if this is an inf1 instance
+fn is_inf1_instance() -> Result<()> {
+    if pciclient::is_inf1_instance().context(error::CheckInf1FailureSnafu)? {
+        return Ok(());
+    }
+    Err(error::Error::NoInf1Present)
+}
+
+// Returns true if is a Neuron-based instance but not inf1. Inf2 is a stand in name for all hardware after
+// inf1 but leaves this open for more hardware types that may need specific decisions from ghostdog in the
+// future.
+fn is_inf2_instance() -> Result<()> {
+    if pciclient::is_inf2_instance().context(error::CheckInf2FailureSnafu)? {
+        return Ok(());
+    }
+    Err(error::Error::NoInf2Present)
 }
 
 /// Detects if infiniband is present. If not, return early. If it does find Infiniband devices,
@@ -357,6 +399,17 @@ fn nvidia_driver_supported(driver_name: &str) -> Result<()> {
         }
     );
     Ok(())
+}
+
+fn match_neuron_driver(driver_flavor: &str) -> Result<()> {
+    match driver_flavor {
+        "inf1" => is_inf1_instance(),
+        "latest" => is_inf2_instance(),
+        _ => Err(error::Error::UnsupportedDriverFlavor {
+            driver: "neuron".to_string(),
+            flavor: driver_flavor.to_string(),
+        }),
+    }
 }
 
 // Known system partition types for Bottlerocket.
