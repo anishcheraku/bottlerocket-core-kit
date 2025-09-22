@@ -1,3 +1,19 @@
+# v10.5.0 (2025-09-22)
+
+## OS Changes
+- Support arguments with a `--` separator in `apiclient exec` subcommand ([#647])
+- Backport `systemd` patch to suppress `ENOENT` error logs ([#655])
+- Install `driverdog` for all variants ([#656])
+
+### Third Party Package Updates
+- Update `libexpat`, `aws-iam-authenticator`, `containerd-1.7`, `containerd-2.0`, `kubernetes-1.28-1.34` ([#663], [#666])
+
+[#647]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/647
+[#655]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/655
+[#656]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/656
+[#663]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/663
+[#666]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/666
+
 # v10.4.1 (2025-09-11)
 
 ## Build Changes
