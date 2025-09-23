@@ -1,9 +1,16 @@
+# v10.6.0 (2025-09-23)
+
+## OS Changes
+- Update ECR parsing in `host-ctr` after `aws-sdk-go-v2` migration ([#664])
+
+[#664]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/664
+
 # v10.5.0 (2025-09-22)
 
 ## OS Changes
 - Support arguments with a `--` separator in `apiclient exec` subcommand ([#647])
 - Backport `systemd` patch to suppress `ENOENT` error logs ([#655])
-- Install `driverdog` for all variants ([#656])
+- Install `driverdog` for all variants ([#656]) - Thanks @fletcherw
 
 ### Third Party Package Updates
 - Update `libexpat`, `aws-iam-authenticator`, `containerd-1.7`, `containerd-2.0`, `kubernetes-1.28-1.34` ([#663], [#666])
