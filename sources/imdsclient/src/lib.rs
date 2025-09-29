@@ -318,7 +318,7 @@ impl ImdsClient {
                             .to_vec();
 
                         let response_str = printable_string(&response_body);
-                        trace!("Response: {:?}", response_str);
+                        trace!("Response: {response_str:?}");
 
                         Ok(Some(response_body))
                     }
@@ -346,7 +346,7 @@ impl ImdsClient {
 
                         let response_str = printable_string(&response_body);
 
-                        trace!("Response: {:?}", response_str);
+                        trace!("Response: {response_str:?}");
 
                         error::ResponseSnafu {
                             method: "GET",

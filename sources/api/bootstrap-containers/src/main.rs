@@ -263,7 +263,7 @@ where
 {
     let name = name.as_ref();
 
-    info!("Handling bootstrap container '{}'", name);
+    info!("Handling bootstrap container '{name}'");
 
     // Get basic settings, as retrieved from API.
     let source = container_details
@@ -289,7 +289,7 @@ where
 
     // If user data was specified, decode it and write it out
     if let Some(user_data) = &container_details.user_data {
-        debug!("Decoding user data for container '{}'", name);
+        debug!("Decoding user data for container '{name}'");
         let decoded_bytes = base64::engine::general_purpose::STANDARD
             .decode(user_data.as_bytes())
             .context(error::Base64DecodeSnafu { name })?;
@@ -310,14 +310,11 @@ where
 
     if mode == "off" {
         // If mode is 'off', disable the container, and clean up any left over tasks
-        info!(
-            "Bootstrap container mode for '{}' is 'off', disabling unit",
-            name
-        );
+        info!("Bootstrap container mode for '{name}' is 'off', disabling unit");
         systemd_unit.disable()?;
 
         if host_containerd_unit.is_active()? {
-            debug!("Cleaning up container '{}'", name);
+            debug!("Cleaning up container '{name}'");
             crate::command(
                 constants::HOST_CTR_BIN,
                 [
@@ -328,7 +325,7 @@ where
             )?;
         }
     } else {
-        info!("Bootstrap container mode for '{}' is '{}'", name, mode);
+        info!("Bootstrap container mode for '{name}' is '{mode}'");
 
         // Clean up any left over tasks, before the container is enabled
         if host_containerd_unit.is_active()? && !systemd_unit.is_enabled()? {
@@ -342,7 +339,7 @@ where
             )?;
         }
 
-        info!("Enabling unit '{}'", unit_name);
+        info!("Enabling unit '{unit_name}'");
         systemd_unit.enable()?;
     }
 
@@ -386,7 +383,7 @@ where
         },
     )?;
 
-    debug!("Writing environment file for unit '{}'", name);
+    debug!("Writing environment file for unit '{name}'");
     fs::write(&env_path, output).context(error::WriteConfigurationFileSnafu { path: env_path })?;
 
     // Build unit's drop-in file, used to override the unit's configurations
@@ -402,7 +399,7 @@ where
         .context(error::WriteConfigurationValueSnafu { value: "[Install]" })?;
     writeln!(output, "{dependency}=configured.target")
         .context(error::WriteConfigurationValueSnafu { value: dependency })?;
-    debug!("Writing drop-in file for {}", name);
+    debug!("Writing drop-in file for {name}");
     fs::create_dir_all(&drop_in_dir).context(error::MkdirSnafu { dir: &drop_in_dir })?;
     fs::write(&drop_in_path, output)
         .context(error::WriteConfigurationFileSnafu { path: drop_in_path })?;
@@ -542,14 +539,14 @@ where
 fn mark_bootstrap(args: MarkBootstrapArgs) -> Result<()> {
     let container_id: &str = args.container_id.as_ref();
     let mode = args.mode.as_ref();
-    info!("Mode for '{}' is '{}'", container_id, mode);
+    info!("Mode for '{container_id}' is '{mode}'");
 
     // When 'mode' is 'once', the container is marked as 'off' once it
     // finishes. This guarantees that the container is only started in
     // the boot where it was created.
     if mode != "always" {
         let formatted = format!("settings.bootstrap-containers.{container_id}.mode=off");
-        info!("Turning off container '{}'", container_id);
+        info!("Turning off container '{container_id}'");
         command("apiclient", ["set", formatted.as_str()])?;
     }
 

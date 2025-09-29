@@ -36,7 +36,7 @@ impl AsyncUserDataProvider for Ec2Imds {
             return Ok(None);
         }
 
-        trace!("Received user data: {}", user_data_str);
+        trace!("Received user data: {user_data_str}");
         let json = SettingsJson::from_toml_str(&user_data_str, "EC2 IMDS").context(
             error::SettingsToJSONSnafu {
                 from: "instance user data",

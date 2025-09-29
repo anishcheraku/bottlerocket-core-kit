@@ -244,7 +244,7 @@ where
     args.append(&mut dependencies_paths);
 
     command(LD_BIN_PATH, &args)?;
-    info!("Linked {}", name);
+    info!("Linked {name}");
 
     Ok(())
 }
@@ -287,7 +287,7 @@ where
     args.append(&mut dependencies);
 
     command(LD_BIN_PATH, &args)?;
-    info!("Linked object '{}'", name);
+    info!("Linked object '{name}'");
 
     // Strip the object file
     command(
@@ -302,7 +302,7 @@ where
             &object_path,
         ],
     )?;
-    info!("Stripped object '{}'", name);
+    info!("Stripped object '{name}'");
 
     Ok(())
 }
@@ -344,7 +344,7 @@ where
         from: &source_path,
         to: &destination_path,
     })?;
-    info!("Copied {}", name);
+    info!("Copied {name}");
     Ok(())
 }
 
@@ -416,7 +416,7 @@ where
         .context(error::ExecutionFailureSnafu { command })?;
 
     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-    trace!("stdout: {}", stdout);
+    trace!("stdout: {stdout}");
     trace!("stderr: {}", String::from_utf8_lossy(&output.stderr));
 
     ensure!(
@@ -462,7 +462,7 @@ fn run() -> Result<()> {
 
 fn main() {
     if let Err(e) = run() {
-        error!("{}", e);
+        error!("{e}");
         process::exit(1);
     }
 }

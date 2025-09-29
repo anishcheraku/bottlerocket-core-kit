@@ -232,7 +232,7 @@ where
 
     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
 
-    trace!("stdout: {}", stdout);
+    trace!("stdout: {stdout}");
     trace!("stderr: {}", String::from_utf8_lossy(&output.stderr));
 
     ensure!(
@@ -362,8 +362,7 @@ where
     )?;
 
     info!(
-        "Host container '{}' is enabled: {}, superpowered: {}, with source: {}, entrypoint command: {}",
-        name, enabled, superpowered, source, command
+        "Host container '{name}' is enabled: {enabled}, superpowered: {superpowered}, with source: {source}, entrypoint command: {command}"
     );
 
     // Create the directory regardless if user data was provided for the container
@@ -393,13 +392,13 @@ where
 
     // Unconditionally stop the container, and wait for it to complete. Don't worry about
     // the enabled or disabled status for the unit yet - we'll fix that up later.
-    debug!("Stopping host container: '{}'", unit_name);
+    debug!("Stopping host container: '{unit_name}'");
     systemd_unit.stop()?;
 
     // Let's make sure there's no lingering container tasks that host-ctr might bind to.
     // We want to ensure the host container is running with its most recent configuration.
     if host_containerd_unit.is_active()? {
-        debug!("Cleaning up host container: '{}'", unit_name);
+        debug!("Cleaning up host container: '{unit_name}'");
         crate::command(
             constants::HOST_CTR_BIN,
             ["clean-up", "--container-id", name],
@@ -414,22 +413,22 @@ where
         // If the systemd target is 'multi-user', then we've finished booting. The container
         // should be running if it's enabled, and left stopped if it's disabled.
         ("multi-user.target", true) => {
-            debug!("Immediately enabling host container: '{}'", unit_name);
+            debug!("Immediately enabling host container: '{unit_name}'");
             systemd_unit.enable_now()?
         }
         ("multi-user.target", false) => {
-            debug!("Immediately disabling host container: '{}'", unit_name);
+            debug!("Immediately disabling host container: '{unit_name}'");
             systemd_unit.disable_now()?;
         }
 
         // If it's any other target, then we haven't finished booting and the system may not
         // be fully configured. The unit state should match the host container status.
         (_, true) => {
-            debug!("Enabling host container: '{}'", unit_name);
+            debug!("Enabling host container: '{unit_name}'");
             systemd_unit.enable()?
         }
         (_, false) => {
-            debug!("Disabling host container: '{}'", unit_name);
+            debug!("Disabling host container: '{unit_name}'");
             systemd_unit.disable()?;
         }
     }
@@ -440,10 +439,7 @@ where
 fn is_container_affected(settings: &[&str], container_name: &str) -> bool {
     if settings.is_empty() {
         // it means that Bottlerocket is booting - all containers need to be started
-        info!(
-            "Handling host container '{}' during full configuration process",
-            container_name
-        );
+        info!("Handling host container '{container_name}' during full configuration process");
         return true;
     }
 
@@ -452,19 +448,16 @@ fn is_container_affected(settings: &[&str], container_name: &str) -> bool {
 
     for setting in settings {
         if setting.starts_with(&container_prefix) {
-            info!("Handling host container '{}' because it's directly affected by changed setting '{}' (and maybe others)", container_name, setting);
+            info!("Handling host container '{container_name}' because it's directly affected by changed setting '{setting}' (and maybe others)");
             return true;
         }
         if !setting.starts_with(setting_prefix) {
             // if its some other setting, return true for all host-containers, example: network
-            info!("Handling host container '{}' because it's indirectly affected by changed setting '{}' (and maybe others)", container_name, setting);
+            info!("Handling host container '{container_name}' because it's indirectly affected by changed setting '{setting}' (and maybe others)");
             return true;
         }
     }
-    info!(
-        "Not handling host container '{}', no changed settings affect it",
-        container_name
-    );
+    info!("Not handling host container '{container_name}', no changed settings affect it");
     false
 }
 

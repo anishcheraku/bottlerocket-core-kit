@@ -51,13 +51,13 @@ impl ser::Serializer for &MapKeySerializer {
     fn serialize_str(self, value: &str) -> Result<String> {
         // Make sure string is valid as a key.
         let key = Key::from_segments(KeyType::Data, &[value]).map_err(|e| {
-            debug!("MapKeySerializer got invalid key name: {}", value);
+            debug!("MapKeySerializer got invalid key name: {value}");
             error::InvalidKeySnafu {
                 msg: format!("{e}"),
             }
             .into_error(NoSource)
         })?;
-        trace!("MapKeySerializer got OK key: {}", key);
+        trace!("MapKeySerializer got OK key: {key}");
         Ok(key.to_string())
     }
 

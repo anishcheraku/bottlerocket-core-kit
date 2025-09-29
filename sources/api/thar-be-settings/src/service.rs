@@ -136,7 +136,7 @@ where
 /// Call the `restart()` method on each Service in a Services object
 pub fn restart_services(services: Services) -> Result<()> {
     for (name, service) in services.0 {
-        debug!("Checking for restart-commands for {}", name);
+        debug!("Checking for restart-commands for {name}");
         service.restart()?;
     }
     Ok(())
@@ -152,7 +152,7 @@ trait ServiceRestart {
 impl ServiceRestart for Service {
     fn restart(&self) -> Result<()> {
         let restart_commands = &self.model.restart_commands;
-        info!("restart commands {:?}", restart_commands);
+        info!("restart commands {restart_commands:?}");
         for restart_command in restart_commands {
             // Split on space, assume the first item is the command
             // and the rest are args.

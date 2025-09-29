@@ -59,7 +59,7 @@ impl Args {
                     let path_str = iter
                         .next()
                         .unwrap_or_else(|| usage_msg("Did not give argument to --datastore-path"));
-                    trace!("Given --datastore-path: {}", path_str);
+                    trace!("Given --datastore-path: {path_str}");
 
                     // On first boot, the data store won't exist yet, because storewolf runs after.
                     if !Path::new(&path_str).exists() {
@@ -87,7 +87,7 @@ impl Args {
                     let path_str = iter.next().unwrap_or_else(|| {
                         usage_msg("Did not give argument to --migration-directory")
                     });
-                    trace!("Given --migration-directory: {}", path_str);
+                    trace!("Given --migration-directory: {path_str}");
                     migration_directory = Some(PathBuf::from(path_str));
                 }
 
@@ -95,7 +95,7 @@ impl Args {
                     let version_str = iter.next().unwrap_or_else(|| {
                         usage_msg("Did not give argument to --migrate-to-version")
                     });
-                    trace!("Given --migrate-to-version: {}", version_str);
+                    trace!("Given --migrate-to-version: {version_str}");
                     let version = Version::from_str(&version_str).unwrap_or_else(|e| {
                         usage_msg(format!("Invalid argument to --migrate-to-version: {e}"))
                     });
@@ -113,7 +113,7 @@ impl Args {
                     let path_str = iter
                         .next()
                         .unwrap_or_else(|| usage_msg("Did not give argument to --root-path"));
-                    trace!("Given --root-path: {}", path_str);
+                    trace!("Given --root-path: {path_str}");
                     root_path = Some(PathBuf::from(path_str));
                 }
 
@@ -121,7 +121,7 @@ impl Args {
                     let path_str = iter.next().unwrap_or_else(|| {
                         usage_msg("Did not give argument to --metadata-directory")
                     });
-                    trace!("Given --metadata-directory: {}", path_str);
+                    trace!("Given --metadata-directory: {path_str}");
                     metadata_path = Some(PathBuf::from(path_str));
                 }
                 _ => usage_msg(format!("Unable to parse input '{arg}'")),

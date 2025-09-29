@@ -893,7 +893,7 @@ async fn check(args: &Args) -> Result<String> {
     match serde_json::from_str::<serde_json::Value>(&output) {
         Ok(value) => println!("{value:#}"),
         Err(e) => {
-            warn!("Unable to deserialize response (invalid JSON?): {}", e);
+            warn!("Unable to deserialize response (invalid JSON?): {e}");
             println!("{output}");
         }
     }
@@ -907,7 +907,7 @@ async fn check(args: &Args) -> Result<String> {
 /// Main entry point, dispatches subcommands.
 async fn run() -> Result<()> {
     let (args, subcommand) = parse_args(env::args());
-    trace!("Parsed args for subcommand {:?}: {:?}", subcommand, args);
+    trace!("Parsed args for subcommand {subcommand:?}: {args:?}");
 
     // We use TerminalMode::Stderr because apiclient users expect server response data on stdout.
     TermLogger::init(
@@ -975,7 +975,7 @@ async fn run() -> Result<()> {
         Subcommand::Set(set) => {
             let settings = match set {
                 SetArgs::Simple(simple) => {
-                    trace!("User supplied Key Value settings {:#?}", simple);
+                    trace!("User supplied Key Value settings {simple:#?}");
                     // Construct the Key Pair struct.
                     let set_key_pair = SetKeyPairSettings {
                         request_payload: simple,
@@ -985,7 +985,7 @@ async fn run() -> Result<()> {
                     SettingsInput::KeyPair(settings_string)
                 }
                 SetArgs::Json(json) => {
-                    trace!("User supplied Json settings {:#?}", json);
+                    trace!("User supplied Json settings {json:#?}");
                     // Convert JSON Value to a string.
                     SettingsInput::Json(json.to_string())
                 }
@@ -1246,10 +1246,7 @@ mod tests {
                 assert_eq!(actual.tty, expected.tty);
                 assert_eq!(actual.command, expected.command);
             }
-            _ => panic!(
-                "Expected Exec subcommand: {:?}, got: {:?}",
-                expected_subcommand, subcommand
-            ),
+            _ => panic!("Expected Exec subcommand: {expected_subcommand:?}, got: {subcommand:?}"),
         }
     }
 
@@ -1293,10 +1290,7 @@ mod tests {
                 assert_eq!(actual.tty, expected.tty, "TTY setting should match");
                 assert_eq!(actual.command, expected.command, "Command should match");
             }
-            _ => panic!(
-                "Expected Exec subcommand: {:?}, got: {:?}",
-                expected_subcommand, subcommand
-            ),
+            _ => panic!("Expected Exec subcommand: {expected_subcommand:?}, got: {subcommand:?}"),
         }
     }
 }

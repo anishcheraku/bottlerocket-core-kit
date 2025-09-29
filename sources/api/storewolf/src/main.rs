@@ -457,10 +457,7 @@ fn populate_default_metadata(
             }
         }
 
-        trace!(
-            "Writing default metadata to datastore: {:#?}",
-            metadata_to_write
-        );
+        trace!("Writing default metadata to datastore: {metadata_to_write:#?}");
         for metadata in metadata_to_write {
             let (md, key, val) = metadata;
             datastore

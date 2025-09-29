@@ -299,11 +299,11 @@ fn main() -> ! {
     std::process::exit(match main_inner() {
         Ok(()) => 0,
         Err(err) => {
-            error!("{}", err);
+            error!("{err}");
             if let Some(var) = std::env::var_os("RUST_BACKTRACE") {
                 if var != "0" {
                     if let Some(backtrace) = err.backtrace() {
-                        error!("\n{:?}", backtrace);
+                        error!("\n{backtrace:?}");
                     }
                 }
             }

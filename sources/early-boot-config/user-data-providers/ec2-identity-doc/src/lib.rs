@@ -18,7 +18,7 @@ pub struct Ec2IdentityDoc;
 impl Ec2IdentityDoc {
     async fn fetch_region() -> Result<String> {
         let region = if Path::new(IDENTITY_DOCUMENT_FILE).exists() {
-            info!("'{}' exists, using it", IDENTITY_DOCUMENT_FILE);
+            info!("'{IDENTITY_DOCUMENT_FILE}' exists, using it");
             let data =
                 fs::read_to_string(IDENTITY_DOCUMENT_FILE).context(error::InputFileReadSnafu {
                     path: IDENTITY_DOCUMENT_FILE,
@@ -56,10 +56,7 @@ impl AsyncUserDataProvider for Ec2IdentityDoc {
     ) -> std::result::Result<Option<SettingsJson>, Box<dyn std::error::Error>> {
         let region = Self::fetch_region().await?;
 
-        trace!(
-            "Retrieved region from instance identity document: {}",
-            region
-        );
+        trace!("Retrieved region from instance identity document: {region}");
         let val = json!({ "aws": {"region": region} });
         let json = SettingsJson::from_val(&val, "EC2 instance identity document").context(
             error::SettingsToJSONSnafu {

@@ -150,7 +150,7 @@ fn write_update_status(update_status: &UpdateStatus) -> Result<()> {
         },
     )?;
     let tempfile_path = status_file_tempfile.into_temp_path();
-    debug!("Updating status file in '{}'", UPDATE_STATUS_FILE);
+    debug!("Updating status file in '{UPDATE_STATUS_FILE}'");
     tempfile_path
         .persist(UPDATE_STATUS_FILE)
         .context(error::CreateStatusFileSnafu {

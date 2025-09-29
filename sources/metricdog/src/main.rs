@@ -133,7 +133,7 @@ pub(crate) fn main_inner(
             if let Err(err) = metricdog.send_boot_success() {
                 // we don't want to fail the boot if there is a failure to send this message, so
                 // we log the error and return Ok(())
-                error!("Error while reporting boot success: {}", err);
+                error!("Error while reporting boot success: {err}");
             }
         }
         Command::SendHealthPing(_) => {

@@ -434,7 +434,7 @@ where
                 pentacle::SealedCommand::new(&mut reader).context(error::SealMigrationSnafu)?;
             command.args(command_args);
 
-            debug!("Migration command: {:?}", command);
+            debug!("Migration command: {command:?}");
 
             let output = command.output().context(error::StartMigrationSnafu)?;
             Ok(output)
@@ -452,7 +452,7 @@ where
         if !output.stderr.is_empty() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             // We want to see migration stderr on the console, so log at error level.
-            error!("Migration stderr: {}", stderr);
+            error!("Migration stderr: {stderr}");
         } else {
             debug!("No migration stderr");
         }

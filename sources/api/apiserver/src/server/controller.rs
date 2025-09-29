@@ -325,7 +325,7 @@ pub(crate) fn get_settings_keys<D: DataStore>(
 ) -> Result<Settings> {
     let mut data = HashMap::new();
     for key_str in keys {
-        trace!("Pulling value from datastore for key: {}", key_str);
+        trace!("Pulling value from datastore for key: {key_str}");
         let key = Key::new(KeyType::Data, key_str).context(error::NewKeySnafu {
             key_type: "data",
             name: *key_str,
@@ -445,10 +445,7 @@ pub(crate) fn set_settings<D: DataStore>(
             })?;
     }
 
-    info!(
-        "Writing Settings to pending transaction in datastore: {:?}",
-        pairs
-    );
+    info!("Writing Settings to pending transaction in datastore: {pairs:?}");
     datastore
         .set_keys(&pairs, &pending)
         .context(error::DataStoreSnafu { op: "set_keys" })
@@ -470,7 +467,7 @@ pub(crate) fn get_metadata_for_data_keys<D: DataStore, S: AsRef<str>>(
 
     let mut result = HashMap::new();
     for data_key_str in data_key_strs {
-        trace!("Pulling metadata from datastore for key: {}", data_key_str);
+        trace!("Pulling metadata from datastore for key: {data_key_str}");
         let data_key = Key::new(KeyType::Data, data_key_str).context(error::NewKeySnafu {
             key_type: "data",
             name: *data_key_str,
@@ -597,9 +594,7 @@ pub(crate) fn get_settings_generator_metadata<D: DataStore, S: AsRef<str>>(
                 .context(error::DeserializeSettingsGeneratorSnafu)?;
 
             trace!(
-                "Getting the metadata for key {:?} with setting generator {:?}",
-                data_key,
-                setting_generator
+                "Getting the metadata for key {data_key:?} with setting generator {setting_generator:?}"
             );
             expand_setting_generator(datastore, &data_key, setting_generator, &mut result)?;
         }
@@ -761,7 +756,7 @@ where
     if let Some(keys_limit) = keys_limit {
         let keys_limit: Vec<&str> = keys_limit.iter().map(|s| s.as_ref()).collect();
         // Prepare input to config applier; it uses the changed keys to update the right config
-        trace!("Serializing the commit's changed keys: {:?}", keys_limit);
+        trace!("Serializing the commit's changed keys: {keys_limit:?}");
         let cmd_input =
             serde_json::to_string(&keys_limit).context(error::CommandSerializationSnafu {
                 given: "commit's changed keys",

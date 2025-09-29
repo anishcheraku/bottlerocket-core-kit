@@ -74,7 +74,7 @@ where
     }
 
     let method = "GET";
-    trace!("{}ing from {}", method, uri);
+    trace!("{method}ing from {uri}");
     let (code, response_body) = apiclient::raw_request(socket_path, &uri, method, None)
         .await
         .context(error::APIRequestSnafu { method, uri: &uri })?;
@@ -88,7 +88,7 @@ where
         }
         .fail();
     }
-    trace!("JSON response: {}", response_body);
+    trace!("JSON response: {response_body}");
 
     serde_json::from_str(&response_body).context(error::ResponseJsonSnafu { method, uri })
 }
@@ -102,7 +102,7 @@ where
     debug!("Querying API for settings data");
     let settings: model::Model =
         get_json(&socket_path, "/", None as Option<(String, String)>).await?;
-    trace!("Model values: {:?}", settings);
+    trace!("Model values: {settings:?}");
 
     Ok(settings)
 }

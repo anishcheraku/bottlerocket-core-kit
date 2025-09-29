@@ -848,7 +848,7 @@ fn construct_key_pair_map(settings_key_pair_vec: &Vec<String>) -> Result<HashMap
 
         settings_key_pair_map.insert(key, value.to_string());
     }
-    trace!("Key=Value map: {:#?}", settings_key_pair_map);
+    trace!("Key=Value map: {settings_key_pair_map:#?}");
     // We massage the map values to determine type of each input
     massage_set_input(settings_key_pair_map)
 }
@@ -888,7 +888,7 @@ fn massage_set_input(input_map: HashMap<Key, String>) -> Result<HashMap<Key, Str
         };
         massaged_map.insert(key, serialized);
     }
-    trace!("Massaged key=value input: {:#?}", massaged_map);
+    trace!("Massaged key=value input: {massaged_map:#?}");
     Ok(massaged_map)
 }
 

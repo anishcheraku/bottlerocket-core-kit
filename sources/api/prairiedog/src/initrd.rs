@@ -27,9 +27,9 @@ pub(crate) fn generate_initrd(bootconfig: &[u8]) -> Result<Vec<u8>> {
     let mut initrd = bootconfig.to_owned();
     // initrd image file needs to be 4-byte aligned, so we add padding as necessary.
     let padding_size = (BOOTCONFIG_ALIGN - (total_size % BOOTCONFIG_ALIGN)) % BOOTCONFIG_ALIGN;
-    trace!("Boot config size: {}", bootconfig_size);
-    trace!("Initrd total size: {}", total_size);
-    trace!("Padding size: {}", padding_size);
+    trace!("Boot config size: {bootconfig_size}");
+    trace!("Initrd total size: {total_size}");
+    trace!("Padding size: {padding_size}");
     initrd.put_bytes(b'\0', padding_size);
     bootconfig_size += padding_size;
     // Append boot config file size (file + padding bytes)

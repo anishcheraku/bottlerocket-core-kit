@@ -131,12 +131,12 @@ where
             .decode(manifest.as_bytes())
             .context(error::Base64DecodeSnafu { name })?;
 
-        info!("Writing static pod '{}' to '{}'", name, STATIC_POD_DIR);
+        info!("Writing static pod '{name}' to '{STATIC_POD_DIR}'");
 
         // Write the manifest file for this static pod
         write_manifest_file(name, manifest)?;
     } else {
-        info!("Removing static pod '{}' from '{}'", name, STATIC_POD_DIR);
+        info!("Removing static pod '{name}' from '{STATIC_POD_DIR}'");
 
         // Delete the manifest file so the static pod no longer runs (disabled)
         delete_manifest_file(name)?;

@@ -42,7 +42,7 @@ impl Outcome {
 }
 
 fn systemctl(args: &[&str]) -> Result<Outcome> {
-    trace!("calling systemctl with '{:?}'", args);
+    trace!("calling systemctl with '{args:?}'");
     let output = Command::new(SYSTEMCTL)
         .args(args)
         .output()

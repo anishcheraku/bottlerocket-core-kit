@@ -96,7 +96,7 @@ fn split_bundles(certificates_bundle: HashMap<Identifier, PemCertificate>) -> Re
 
         // Empty data means the certificate bundle was disabled in the API
         if data.trim() == "" {
-            debug!("Found empty bundle: {}", name);
+            debug!("Found empty bundle: {name}");
             continue;
         }
 
@@ -235,7 +235,7 @@ fn run() -> Result<()> {
 // https://github.com/shepmaster/snafu/issues/110
 fn main() {
     if let Err(e) = run() {
-        error!("{}", e);
+        error!("{e}");
         process::exit(1);
     }
 }

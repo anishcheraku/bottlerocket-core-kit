@@ -21,11 +21,8 @@ pub async fn signal_resource(
     let instance_id = get_instance_id(&mut client).await?;
     let region = get_region(&mut client).await?;
 
-    info!(
-        "Region: {:?} - InstanceID: {:?} - Signal: {:?}",
-        region, instance_id, status
-    );
-    let config = aws_config::defaults(BehaviorVersion::v2024_03_28())
+    info!("Region: {region:?} - InstanceID: {instance_id:?} - Signal: {status:?}");
+    let config = aws_config::defaults(BehaviorVersion::v2025_08_07())
         .region(Region::new(region.to_owned()))
         .load()
         .await;

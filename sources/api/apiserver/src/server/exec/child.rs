@@ -124,7 +124,7 @@ impl ChildHandles {
         // meaning no ANSI escapes are passed back and forth.
         command.env("TERM", "screen");
 
-        debug!("Spawning command for exec request: {:?}", command);
+        debug!("Spawning command for exec request: {command:?}");
         let mut child = command.spawn().context(error::SpawnSnafu)?;
 
         // `Command` returns pid as u32, but we want i32 to deal with nix.
@@ -132,7 +132,7 @@ impl ChildHandles {
             .ok()
             .context(error::InvalidPidSnafu { given: child.id() })?;
         let pid = Pid::from_raw(pid_raw);
-        debug!("Spawned child has pid {}", pid);
+        debug!("Spawned child has pid {pid}");
 
         // Work around partial move of 'init' into closure; not needed in Rust 2021?
         let tty = init.tty;
@@ -423,7 +423,7 @@ impl WriteToChild {
             // If we can't write to the child process, end the loop and drop the channel so the
             // WebSocket receiver knows we can't accept any more and it should close.
             if let Err(e) = file.write_all(&data) {
-                error!("Failed to write to child process: {}", e);
+                error!("Failed to write to child process: {e}");
                 break;
             }
 
@@ -576,7 +576,7 @@ impl ReadFromChild {
                     if e == Errno::EIO {
                         debug!("Child closed output");
                     } else {
-                        error!("Failed reading from child: {}", e);
+                        error!("Failed reading from child: {e}");
                     }
                     break;
                 }

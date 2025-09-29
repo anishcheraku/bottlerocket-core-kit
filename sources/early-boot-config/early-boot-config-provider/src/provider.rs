@@ -81,7 +81,7 @@ pub fn user_data_from_file<P: AsRef<Path>>(
         return Ok(None);
     }
 
-    trace!("Received user data: {}", user_data_str);
+    trace!("Received user data: {user_data_str}");
     let desc = format!("user data from {}", path.display());
     let json = SettingsJson::from_toml_str(&user_data_str, desc)
         .context(error::SettingsToJSONSnafu { from: path })?;

@@ -45,7 +45,7 @@ pub fn get_config_file_names(services: &Services) -> HashSet<String> {
         }
     }
 
-    trace!("Config file names: {:?}", config_file_set);
+    trace!("Config file names: {config_file_set:?}");
     config_file_set
 }
 

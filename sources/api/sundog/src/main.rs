@@ -212,7 +212,7 @@ where
     let response = apiclient::get::get_prefixes(socket_path, prefixes.to_owned())
         .await
         .context(error::GetPrefixSnafu { prefixes })?;
-    debug!("API response model: {}", response.to_string());
+    debug!("API response model: {response}");
 
     // Build a Settings struct from the response.
     let settings = serde_json::from_value::<model::Model>(response)
@@ -345,7 +345,7 @@ where
             .iter()
             .any(|k| k.starts_with_segments(setting.segments()))
         {
-            debug!("Setting '{}' is already populated, skipping", setting);
+            debug!("Setting '{setting}' is already populated, skipping");
             continue;
         }
 
@@ -382,7 +382,7 @@ where
                 if !result.stderr.is_empty() {
                     let cmd_stderr = String::from_utf8_lossy(&result.stderr);
                     for line in cmd_stderr.lines() {
-                        info!("Setting generator command '{}' stderr: {}", command, line);
+                        info!("Setting generator command '{command}' stderr: {line}");
                     }
                 }
             }
@@ -396,8 +396,7 @@ where
             }
             Some(2) => {
                 warn!(
-                    "'{}' returned 2, not setting '{}', continuing with other generators",
-                    command, generator
+                    "'{command}' returned 2, not setting '{generator}', continuing with other generators"
                 );
                 continue;
             }
@@ -591,14 +590,8 @@ async fn run() -> Result<()> {
     let (weak_settings, strong_settings) =
         get_dynamic_settings(&args.socket_path, generators).await?;
 
-    trace!(
-        "Weak settings from dynamic settings function: {:#?}",
-        weak_settings
-    );
-    trace!(
-        "Strong settings from dynamic settings function: {:#?}",
-        strong_settings
-    );
+    trace!("Weak settings from dynamic settings function: {weak_settings:#?}");
+    trace!("Strong settings from dynamic settings function: {strong_settings:#?}");
 
     info!("Sending settings values to the API");
 

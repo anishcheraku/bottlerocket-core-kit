@@ -314,7 +314,7 @@ impl Key {
         // Push final segment (keys don't end with a dot, which is when we normally push)
         segments.push(segment);
 
-        trace!("Parsed key name '{}' to segments {:?}", name, segments);
+        trace!("Parsed key name '{name}' to segments {segments:?}");
         Ok(segments)
     }
 
@@ -348,7 +348,7 @@ impl Key {
 
         // Join the (possibly quoted) segments with our separator.
         let name = outputs.join(KEY_SEPARATOR_STR);
-        trace!("Encoded key '{}' from segments {:?}", name, segments);
+        trace!("Encoded key '{name}' from segments {segments:?}");
         Ok(name)
     }
 

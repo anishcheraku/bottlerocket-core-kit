@@ -123,11 +123,11 @@ where
 
     if mode == "off" {
         // If mode is 'off', just log this information.
-        info!("Bootstrap command mode for '{}' is 'off'", name);
+        info!("Bootstrap command mode for '{name}' is 'off'");
         return Ok(());
     }
 
-    info!("Processing bootstrap command '{}' ... ", name);
+    info!("Processing bootstrap command '{name}' ... ");
 
     for command in commands.iter() {
         let (cmd, args) = command.get_command_and_args();
@@ -136,11 +136,11 @@ where
 
     if mode == "once" {
         let formatted = format!("settings.bootstrap-commands.{name}.mode=off");
-        info!("Turning off bootstrap command '{}'", name);
+        info!("Turning off bootstrap command '{name}'");
         run_command("apiclient", ["set", formatted.as_str()])?;
     }
 
-    info!("Successfully ran bootstrap command '{}'", name);
+    info!("Successfully ran bootstrap command '{name}'");
 
     Ok(())
 }
@@ -206,7 +206,7 @@ fn run() -> Result<()> {
         let result = handle_bootstrap_command(name, bootstrap_command);
 
         if let Err(ref e) = result {
-            warn!("Bootstrap command failed to execute {}", e);
+            warn!("Bootstrap command failed to execute {e}");
         }
         ensure!(
             !essential || result.is_ok(),
