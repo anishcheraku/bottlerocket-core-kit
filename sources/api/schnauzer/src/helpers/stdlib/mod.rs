@@ -1228,10 +1228,10 @@ mod test_toml_encode {
     fn toml_encode_toml_injection_1() {
         let result = setup_and_render_template(
             TEMPLATE,
-            &json!({"settings": {"foo-string": [ "apiclient set motd=hello', 'echo pwned\""]}}),
+            &json!({"settings": {"foo-string": [ r#"apiclient set motd=hello', 'echo pwned""#]}}),
         )
         .unwrap();
-        let expected = "['''apiclient set motd=hello', 'echo pwned\"''']";
+        let expected = r#"["""apiclient set motd=hello', 'echo pwned""""]"#;
         assert_eq!(result, expected);
     }
 
@@ -1239,10 +1239,10 @@ mod test_toml_encode {
     fn toml_encode_toml_injection_2() {
         let result = setup_and_render_template(
             TEMPLATE,
-            &json!({"settings": {"foo-string": [ "apiclient set motd=hello\", \"echo pwned\""]}}),
+            &json!({"settings": {"foo-string": [ r#"apiclient set motd=hello", "echo pwned""#]}}),
         )
         .unwrap();
-        let expected = "['apiclient set motd=hello\", \"echo pwned\"']";
+        let expected = r#"['apiclient set motd=hello", "echo pwned"']"#;
         assert_eq!(result, expected);
     }
 
@@ -1250,10 +1250,10 @@ mod test_toml_encode {
     fn toml_encode_toml_injection_3() {
         let result = setup_and_render_template(
             TEMPLATE,
-            &json!({"settings": {"foo-string": [ "apiclient set motd=hello\", \"echo pwned\", 'echo pwned2'"]}}),
+            &json!({"settings": {"foo-string": [ r#"apiclient set motd=hello", "echo pwned", 'echo pwned2'"#]}}),
         )
         .unwrap();
-        let expected = "[\"apiclient set motd=hello\\\", \\\"echo pwned\\\", 'echo pwned2'\"]";
+        let expected = r#"["""apiclient set motd=hello", "echo pwned", 'echo pwned2'"""]"#;
         assert_eq!(result, expected);
     }
 }
