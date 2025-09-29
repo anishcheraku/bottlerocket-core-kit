@@ -172,7 +172,6 @@ pest = "2.8"
 pest_derive = "2.8"
 pin-project-lite = "0.2"
 proc-macro2 = "1"
-quick-xml = "0.26"
 quote = "1"
 rand = { version = "0.8", default-features = false }
 regex = "1"
