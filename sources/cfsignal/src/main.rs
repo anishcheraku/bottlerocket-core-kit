@@ -67,15 +67,12 @@ async fn run() -> Result<()> {
         )
         .await
         {
-            error!("Error while sending signal: {}", err);
+            error!("Error while sending signal: {err}");
         }
     }
 
     fs::write(MARKER_FILE, "").unwrap_or_else(|e| {
-        warn!(
-            "Failed to create marker file '{}', may unexpectedly run again: '{}'",
-            MARKER_FILE, e
-        )
+        warn!("Failed to create marker file '{MARKER_FILE}', may unexpectedly run again: '{e}'")
     });
 
     Ok(())

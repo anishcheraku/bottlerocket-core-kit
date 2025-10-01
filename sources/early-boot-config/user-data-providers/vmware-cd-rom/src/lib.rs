@@ -130,7 +130,7 @@ impl UserDataProvider for VmwareCdRom {
 
         // User data could be 700MB compressed!  Eek!  :)
         if user_data_str.len() <= 2048 {
-            trace!("Received user data: {}", user_data_str);
+            trace!("Received user data: {user_data_str}");
         } else {
             trace!(
                 "Received long user data, starts with: {}",

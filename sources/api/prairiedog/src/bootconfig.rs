@@ -95,19 +95,19 @@ where
     let bootconfig_bytes = match get_boot_config_settings(config_path)? {
         Some(boot_settings) => {
             info!("Generating initrd boot config from boot settings");
-            trace!("Boot settings: {:?}", boot_settings);
+            trace!("Boot settings: {boot_settings:?}");
             let bootconfig = serialize_boot_settings_to_boot_config(&boot_settings)?;
-            trace!("Serializing boot config string: {}", bootconfig);
+            trace!("Serializing boot config string: {bootconfig}");
             bootconfig.into_bytes()
         }
         None => {
             // If we don't have any boot settings, write out an initrd with default boot config contents
-            trace!("Serializing boot config string: {}", DEFAULT_BOOTCONFIG_STR);
+            trace!("Serializing boot config string: {DEFAULT_BOOTCONFIG_STR}");
             DEFAULT_BOOTCONFIG_STR.to_string().into_bytes()
         }
     };
     let initrd = generate_initrd(&bootconfig_bytes)?;
-    trace!("Writing initrd image file: {:?}", initrd);
+    trace!("Writing initrd image file: {initrd:?}");
     fs::write(BOOTCONFIG_INITRD_PATH, &initrd).context(error::WriteInitrdSnafu)?;
     Ok(())
 }
@@ -154,10 +154,7 @@ fn read_proc_bootconfig() -> Result<Option<String>> {
 /// Reads `/proc/bootconfig` and populates the Bottlerocket boot settings based on the existing boot config data
 pub(crate) fn generate_boot_settings() -> Result<()> {
     if let Some(proc_bootconfig) = read_proc_bootconfig()? {
-        debug!(
-            "Generating kernel boot config settings from `{}`",
-            PROC_BOOTCONFIG
-        );
+        debug!("Generating kernel boot config settings from `{PROC_BOOTCONFIG}`");
         println!("{}", boot_config_to_boot_settings_json(&proc_bootconfig)?);
     }
     Ok(())

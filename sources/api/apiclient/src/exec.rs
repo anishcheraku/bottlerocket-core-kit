@@ -147,7 +147,7 @@ where
             if let Err(e) = res {
                 let msg = e.to_string();
                 if !msg.is_empty() {
-                    error!("{}", e);
+                    error!("{e}");
                 }
             }
         }
@@ -164,7 +164,7 @@ where
         // Stop if we receive a terminal signal.
         signal = &mut signal_handler.signal_rx => {
             drop(terminal);
-            debug!("Received signal: {:?}", signal);
+            debug!("Received signal: {signal:?}");
             signal_ret = Some(signal);
         }
 
@@ -405,10 +405,10 @@ impl ReadFromUser {
                         match serde_json::to_string(&ClientMessage::ContentComplete) {
                             Ok(msg) => {
                                 if let Err(e) = tx.unbounded_send(Message::Text(msg)) {
-                                    warn!("Unable to send ContentComplete to server, may hang if process doesn't exit: {}", e);
+                                    warn!("Unable to send ContentComplete to server, may hang if process doesn't exit: {e}");
                                 }
                             }
-                            Err(e) => warn!("Unable to serialize ContentComplete, may hang if process doesn't exit: {}", e),
+                            Err(e) => warn!("Unable to serialize ContentComplete, may hang if process doesn't exit: {e}"),
                         }
                         return Ok(());
                     } else {
@@ -611,7 +611,7 @@ impl HandleSignals {
         debug!("Spawning thread to manage signals");
         thread::spawn(move || {
             if let Err(e) = Self::handle_signals(signals, winch_tx, signal_tx) {
-                error!("Signal manager failed: {}", e);
+                error!("Signal manager failed: {e}");
             }
         });
 

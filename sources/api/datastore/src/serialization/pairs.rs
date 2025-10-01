@@ -203,7 +203,7 @@ impl<'a> ser::Serializer for Serializer<'a> {
         let prefix = match self.prefix {
             p @ Some(_) => p,
             None => {
-                trace!("Had no prefix, starting with struct name: {}", name);
+                trace!("Had no prefix, starting with struct name: {name}");
                 let key = Key::from_segments(KeyType::Data, &[&name]).map_err(|e| {
                     error::InvalidKeySnafu {
                         msg: format!("struct '{name}' not valid as Key: {e}"),

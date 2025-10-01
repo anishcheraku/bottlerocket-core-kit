@@ -128,7 +128,7 @@ impl BottlerocketSettingsResolver {
 #[once(result = true, sync_writes = true)]
 pub async fn get_settings_json(socket_path: &Path) -> Result<Value> {
     let method = "GET";
-    trace!("{}ing from {}", method, SETTINGS_API_URI);
+    trace!("{method}ing from {SETTINGS_API_URI}");
     let (code, response_body) = apiclient::raw_request(socket_path, SETTINGS_API_URI, method, None)
         .await
         .context(error::APIRequestSnafu {
@@ -145,7 +145,7 @@ pub async fn get_settings_json(socket_path: &Path) -> Result<Value> {
             response_body,
         }
     );
-    trace!("JSON response: {}", response_body);
+    trace!("JSON response: {response_body}");
     serde_json::from_str(&response_body).context(error::ResponseJsonSnafu {
         method,
         uri: API_SETTINGS_URI,

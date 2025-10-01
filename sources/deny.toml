@@ -48,11 +48,6 @@ wildcards = "deny"
 
 deny = [{ name = "structopt" }, { name = "clap", wrappers = ["cargo-readme"] }]
 
-skip = [
-    # this can be removed once settings sdk is updated to base64 0.22.1
-    { name = "base64", version = "=0.21.7" },
-]
-
 skip-tree = [
     # windows-sys is not a direct dependency. mio and schannel
     # are using different versions of windows-sys. we skip the
@@ -66,6 +61,10 @@ skip-tree = [
     # aws-smithy-experimental brings a set of new dependencies that
     # the aws-sdk doesn't support
     { name = "aws-smithy-experimental", version = "=0.1" },
+    # actix-http has upgraded to v0.9 of 'rand' but upstream has called out some
+    # breaking changes which will need to be explored for our first party code
+    # https://rust-random.github.io/book/update-0.9.html
+    { name = "rand", version = "=0.8" },
 ]
 
 [bans.workspace-dependencies]

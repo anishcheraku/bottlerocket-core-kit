@@ -29,7 +29,7 @@ impl QueryParams {
         let mut params = match self.0.write() {
             Err(e) => {
                 // a thread died while holding a lock to the params. unlikely to occur.
-                error!("unable to add query params to HTTP call: {}", e);
+                error!("unable to add query params to HTTP call: {e}");
                 return url;
             }
             Ok(lock_result) => lock_result,

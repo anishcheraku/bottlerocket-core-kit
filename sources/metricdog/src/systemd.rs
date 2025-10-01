@@ -44,7 +44,7 @@ impl Outcome {
 }
 
 fn command(cmd: &str, args: &[&str]) -> Result<Outcome> {
-    trace!("calling '{}' with '{:?}'", cmd, args);
+    trace!("calling '{cmd}' with '{args:?}'");
     let output = Command::new(cmd)
         .args(args)
         .output()
@@ -136,11 +136,7 @@ fn activate_time(unit: &str) -> Result<String> {
 
 /// Utility function to parse out a systemd unit's property value
 fn parse_property(stdout: &str, property: &str) -> Option<String> {
-    trace!(
-        "parsing stdout from 'systemctl show --property {}':\n{}",
-        property,
-        stdout
-    );
+    trace!("parsing stdout from 'systemctl show --property {property}':\n{stdout}");
 
     // The format of the response is expected to be: `ExecMainStatus=1\n`.
     // Split this at the equals sign, verify the left side and parse the right side.

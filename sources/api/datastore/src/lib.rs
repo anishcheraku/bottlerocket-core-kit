@@ -205,7 +205,7 @@ pub trait DataStore {
         committed: &Committed,
     ) -> Result<HashMap<Key, String>> {
         let keys = self.list_populated_keys(&find_prefix, committed)?;
-        trace!("Found populated keys: {:?}", keys);
+        trace!("Found populated keys: {keys:?}");
         if keys.is_empty() {
             return Ok(HashMap::new());
         }
@@ -213,7 +213,7 @@ pub trait DataStore {
         let mut result = HashMap::new();
         for key in keys {
             // Already confirmed key via listing keys, so an error is more serious.
-            trace!("Pulling value from datastore for key: {}", key);
+            trace!("Pulling value from datastore for key: {key}");
             let value = self
                 .get_key(&key, committed)?
                 .context(error::ListedKeyNotPresentSnafu { key: key.name() })?;
@@ -238,7 +238,7 @@ pub trait DataStore {
         S2: AsRef<str>,
     {
         let meta_map = self.list_populated_metadata(&find_prefix, committed, metadata_key_name)?;
-        trace!("Found populated metadata: {:?}", meta_map);
+        trace!("Found populated metadata: {meta_map:?}");
         if meta_map.is_empty() {
             return Ok(HashMap::new());
         }

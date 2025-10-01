@@ -353,9 +353,7 @@ where
             } else {
                 // No dot, so we have a scalar; hand the data to a scalar deserializer.
                 trace!(
-                    "Key '{}' is scalar, getting '{}' from input to deserialize",
-                    struct_name,
-                    path
+                    "Key '{struct_name}' is scalar, getting '{path}' from input to deserialize",
                 );
                 let val = self.map.get(&path)?;
                 Some((

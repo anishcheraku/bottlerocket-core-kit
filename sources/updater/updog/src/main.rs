@@ -513,7 +513,7 @@ fn set_https_proxy_environment_variables(
     if let Some(no_proxy) = no_proxy {
         if !no_proxy.is_empty() {
             let no_proxy_string = no_proxy.join(",");
-            debug!("setting NO_PROXY={}", no_proxy_string);
+            debug!("setting NO_PROXY={no_proxy_string}");
             std::env::set_var("NO_PROXY", &no_proxy_string);
         }
     }

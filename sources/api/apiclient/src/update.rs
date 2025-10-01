@@ -63,7 +63,7 @@ pub fn required(check_output: &str) -> bool {
             false
         }
         _ => {
-            debug!("Saw state '{}', assuming update is required", state);
+            debug!("Saw state '{state}', assuming update is required");
             true
         }
     }
@@ -202,7 +202,7 @@ where
         }
         .fail();
     };
-    debug!("Found initial timestamp '{}'", before_timestamp);
+    debug!("Found initial timestamp '{before_timestamp}'");
 
     // Make the real request the user wanted.
     let (_code, response_body) = raw_request(&socket_path, &url, &method, data)
@@ -258,10 +258,7 @@ where
             Ok((code, status_body)) => (code, status_body),
             Err(e) => {
                 failures += 1;
-                warn!(
-                    "Unable to check for update status, failure #{}: {}",
-                    failures, e
-                );
+                warn!("Unable to check for update status, failure #{failures}: {e}");
                 continue;
             }
         };
@@ -273,8 +270,7 @@ where
         } else if !code.is_success() {
             failures += 1;
             warn!(
-                "Got code {} when checking update status, failure #{}: {}",
-                code, failures, status_body
+                "Got code {code} when checking update status, failure #{failures}: {status_body}"
             );
             continue;
         }
@@ -284,8 +280,7 @@ where
             .unwrap_or_else(|| "missing".to_string());
         let after_command = response_field(&["most_recent_command", "cmd_type"], &status_body)
             .unwrap_or_else(|| "missing".to_string());
-        debug!("Found timestamp '{}' and command '{}' (looking for command '{}' and a change from initial timestamp '{}')",
-                after_timestamp, after_command, command_name, before_timestamp);
+        debug!("Found timestamp '{after_timestamp}' and command '{after_command}' (looking for command '{command_name}' and a change from initial timestamp '{before_timestamp}')");
 
         // If we have a new timestamp and see our expected command, we're done.
         // Note: we keep waiting if the timestamp changed but the command isn't what we expected;

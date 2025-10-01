@@ -132,7 +132,7 @@ where
         .to_string_lossy();
     let provider_logs = String::from_utf8_lossy(&output.stderr);
     for line in provider_logs.lines() {
-        info!("Provider '{}': {}", provider_name, line);
+        info!("Provider '{provider_name}': {line}");
     }
 
     ensure!(
@@ -158,7 +158,7 @@ where
         constants::LAUNCH_TRANSACTION
     );
     let method = "PATCH";
-    trace!("Request body: {}", user_data);
+    trace!("Request body: {user_data}");
 
     let (code, response_body) =
         apiclient::raw_request(socket_path, uri, method, Some(user_data.to_string()))
@@ -235,10 +235,7 @@ async fn run() -> Result<()> {
     }
 
     fs::write(MARKER_FILE, "").unwrap_or_else(|e| {
-        warn!(
-            "Failed to create marker file {}, may unexpectedly run again: {}",
-            MARKER_FILE, e
-        )
+        warn!("Failed to create marker file {MARKER_FILE}, may unexpectedly run again: {e}")
     });
 
     Ok(())

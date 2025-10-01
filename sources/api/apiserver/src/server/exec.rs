@@ -269,7 +269,7 @@ impl StreamHandler<Result<Message, ws::ProtocolError>> for WsExec {
 
             // This means the client is done with us; stop the actor.
             Ok(Message::Close(reason)) => {
-                info!("Client closed exec connection with reason: {:?}", reason);
+                info!("Client closed exec connection with reason: {reason:?}");
                 ctx.close(reason);
                 ctx.stop();
             }
@@ -285,7 +285,7 @@ impl StreamHandler<Result<Message, ws::ProtocolError>> for WsExec {
             Ok(Message::Nop) => {}
 
             Err(e) => {
-                error!("Stopping after receiving error message: {}", e);
+                error!("Stopping after receiving error message: {e}");
                 ctx.stop();
             }
         }

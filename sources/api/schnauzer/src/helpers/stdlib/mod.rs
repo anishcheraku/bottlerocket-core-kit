@@ -187,7 +187,7 @@ pub fn base64_decode(
         .param(0)
         .map(|v| v.value())
         .context(error::ParamUnwrapSnafu {})?;
-    trace!("Base64 value from template: {}", base64_value);
+    trace!("Base64 value from template: {base64_value}");
 
     // Create an &str from the serde_json::Value
     let base64_str = base64_value
@@ -197,7 +197,7 @@ pub fn base64_decode(
             value: base64_value.to_owned(),
             template: template_name.to_owned(),
         })?;
-    trace!("Base64 string from template: {}", base64_str);
+    trace!("Base64 string from template: {base64_str}");
 
     // Base64 decode the &str
     let decoded_bytes = base64::engine::general_purpose::STANDARD
@@ -211,7 +211,7 @@ pub fn base64_decode(
         base64_string: base64_str.to_string(),
         template: template_name.to_owned(),
     })?;
-    trace!("Decoded base64: {}", decoded);
+    trace!("Decoded base64: {decoded}");
 
     // Write the string out to the template
     out.write(decoded).context(error::TemplateWriteSnafu {
@@ -312,7 +312,7 @@ pub fn join_map(
             value: join_key_val.to_owned(),
             template: template_name.to_owned(),
         })?;
-    trace!("Character used to join keys to values: {}", join_key);
+    trace!("Character used to join keys to values: {join_key}");
 
     let join_pairs_val = get_param(helper, 1)?;
     let join_pairs = join_pairs_val
@@ -322,7 +322,7 @@ pub fn join_map(
             value: join_pairs_val.to_owned(),
             template: template_name.to_owned(),
         })?;
-    trace!("Character used to join pairs: {}", join_pairs);
+    trace!("Character used to join pairs: {join_pairs}");
 
     let fail_behavior_val = get_param(helper, 2)?;
     let fail_behavior_str =
@@ -346,10 +346,7 @@ pub fn join_map(
             ))
         }
     };
-    trace!(
-        "Will we fail if missing the specified map: {}",
-        fail_if_missing
-    );
+    trace!("Will we fail if missing the specified map: {fail_if_missing}");
 
     let map_value = get_param(helper, 3)?;
     // If the requested setting is not set, we check the user's requested fail-if-missing behavior
@@ -368,7 +365,7 @@ pub fn join_map(
     let map = map_value.as_object().context(error::InternalSnafu {
         msg: "Already confirmed map is_object but as_object failed",
     })?;
-    trace!("Map to join: {:?}", map);
+    trace!("Map to join: {map:?}");
 
     // Join the key/value pairs with requested string
     let mut pairs = Vec::new();
@@ -408,7 +405,7 @@ pub fn join_map(
 
     // Join all pairs with the given string.
     let joined = pairs.join(join_pairs);
-    trace!("Joined output: {}", joined);
+    trace!("Joined output: {joined}");
 
     // Write the string out to the template
     out.write(&joined).context(error::TemplateWriteSnafu {
@@ -550,7 +547,7 @@ pub fn default(
             ))
         }
     };
-    trace!("Default value if key is not set: {}", default);
+    trace!("Default value if key is not set: {default}");
 
     let requested_value = get_param(helper, 1)?;
     let value = match requested_value {
@@ -1228,10 +1225,10 @@ mod test_toml_encode {
     fn toml_encode_toml_injection_1() {
         let result = setup_and_render_template(
             TEMPLATE,
-            &json!({"settings": {"foo-string": [ "apiclient set motd=hello', 'echo pwned\""]}}),
+            &json!({"settings": {"foo-string": [ r#"apiclient set motd=hello', 'echo pwned""#]}}),
         )
         .unwrap();
-        let expected = "['''apiclient set motd=hello', 'echo pwned\"''']";
+        let expected = r#"["""apiclient set motd=hello', 'echo pwned""""]"#;
         assert_eq!(result, expected);
     }
 
@@ -1239,10 +1236,10 @@ mod test_toml_encode {
     fn toml_encode_toml_injection_2() {
         let result = setup_and_render_template(
             TEMPLATE,
-            &json!({"settings": {"foo-string": [ "apiclient set motd=hello\", \"echo pwned\""]}}),
+            &json!({"settings": {"foo-string": [ r#"apiclient set motd=hello", "echo pwned""#]}}),
         )
         .unwrap();
-        let expected = "['apiclient set motd=hello\", \"echo pwned\"']";
+        let expected = r#"['apiclient set motd=hello", "echo pwned"']"#;
         assert_eq!(result, expected);
     }
 
@@ -1250,10 +1247,10 @@ mod test_toml_encode {
     fn toml_encode_toml_injection_3() {
         let result = setup_and_render_template(
             TEMPLATE,
-            &json!({"settings": {"foo-string": [ "apiclient set motd=hello\", \"echo pwned\", 'echo pwned2'"]}}),
+            &json!({"settings": {"foo-string": [ r#"apiclient set motd=hello", "echo pwned", 'echo pwned2'"#]}}),
         )
         .unwrap();
-        let expected = "[\"apiclient set motd=hello\\\", \\\"echo pwned\\\", 'echo pwned2'\"]";
+        let expected = r#"["""apiclient set motd=hello", "echo pwned", 'echo pwned2'"""]"#;
         assert_eq!(result, expected);
     }
 }

@@ -152,22 +152,22 @@ impl Metricdog {
             preconfigured_time_ms: self
                 .host_check
                 .preconfigured_time_ms()
-                .map_err(|e| error!("Unable to get preconfigured time: '{}'", e))
+                .map_err(|e| error!("Unable to get preconfigured time: '{e}'"))
                 .ok(),
             configured_time_ms: self
                 .host_check
                 .configured_time_ms()
-                .map_err(|e| error!("Unable to get configured time: '{}'", e))
+                .map_err(|e| error!("Unable to get configured time: '{e}'"))
                 .ok(),
             network_ready_time_ms: self
                 .host_check
                 .network_ready_time_ms()
-                .map_err(|e| error!("Unable to get network ready time: '{}'", e))
+                .map_err(|e| error!("Unable to get network ready time: '{e}'"))
                 .ok(),
             filesystem_ready_time_ms: self
                 .host_check
                 .filesystem_ready_time_ms()
-                .map_err(|e| error!("Unable to get filesystem ready time: '{}'", e))
+                .map_err(|e| error!("Unable to get filesystem ready time: '{e}'"))
                 .ok(),
         });
 

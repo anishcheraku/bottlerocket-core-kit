@@ -43,7 +43,7 @@ impl Terminal {
                 let stdin_tty = isatty(STDIN_FILENO) == Ok(true);
                 let stdout_tty = isatty(STDOUT_FILENO) == Ok(true);
                 let is_tty = stdin_tty && stdout_tty;
-                debug!("Detected tty: {}", is_tty);
+                debug!("Detected tty: {is_tty}");
                 is_tty
             }
         };

@@ -22,7 +22,7 @@ impl VmwareGuestinfo {
                 let encoding_str = String::from_utf8(val).context(error::InvalidUtf8Snafu {
                     what: GUESTINFO_USERDATA_ENCODING,
                 })?;
-                info!("Found user data encoding: {}", encoding_str);
+                info!("Found user data encoding: {encoding_str}");
 
                 serde_plain::from_str(&encoding_str).context(error::UnknownEncodingSnafu {
                     encoding: encoding_str,
@@ -32,10 +32,7 @@ impl VmwareGuestinfo {
             // The cloudinit VMware guestinfo data provider assumes any user data without an
             // associated encoding means raw data is being passed.  We will follow suit here.
             None => {
-                warn!(
-                    "'{}' unset, assuming raw user data",
-                    GUESTINFO_USERDATA_ENCODING
-                );
+                warn!("'{GUESTINFO_USERDATA_ENCODING}' unset, assuming raw user data");
                 UserDataEncoding::Raw
             }
         };
@@ -53,10 +50,7 @@ impl VmwareGuestinfo {
         // should work out.
         let mut backdoor = vmw_backdoor::probe_backdoor_privileged()
             .or_else(|e| {
-                debug!(
-                    "Unable to access guestinfo via privileged mode, using unprivileged: {}",
-                    e
-                );
+                debug!("Unable to access guestinfo via privileged mode, using unprivileged: {e}");
                 vmw_backdoor::probe_backdoor()
             })
             .context(error::BackdoorSnafu {

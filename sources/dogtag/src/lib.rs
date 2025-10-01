@@ -33,10 +33,7 @@ pub type Result<T> = std::result::Result<T, error::Error>;
 
 /// find_hostname will utilize the helpers located in /usr/libexec/hostname-detectors to try and discover the hostname
 pub async fn find_hostname(ip_addr: IpAddr) -> Result<String> {
-    debug!(
-        "attempting to discover hostname detectors in {}",
-        DOGTAG_BIN_PATH
-    );
+    debug!("attempting to discover hostname detectors in {DOGTAG_BIN_PATH}");
     // We want to do reverse sort as we want to prioritize higher numbers first
     // this is because it makes it easier to add more of these and not have to worry about
     // bumping the binary name for existing ones

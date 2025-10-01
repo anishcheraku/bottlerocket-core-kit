@@ -227,8 +227,6 @@ license-files = [
     { path = "LICENSE", hash = 0xf308ccd7 },
     { path = "aws-lc/LICENSE", hash = 0xb6d14686 },
     { path = "aws-lc/third_party/fiat/LICENSE", hash = 0x75829ee2 },
-    { path = "aws-lc/third_party/jitterentropy/LICENSE", hash = 0x86ca01d4},
-    { path = "aws-lc/third_party/jitterentropy/LICENSE.bsd", hash = 0x7a297032 },
 ]
 skip-files = [
     "aws-lc/third_party/jitterentropy/LICENSE.gplv2"
@@ -236,5 +234,6 @@ skip-files = [
 [clarify.half]
 expression = "MIT OR Apache-2.0"
 license-files = [
-    { path = "LICENSE", hash = 0xa9f8b3a2 },
+    { path = "LICENSE-APACHE", hash = 0xd0891cfa },
+    { path = "LICENSE-MIT", hash = 0xbcce9ab4 },
 ]

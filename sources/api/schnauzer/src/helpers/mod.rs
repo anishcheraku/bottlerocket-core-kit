@@ -400,7 +400,7 @@ pub fn join_node_taints(
         .context(error::InternalSnafu {
             msg: "Already confirmed map is_object but as_object failed",
         })?;
-    trace!("node taints to join: {:?}", node_taints);
+    trace!("node taints to join: {node_taints:?}");
 
     // Join the key/value pairs for node taints
     let mut pairs = Vec::new();
@@ -445,7 +445,7 @@ pub fn join_node_taints(
 
     // Join all pairs with the given string.
     let joined = pairs.join(",");
-    trace!("Joined output: {}", joined);
+    trace!("Joined output: {joined}");
 
     // Write the string out to the template
     out.write(&joined).context(error::TemplateWriteSnafu {
@@ -984,19 +984,19 @@ pub fn localhost_aliases(
         .param(0)
         .map(|v| v.value())
         .context(error::ParamUnwrapSnafu {})?;
-    trace!("IP version value from template: {}", ip_version_value);
+    trace!("IP version value from template: {ip_version_value}");
 
     let hostname_value = helper
         .param(1)
         .map(|v| v.value())
         .context(error::ParamUnwrapSnafu {})?;
-    trace!("Hostname value from template: {}", hostname_value);
+    trace!("Hostname value from template: {hostname_value}");
 
     let hosts_value = helper
         .param(2)
         .map(|v| v.value())
         .context(error::ParamUnwrapSnafu {})?;
-    trace!("Hosts value from template: {}", hosts_value);
+    trace!("Hosts value from template: {hosts_value}");
 
     // Extract our variables from their serde_json::Value objects
     let ip_version = ip_version_value
@@ -1006,7 +1006,7 @@ pub fn localhost_aliases(
             value: ip_version_value.to_owned(),
             template: template_name.to_owned(),
         })?;
-    trace!("IP version string from template: {}", ip_version);
+    trace!("IP version string from template: {ip_version}");
 
     let localhost_comparator = match ip_version {
         "ipv4" => IPV4_LOCALHOST,
@@ -1028,7 +1028,7 @@ pub fn localhost_aliases(
             value: hostname_value.to_owned(),
             template: template_name.to_owned(),
         })?;
-    trace!("Hostname string from template: {}", hostname);
+    trace!("Hostname string from template: {hostname}");
 
     let mut results: Vec<String> = vec![];
 
@@ -1043,7 +1043,7 @@ pub fn localhost_aliases(
             )
         })
         .transpose()?;
-    trace!("Hosts from template: {:?}", hosts);
+    trace!("Hosts from template: {hosts:?}");
 
     // If our hostname isn't resolveable, add it to the alias list.
     if !hostname.is_empty() && !hostname_resolveable(hostname, hosts.as_ref()) {
@@ -1102,7 +1102,7 @@ pub fn etc_hosts_entries(
         .param(0)
         .map(|v| v.value())
         .context(error::ParamUnwrapSnafu {})?;
-    trace!("Hosts value from template: {}", hosts_value);
+    trace!("Hosts value from template: {hosts_value}");
 
     if hosts_value.is_null() {
         // If hosts aren't set, just exit.
@@ -1119,7 +1119,7 @@ pub fn etc_hosts_entries(
         value: hosts_value.to_owned(),
         template: template_name.to_owned(),
     })?;
-    trace!("Hosts from template: {:?}", hosts);
+    trace!("Hosts from template: {hosts:?}");
 
     hosts
         .iter_merged()
@@ -1387,7 +1387,7 @@ pub fn oci_defaults(
         }
     };
 
-    debug!("{}_section: \n{}", oci_spec_section, result_lines);
+    debug!("{oci_spec_section}_section: \n{result_lines}");
 
     // Write out the final values to the configuration file
     out.write(result_lines.as_str())
@@ -1637,7 +1637,7 @@ fn hostname_resolveable(
             !(ip_list.is_empty() || resolves_to_localhost)
         }
         Err(e) => {
-            trace!("DNS hostname lookup failed: {},", e);
+            trace!("DNS hostname lookup failed: {e},");
             false
         }
     }

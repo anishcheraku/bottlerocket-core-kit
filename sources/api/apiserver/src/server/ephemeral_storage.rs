@@ -71,7 +71,7 @@ pub fn initialize(fs: Option<Filesystem>, disks: Option<Vec<String>>) -> Result<
         }
     );
 
-    info!("initializing ephemeral storage disks={:?}", disks);
+    info!("initializing ephemeral storage disks={disks:?}");
     // with a single disk, there is no need to create the array
     let device_name = match disks.len() {
         1 => disks.first().expect("non-empty").clone(),
@@ -79,10 +79,7 @@ pub fn initialize(fs: Option<Filesystem>, disks: Option<Vec<String>>) -> Result<
             let scan_output = mdadm_scan()?;
             // no previously configured array found, so construct a new one
             if scan_output.is_empty() {
-                info!(
-                    "creating array named {:?} from {:?}",
-                    RAID_DEVICE_NAME, disks
-                );
+                info!("creating array named {RAID_DEVICE_NAME:?} from {disks:?}");
                 mdadm_create(RAID_DEVICE_NAME, disks.iter().map(|x| x.as_str()).collect())?;
             }
             // Once it is built, it will be available in `/dev/md/`
@@ -92,13 +89,10 @@ pub fn initialize(fs: Option<Filesystem>, disks: Option<Vec<String>>) -> Result<
 
     let fs = fs.unwrap_or(Filesystem::Xfs);
     if !is_formatted(&device_name, &fs)? {
-        info!("formatting {:?} as {}", device_name, fs);
+        info!("formatting {device_name:?} as {fs}");
         format_device(&device_name, &fs)?;
     } else {
-        info!(
-            "{:?} is already formatted as {}, skipping format",
-            device_name, fs
-        );
+        info!("{device_name:?} is already formatted as {fs}, skipping format");
     }
 
     Ok(())
@@ -158,7 +152,7 @@ pub fn bind(variant: &str, dirs: Vec<String>) -> Result<()> {
     }
     std::fs::create_dir_all(mount_point).context(error::MkdirSnafu {})?;
 
-    info!("mounting {:?} as {:?}", device_name, mount_point);
+    info!("mounting {device_name:?} as {mount_point:?}");
     let output = Command::new(MOUNT)
         .args([
             OsString::from(device_name.clone()),
@@ -188,13 +182,13 @@ pub fn bind(variant: &str, dirs: Vec<String>) -> Result<()> {
         std::fs::create_dir_all(&mount_destination).context(error::MkdirSnafu {})?;
 
         if is_mounted(dir)? {
-            info!("skipping bind mount of {:?}, already mounted", dir);
+            info!("skipping bind mount of {dir:?}, already mounted");
             continue;
         }
         // call the equivalent of
         // mount --rbind /mnt/.ephemeral/._var_lib_kubelet /var/lib/kubelet
         let source_dir = OsString::from(&dir);
-        info!("binding {:?} to {:?}", source_dir, mount_destination);
+        info!("binding {source_dir:?} to {mount_destination:?}");
 
         let output = Command::new(MOUNT)
             .args([
@@ -216,7 +210,7 @@ pub fn bind(variant: &str, dirs: Vec<String>) -> Result<()> {
 
     for dir in dirs {
         let source_dir = OsString::from(&dir);
-        info!("sharing mounts for {:?}", source_dir);
+        info!("sharing mounts for {source_dir:?}");
         // mount --make-rshared /var/lib/kubelet
         let output = Command::new(MOUNT)
             .args([OsStr::new("--make-rshared"), &source_dir])

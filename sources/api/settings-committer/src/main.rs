@@ -57,21 +57,18 @@ mod error {
 async fn check_pending_settings<S: AsRef<str>>(socket_path: S, transaction: &str) {
     let uri = format!("{API_PENDING_URI_BASE}?tx={transaction}");
 
-    debug!("GET-ing {} to determine if there are pending settings", uri);
+    debug!("GET-ing {uri} to determine if there are pending settings");
     let get_result = apiclient::raw_request(socket_path.as_ref(), &uri, "GET", None).await;
     let response_body = match get_result {
         Ok((code, response_body)) => {
             if !code.is_success() {
-                warn!(
-                    "Got {} when sending GET to {}: {}",
-                    code, uri, response_body
-                );
+                warn!("Got {code} when sending GET to {uri}: {response_body}");
                 return;
             }
             response_body
         }
         Err(err) => {
-            warn!("Failed to GET pending settings from {}: {}", uri, err);
+            warn!("Failed to GET pending settings from {uri}: {err}");
             return;
         }
     };
@@ -83,7 +80,7 @@ async fn check_pending_settings<S: AsRef<str>>(socket_path: S, transaction: &str
             debug!("Pending settings for tx {}: {:?}", transaction, &pending);
         }
         Err(err) => {
-            warn!("Failed to parse response from {}: {}", uri, err);
+            warn!("Failed to parse response from {uri}: {err}");
         }
     }
 }
@@ -91,7 +88,7 @@ async fn check_pending_settings<S: AsRef<str>>(socket_path: S, transaction: &str
 /// Commits pending settings to live.
 async fn commit_pending_settings<S: AsRef<str>>(socket_path: S, transaction: &str) -> Result<()> {
     let uri = format!("{API_COMMIT_URI_BASE}?tx={transaction}");
-    debug!("POST-ing to {} to move pending settings to live", uri);
+    debug!("POST-ing to {uri} to move pending settings to live");
 
     if let Err(e) = apiclient::raw_request(socket_path.as_ref(), &uri, "POST", None).await {
         match e {

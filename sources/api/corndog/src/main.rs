@@ -74,14 +74,14 @@ fn run() -> Result<()> {
         "sysctl" => {
             let kernel = get_kernel_settings(args.config_path)?;
             if let Some(sysctls) = kernel.sysctl {
-                debug!("Applying sysctls: {:#?}", sysctls);
+                debug!("Applying sysctls: {sysctls:#?}");
                 set_sysctls(sysctls)?;
             }
         }
         "lockdown" => {
             let kernel = get_kernel_settings(args.config_path)?;
             if let Some(lockdown) = kernel.lockdown {
-                debug!("Setting lockdown: {:#?}", lockdown);
+                debug!("Setting lockdown: {lockdown:#?}");
                 set_lockdown(&lockdown)?;
             }
         }
@@ -212,10 +212,7 @@ fn check_for_existing_hugepages(existing_hugepages_value: String) -> String {
             return value.to_string();
         }
         Err(err) => {
-            warn!(
-                "Failed to parse the existing hugepage value, using 0 as default. Error: {}",
-                err
-            );
+            warn!("Failed to parse the existing hugepage value, using 0 as default. Error: {err}");
         }
     }
     "0".to_string()
@@ -243,7 +240,7 @@ fn compute_hugepages_for_efa(num_cores: usize) -> String {
 fn set_lockdown(lockdown: &str) -> Result<()> {
     let current_raw = fs::read_to_string(LOCKDOWN_PATH).unwrap_or_else(|_| "unknown".to_string());
     let current = parse_kernel_setting(&current_raw);
-    trace!("Parsed lockdown setting '{}' to '{}'", current_raw, current);
+    trace!("Parsed lockdown setting '{current_raw}' to '{current}'");
 
     // The kernel doesn't allow rewriting the current value.
     if current == lockdown {

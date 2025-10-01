@@ -19,7 +19,6 @@ indexmap = { workspace = true, features = ["serde"] }
 envy.workspace = true
 lazy_static.workspace = true
 systemd-derive.workspace = true
-quick-xml = { workspace = true, features = ["serialize"] }
 rand = { workspace = true, features = ["std", "std_rng"] }
 regex.workspace = true
 serde = { workspace = true, features = ["derive"] }

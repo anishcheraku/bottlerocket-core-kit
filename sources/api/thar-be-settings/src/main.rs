@@ -124,7 +124,7 @@ async fn write_config_files(
     // Create a vec of ConfigFile structs from the list of changed services
     info!("Requesting configuration file data for affected services");
     let config_files = config::get_affected_config_files(&args.socket_path, files_limit).await?;
-    trace!("Found config files: {:?}", config_files);
+    trace!("Found config files: {config_files:?}");
 
     let template_importer = BottlerocketTemplateImporter::new((&args.socket_path).into());
 
@@ -168,7 +168,7 @@ async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
             );
             let services =
                 service::get_affected_services(&args.socket_path, Some(changed_settings)).await?;
-            trace!("Found services: {:?}", services);
+            trace!("Found services: {services:?}");
             if services.0.is_empty() {
                 info!("No services are affected, exiting...");
                 process::exit(0)
@@ -190,7 +190,7 @@ async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
 
             info!("Restarting all services...");
             let services = service::get_affected_services(&args.socket_path, None).await?;
-            trace!("Found services: {:?}", services);
+            trace!("Found services: {services:?}");
             service::restart_services(services)?;
         }
     }

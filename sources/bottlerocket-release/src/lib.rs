@@ -88,7 +88,7 @@ impl BottlerocketRelease {
                     value = &value[..value.len() - 1];
                 }
 
-                debug!("Found os-release value {}={}", key, value);
+                debug!("Found os-release value {key}={value}");
                 Some((key.to_owned(), value.to_owned()))
             })
             .collect();
