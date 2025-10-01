@@ -1,5 +1,5 @@
 Name: %{_cross_os}glibc
-Version: 2.41
+Version: 2.42
 Release: 1%{?dist}
 Epoch: 1
 Summary: The GNU libc libraries
@@ -18,49 +18,37 @@ Source14: tz-utc.txt
 # applied and reverted during the build.
 Source99: HACK-only-build-and-install-localedef.patch
 
-# Upstream patches from 2.41 release branch:
+# Upstream patches from 2.42 release branch:
 # ```
-# git checkout origin/release/2.41/master
-# git format-patch --no-numbered glibc-2.41..
+# git checkout origin/release/2.42/master
+# git format-patch --no-numbered --no-signature glibc-2.42..
 # ```
-Patch0001: 0001-Remove-advisories-from-release-branch.patch
-Patch0002: 0002-NEWS-start-new-section.patch
-Patch0003: 0003-math-Fix-log10p1f-internal-table-value-BZ-32626.patch
-Patch0004: 0004-math-Fix-sinhf-for-some-inputs-BZ-32627.patch
-Patch0005: 0005-nptl-Correct-stack-size-attribute-when-stack-grows-u.patch
-Patch0006: 0006-math-Fix-tanf-for-some-inputs-BZ-32630.patch
-Patch0007: 0007-assert-Add-test-for-CVE-2025-0395.patch
-Patch0008: 0008-Fix-tst-aarch64-pkey-to-handle-ENOSPC-as-not-support.patch
-Patch0009: 0009-x86-__HAVE_FLOAT128-Defined-to-0-for-Intel-SYCL-comp.patch
-Patch0010: 0010-math-Fix-unknown-type-name-__float128-for-clang-3.4-.patch
-Patch0011: 0011-math-Add-optimization-barrier-to-ensure-a1-u.d-is-no.patch
-Patch0012: 0012-RISC-V-Fix-IFUNC-resolver-cannot-access-gp-pointer.patch
-Patch0013: 0013-Aarch64-Improve-codegen-in-SVE-asinh.patch
-Patch0014: 0014-Aarch64-Improve-codegen-in-SVE-exp-and-users-and-upd.patch
-Patch0015: 0015-AArch64-Improve-codegen-for-SVE-erfcf.patch
-Patch0016: 0016-AArch64-Improve-codegen-for-SVE-pow.patch
-Patch0017: 0017-AArch64-Improve-codegen-for-SVE-powf.patch
-Patch0018: 0018-aarch64-Add-configure-checks-for-GCS-support.patch
-Patch0019: 0019-aarch64-Add-tests-for-Guarded-Control-Stack.patch
-Patch0020: 0020-aarch64-Add-GCS-tests-for-transitive-dependencies.patch
-Patch0021: 0021-aarch64-Add-GCS-tests-for-dlopen.patch
-Patch0022: 0022-aarch64-Add-GCS-test-with-signal-handler.patch
-Patch0023: 0023-math-Improve-layout-of-exp-exp10-data.patch
-Patch0024: 0024-AArch64-Add-SVE-memset.patch
-Patch0025: 0025-AArch64-Use-prefer_sve_ifuncs-for-SVE-memset.patch
-Patch0026: 0026-Pass-Wl-no-error-execstack-for-tests-where-Wl-z-exec.patch
-Patch0027: 0027-static-pie-Skip-the-empty-PT_LOAD-segment-at-offset-.patch
-Patch0028: 0028-elf-Check-if-__attribute__-aligned-65536-is-supporte.patch
-Patch0029: 0029-configure-Fix-spelling-of-Wl-no-error-execstack-opti.patch
-Patch0030: 0030-posix-Move-environ-helper-variables-next-to-environ-.patch
-Patch0031: 0031-math-Remove-an-extra-semicolon-in-math-function-decl.patch
-Patch0032: 0032-Linux-Remove-attribute-access-from-sched_getattr-bug.patch
-Patch0033: 0033-nptl-clear-the-whole-rseq-area-before-registration.patch
-Patch0034: 0034-nptl-PTHREAD_COND_INITIALIZER-compatibility-with-pre.patch
-Patch0035: 0035-nptl-Check-if-thread-is-already-terminated-in-sigcan.patch
-Patch0036: 0036-x86_64-Add-tanh-with-FMA.patch
-Patch0037: 0037-x86_64-Add-sinh-with-FMA.patch
-Patch0038: 0038-x86_64-Add-atanh-with-FMA.patch
+Patch0001: 0001-Replace-advisories-directory-with-pointer-file.patch
+Patch0002: 0002-NEWS-add-new-section.patch
+Patch0003: 0003-inet-fortified-fix-namespace-violation-bug-33227.patch
+Patch0004: 0004-stdlib-resolve-a-double-lock-init-issue-after-fork-B.patch
+Patch0005: 0005-elf-Extract-rtld_setup_phdr-function-from-dl_main.patch
+Patch0006: 0006-elf-Handle-ld.so-with-LOAD-segment-gaps-in-_dl_find_.patch
+Patch0007: 0007-nptl-Fix-SYSCALL_CANCEL-for-return-values-larger-tha.patch
+Patch0008: 0008-Delete-temporary-files-in-support_subprocess.patch
+Patch0009: 0009-tst-fopen-threaded.c-Delete-temporary-file.patch
+Patch0010: 0010-tst-freopen4-main.c-Call-support_capture_subprocess-.patch
+Patch0011: 0011-tst-env-setuid-Delete-LD_DEBUG_OUTPUT-output.patch
+Patch0012: 0012-Revert-tst-freopen4-main.c-Call-support_capture_subp.patch
+Patch0013: 0013-hurd-support-Fix-running-SGID-tests.patch
+Patch0014: 0014-malloc-Remove-redundant-NULL-check.patch
+Patch0015: 0015-malloc-Fix-MAX_TCACHE_SMALL_SIZE.patch
+Patch0016: 0016-malloc-Make-sure-tcache_key-is-odd-enough.patch
+Patch0017: 0017-malloc-Fix-checking-for-small-negative-values-of-tca.patch
+Patch0018: 0018-Use-TLS-initial-exec-model-for-__libc_tsd_CTYPE_-thr.patch
+Patch0019: 0019-i386-Add-GLIBC_ABI_GNU_TLS-version-BZ-33221.patch
+Patch0020: 0020-x86-64-Add-GLIBC_ABI_GNU2_TLS-version-BZ-33129.patch
+Patch0021: 0021-x86-64-Add-GLIBC_ABI_DT_X86_64_PLT-BZ-33212.patch
+Patch0022: 0022-i386-Also-add-GLIBC_ABI_GNU2_TLS-version-BZ-33129.patch
+Patch0023: 0023-AArch64-Fix-SVE-powf-routine-BZ-33299.patch
+Patch0024: 0024-libio-Define-AT_RENAME_-with-the-same-tokens-as-Linu.patch
+Patch0025: 0025-nss-Group-merge-does-not-react-to-ERANGE-during-merg.patch
+Patch0026: 0026-nptl-Fix-MADV_GUARD_INSTALL-logic-for-thread-without.patch
 
 # Fedora patches
 Patch1001: glibc-cs-path.patch
