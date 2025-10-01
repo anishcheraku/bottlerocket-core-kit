@@ -129,8 +129,6 @@ pub fn bind(variant: &str, dirs: Vec<String>) -> Result<()> {
         .map(|dir| dir.trim_end_matches("/").to_string())
         .collect();
 
-    let mount_point = format!("/mnt/{EPHEMERAL_MNT}");
-    let mount_point = Path::new(&mount_point);
     let allowed_dirs = allowed_bind_dirs(variant);
     for dir in &dirs {
         let exact_match = allowed_dirs.allowed_exact.contains(dir.as_str());
@@ -150,26 +148,32 @@ pub fn bind(variant: &str, dirs: Vec<String>) -> Result<()> {
             }
         )
     }
-    std::fs::create_dir_all(mount_point).context(error::MkdirSnafu {})?;
 
-    info!("mounting {device_name:?} as {mount_point:?}");
-    let output = Command::new(MOUNT)
-        .args([
-            OsString::from(device_name.clone()),
-            OsString::from(mount_point.as_os_str()),
-        ])
-        .output()
-        .context(error::ExecutionFailureSnafu { command: MOUNT })?;
+    let mount_point = format!("/mnt/{EPHEMERAL_MNT}");
+    if !is_mounted(&mount_point)? {
+        std::fs::create_dir_all(&mount_point).context(error::MkdirSnafu {})?;
+        info!("mounting {device_name} as {mount_point}");
+        let output = Command::new(MOUNT)
+            .args([
+                OsString::from(device_name.clone()),
+                OsString::from(&mount_point),
+            ])
+            .output()
+            .context(error::ExecutionFailureSnafu { command: MOUNT })?;
 
-    ensure!(
-        output.status.success(),
-        error::MountArrayFailureSnafu {
-            what: device_name,
-            dest: mount_point.to_string_lossy().to_string(),
-            output
-        }
-    );
+        ensure!(
+            output.status.success(),
+            error::MountArrayFailureSnafu {
+                what: device_name,
+                dest: &mount_point,
+                output
+            }
+        );
+    } else {
+        info!("device already mounted at {mount_point}, skipping mount");
+    }
 
+    let mount_point = Path::new(&mount_point);
     for dir in &dirs {
         // construct a directory name (E.g. /var/lib/kubelet => ._var_lib_kubelet) that will be
         // unique between the binding targets
