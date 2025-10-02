@@ -1,3 +1,31 @@
+# v10.7.0 (2025-10-02)
+
+## OS Changes
+- Update Rust dependencies for first-party sources ([#673])
+- Update Go dependencies for first-party sources ([#673])
+- Patch `systemd` to suppress a warning log that is not applicable to Bottlerocket ([#681])
+
+### Third Party Package Updates
+- Update `glibc` and `docker-engine` ([#676], [#671])
+- Update core libraries: `libpcre`, `readline`, `libz`, `libtirpc`, `libnftl`, `libbncurses`, `libinih`, `libglib`, `libffi`, `libbpf`, `libdevmapper`, and `libscrypsetup` ([#683])
+- Update core system utilities: `iproute`, `strace`, `nvme-cli`, `libnvme`, `xfsprogs`, `ethtool`, `util-linux`, `pciutils`, `dbus-broker`, and `e2fsprogs`([#675], [#680])
+
+## Build Changes
+- Update `bottlerocket-settings-models` to v0.16.0 ([#646])
+
+## Orchestrator Changes
+### Kubernetes
+- Add `pid` resource to `kubeReserved` setting ([#646])
+
+[#646]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/646
+[#671]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/671
+[#673]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/673
+[#675]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/675
+[#676]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/676
+[#680]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/680
+[#681]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/681
+[#683]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/683
+
 # v10.6.0 (2025-09-23)
 
 ## OS Changes
