@@ -1,5 +1,5 @@
 Name: %{_cross_os}libtirpc
-Version: 1.3.6
+Version: 1.3.7
 Release: 1%{?dist}
 Epoch: 1
 Summary: Library for RPC
