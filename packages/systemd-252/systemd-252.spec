@@ -88,6 +88,11 @@ Patch9017: 9017-dissect-image-disable-openssl-support.patch
 # unneeded dependency on libssl.
 Patch9018: 9018-meson-replace-openssl-dependency-with-libcrypto.patch
 
+# Downgrade warning logs for unit files with permission not set to 0044 since
+# it does not apply to Bottlerocket where the API is restricted by the SELinux
+# policy
+Patch9019: 9019-suppress-log-for-units-with-mode-0044.patch
+
 BuildRequires: gperf
 BuildRequires: intltool
 BuildRequires: meson
