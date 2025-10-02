@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://mirrors.edge.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs"
 
 [[package.metadata.build-package.external-files]]
-url = "https://mirrors.edge.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v1.47.1/e2fsprogs-1.47.1.tar.xz"
-sha512 = "2ac51f7654a44adf3ee5a5e32cecd7f129e423bdf3074c60b22a7acdba131e7dd0bb2964c107a06ae133f51836272be166f5da1f996f67ceb6c22e2636117beb"
+url = "https://mirrors.edge.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v1.47.2/e2fsprogs-1.47.2.tar.xz"
+sha512 = "a32632e072e535bf164503cf9992a4da7ea971e80f8f84ead4e7bc8899a92c27e4670bdebef1de0187596672e44af7b96078888e0cd4eefa3e3f551344d434d8"
 
 [[package.metadata.build-package.external-files]]
-url = "https://mirrors.edge.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v1.47.1/e2fsprogs-1.47.1.tar.sign"
-sha512 = "35461f3e3a024cff7ad9b26cd7b76f9b061c48b335bb005d1e86cc3834950779750db901ce0c84e608f0cb74744e4052205dd3c5e06a57f52c17f3784bc00bf8"
+url = "https://mirrors.edge.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v1.47.2/e2fsprogs-1.47.2.tar.sign"
+sha512 = "cfc99e49d2623140d0f086c1f0e85f6df0fdb688d6d46efeb6e16101b42db32a63374582ab346eb1ba2b14bf2898c09bd6ddcb8afcaf89bf7e22c7ec8810f7bc"
 
 [build-dependencies]
 glibc = { path = "../glibc" }

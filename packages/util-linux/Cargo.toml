@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://www.kernel.org/pub/linux/utils/util-linux"
 
 [[package.metadata.build-package.external-files]]
-url = "https://www.kernel.org/pub/linux/utils/util-linux/v2.40/util-linux-2.40.4.tar.xz"
-sha512 = "0024955056ba7b4c54040a917f9919f49692e57ba6d42d17a6c29c1eefe88bf48b1214a545072b71c468829a63a8f15237f49733e9127c134e11126d1e435124"
+url = "https://www.kernel.org/pub/linux/utils/util-linux/v2.41/util-linux-2.41.2.tar.xz"
+sha512 = "696c87e7cf185acc9b4b969ddade6155ea2945ae494eaecfd7b1f35d9607166cb09be79878fb793dd31b4d4dcac8c9be4be76af3886185db7ae8b58c303fb0cf"
 
 [[package.metadata.build-package.external-files]]
-url = "https://www.kernel.org/pub/linux/utils/util-linux/v2.40/util-linux-2.40.4.tar.sign"
-sha512 = "1ed2f8710a702e313d690c9c071c7a151df1cef7527a08ab4d1eda7a293239cf00392a78b21125df09f0af7249b473b1a51b92bb8e0494608db437c7ee4e0473"
+url = "https://www.kernel.org/pub/linux/utils/util-linux/v2.41/util-linux-2.41.2.tar.sign"
+sha512 = "05ecccd24fbeea38a8579907629264550a309cfdfa63fa6eab756c0fc3cd182e9764101731424c1421d1ed950c2c1e41cf210abcd9c2837323c657292cdc9a0d"
 
 [build-dependencies]
 glibc = { path = "../glibc" }

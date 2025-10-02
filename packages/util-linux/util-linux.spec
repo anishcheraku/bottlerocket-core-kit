@@ -1,5 +1,5 @@
-%global majorminor 2.40
-%global version %{majorminor}.4
+%global majorminor 2.41
+%global version %{majorminor}.2
 
 Name: %{_cross_os}util-linux
 Version: %{version}
@@ -205,11 +205,13 @@ done
 %{_cross_bindir}/unshare
 %{_cross_bindir}/uuidgen
 %{_cross_bindir}/uuidparse
+%exclude %{_cross_bindir}/bits
 %exclude %{_cross_bindir}/cal
 %exclude %{_cross_bindir}/col
 %exclude %{_cross_bindir}/colcrt
 %exclude %{_cross_bindir}/colrm
 %exclude %{_cross_bindir}/column
+%exclude %{_cross_bindir}/coresched
 %exclude %{_cross_bindir}/eject
 %exclude %{_cross_bindir}/enosys
 %exclude %{_cross_bindir}/exch

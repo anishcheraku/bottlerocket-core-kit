@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://github.com/bus1/dbus-broker/releases/"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/bus1/dbus-broker/releases/download/v36/dbus-broker-36.tar.xz"
-sha512 = "47ff345e27ae2ba41f43a4a6eb09b813583ef43392d1dfa2fc1805578c0ed3a1e414c3eae63f78ca3806904dc017a138e283aa32ba973de51ed613050b244a0f"
+url = "https://github.com/bus1/dbus-broker/releases/download/v37/dbus-broker-37.tar.xz"
+sha512 = "9f7c8aa4fabd1fc2da7b521a742874dd0e54f12c24fd5b9a3cbc91e8de05b9d08299cb0b353b923a6b8e33be194222e0242b6ba7cad795a350e7d056b7303e13"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/bus1/dbus-broker/releases/download/v36/dbus-broker-36.tar.xz.asc"
-sha512 = "711e3db030cd8d3953e966c11d2afa4c543548f882d3364fc0b79b7cfb3b8d5ecb65b1148429acf80b5ee803305f27f80538bd2f4b30e98da97fd05eb6dc0344"
+url = "https://github.com/bus1/dbus-broker/releases/download/v37/dbus-broker-37.tar.xz.asc"
+sha512 = "7201751d2ebfe418cd5f5301e27c3d679526faa3b950bbcde385ef68dd29ec902ed29dc558d330a6270bbafe5df3efe72dfa47370eb5ce5f26cf41bfec5b399f"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
