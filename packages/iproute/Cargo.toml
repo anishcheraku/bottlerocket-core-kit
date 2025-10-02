@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "http://kernel.org/pub/linux/utils/net/iproute2"
 
 [[package.metadata.build-package.external-files]]
-url = "https://kernel.org/pub/linux/utils/net/iproute2/iproute2-6.15.0.tar.xz"
-sha512 = "1a438941cd939e1c8e32cfe8c40e6fd826c89185f1bb0c623eaad7380a66afd9fa9e0d7cdc5e5b193d2761b7dbdc78fd0811537eecc500be633730c32ff55ad4"
+url = "https://kernel.org/pub/linux/utils/net/iproute2/iproute2-6.16.0.tar.xz"
+sha512 = "88930ea1a3a901594a69dc04e533bfd1de0f5b79f176dedb45f11f01035bd680edccc8e04e56d0922ee430580581c646473a3baa941254739878f7ab946f17df"
 
 [[package.metadata.build-package.external-files]]
-url = "https://kernel.org/pub/linux/utils/net/iproute2/iproute2-6.15.0.tar.sign"
-sha512 = "5a1159f926c1543ac01d7981f87a66c9715ebecffe37bd3954aebfe9499db8591ca26448322a60c55fd4d48564f63730732c80f010c7da1268dc9db1e089b48e"
+url = "https://kernel.org/pub/linux/utils/net/iproute2/iproute2-6.16.0.tar.sign"
+sha512 = "651a0096325c804ff01da4427abfbc3a72362980baa4869d60aa94aa944c04bcb535070ae8e05b4e7f6e1ac667873ad80f77532edec0ce7e3bf34d4457ee3854"
 
 [build-dependencies]
 glibc = { path = "../glibc" }

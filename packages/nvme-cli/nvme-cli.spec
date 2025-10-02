@@ -1,11 +1,14 @@
 Name: %{_cross_os}nvme-cli
-Version: 2.14
+Version: 2.15
 Release: 1%{?dist}
 Epoch: 1
 Summary: CLI to interact with NVMe devices
 License: LGPL-2.1-only AND GPL-2.0-only AND CC0-1.0 AND MIT
 URL: https://github.com/linux-nvme/nvme-cli
 Source0: https://github.com/linux-nvme/nvme-cli/archive/v%{version}/nvme-cli-%{version}.tar.gz
+# This patch carries the necessary code for detailed performance stats on all NVMe local volumes.
+# Please verify and remove it in the next update.
+Patch0001: 0001-plugins-amzn-Add-stats-support-for-EC2-local-storage.patch
 
 BuildRequires: meson
 BuildRequires: %{_cross_os}glibc-devel
