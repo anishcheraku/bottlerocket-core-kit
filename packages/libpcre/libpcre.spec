@@ -1,12 +1,12 @@
 Name: %{_cross_os}libpcre
-Version: 10.44
+Version: 10.46
 Release: 1%{?dist}
 Summary: Library for regular expressions
 License: BSD-3-Clause
 URL: https://www.pcre.org/
 Source0: https://github.com/PhilipHazel/pcre2/releases/download/pcre2-%{version}/pcre2-%{version}.tar.bz2
 Source1: https://github.com/PhilipHazel/pcre2/releases/download/pcre2-%{version}/pcre2-%{version}.tar.bz2.sig
-Source2: gpgkey-45F68D54BBE23FB3039B46E59766E084FB0F43D8.asc
+Source2: gpgkey-BEA5BD404EE723426130321AA19B9D6B8B6595D4.asc
 BuildRequires: %{_cross_os}glibc-devel
 
 %description
@@ -50,7 +50,7 @@ Requires: %{name}
 %make_install
 
 %files
-%license LICENCE
+%license LICENCE.md
 %{_cross_attribution_file}
 %{_cross_libdir}/*.so.*
 %exclude %{_cross_bindir}

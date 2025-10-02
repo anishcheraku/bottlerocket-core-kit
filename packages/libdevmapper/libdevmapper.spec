@@ -1,5 +1,5 @@
 Name: %{_cross_os}libdevmapper
-Version: 2.03.33
+Version: 2.03.35
 Release: 1%{?dist}
 Summary: Library for device mapper
 License: LGPL-2.1-only

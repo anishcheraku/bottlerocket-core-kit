@@ -1,5 +1,5 @@
 Name: %{_cross_os}libz
-Version: 2.2.4
+Version: 2.2.5
 Release: 1%{?dist}
 Epoch: 1
 Summary: Library for zlib compression

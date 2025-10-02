@@ -1,5 +1,5 @@
 Name: %{_cross_os}libcryptsetup
-Version: 2.7.5
+Version: 2.8.1
 Release: 1%{?dist}
 Summary: Libraries for disk encryption support
 License: GPL-2.0-or-later WITH cryptsetup-OpenSSL-exception AND LGPL-2.1-or-later WITH cryptsetup-OpenSSL-exception
@@ -91,7 +91,7 @@ autoreconf -fi
 %make_install
 
 %files
-%license COPYING COPYING.LGPL
+%license COPYING docs/licenses/COPYING.LGPL-2.1-or-later-WITH-cryptsetup-OpenSSL-exception
 %{_cross_attribution_file}
 %{_cross_libdir}/*.so.*
 %{_cross_tmpfilesdir}/cryptsetup.conf

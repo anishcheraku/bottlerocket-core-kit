@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://ftp.gnu.org/gnu/readline"
 
 [[package.metadata.build-package.external-files]]
-url = "https://ftp.gnu.org/gnu/readline/readline-8.2.13.tar.gz"
-sha512 = "53476c88fedcc8831bc4926c32943700dc6e99b1aa17b68fb1e59d885c609db9e335314428f98d962e4f06a1ef5433e763ec1b6fa41ee5580c05ec5380ba563a"
+url = "https://ftp.gnu.org/gnu/readline/readline-8.3.tar.gz"
+sha512 = "513002753dcf5db9213dbbb61d51217245f6a40d33b1dd45238e8062dfa8eef0c890b87a5548e11db959e842724fb572c4d3d7fb433773762a63c30efe808344"
 
 [[package.metadata.build-package.external-files]]
-url = "https://ftp.gnu.org/gnu/readline/readline-8.2.13.tar.gz.sig"
-sha512 = "e2ee2ebc0c24620b9e69123487670a7576342442525e5c6996943e80053d51cabf9aca8583bc8bfcdd2bf81deefdea67ceae872c598e27babf50408b26451040"
+url = "https://ftp.gnu.org/gnu/readline/readline-8.3.tar.gz.sig"
+sha512 = "8f9d4adeb068016e61f76052fb38552db447fc461c7d48811d8af5f0436abce20277e08c475a1c48c99fa37f2b20ca549a94eb5cee0fe6f0d4c854699cc0988c"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
