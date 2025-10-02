@@ -1,5 +1,5 @@
 Name: %{_cross_os}libnftnl
-Version: 1.2.9
+Version: 1.3.0
 Release: 1%{?dist}
 Epoch: 1
 Summary: Library for nftables netlink
