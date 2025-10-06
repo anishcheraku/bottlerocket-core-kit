@@ -18,6 +18,7 @@ Patch0001: 0001-use-shared-libtirpc.patch
 Patch0002: 0002-use-prefix-from-environment.patch
 Patch0003: 0003-keep-debug-symbols.patch
 Patch0004: 0004-makefile-avoid-ldconfig-when-cross-compiling.patch
+Patch0005: 0005-Add-clock_gettime-to-allowed-syscalls.patch
 
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libelf-devel
