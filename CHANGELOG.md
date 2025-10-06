@@ -1,3 +1,11 @@
+# v10.7.1 (2025-10-06)
+
+### Third Party Package Updates
+
+- Add a patch for `libnvidia-container` to support glibc ([#687])
+
+[#687]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/687
+
 # v10.7.0 (2025-10-02)
 
 ## OS Changes
