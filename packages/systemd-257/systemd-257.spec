@@ -439,14 +439,13 @@ install -p -m 0644 %{S:2} %{buildroot}%{_cross_bootconfigdir}/21-cgroup-enable-l
 %{_cross_libdir}/systemd/systemd-sysctl
 %{_cross_libdir}/systemd/systemd-sysroot-fstab-check
 %{_cross_libdir}/systemd/systemd-udevd
-%{_cross_libdir}/systemd/system-generators/systemd-tpm2-generator
 
 %exclude %{_cross_libdir}/systemd/profile.d/70-systemd-shell-extra.sh
 %exclude %{_cross_libdir}/systemd/repart/*
-%exclude %{_cross_libdir}/systemd/system-generators/systemd-ssh-generator
-%exclude %{_cross_libdir}/systemd/system-generators/systemd-gpt-auto-generator
 %exclude %{_cross_libdir}/systemd/systemd-battery-check
 %exclude %{_cross_libdir}/systemd/systemd-ssh-proxy
+%exclude %{_cross_systemdgeneratordir}/systemd-ssh-generator
+%exclude %{_cross_systemdgeneratordir}/systemd-gpt-auto-generator
 
 %dir %{_cross_libdir}/systemd/system-preset
 %{_cross_libdir}/systemd/system-preset/90-systemd.preset
@@ -787,6 +786,7 @@ install -p -m 0644 %{S:2} %{buildroot}%{_cross_bootconfigdir}/21-cgroup-enable-l
 %dir %{_cross_systemdgeneratordir}
 %{_cross_systemdgeneratordir}/systemd-fstab-generator
 %{_cross_systemdgeneratordir}/systemd-run-generator
+%{_cross_systemdgeneratordir}/systemd-tpm2-generator
 
 %exclude %{_cross_datadir}/polkit-1
 %exclude %{_cross_docdir}
