@@ -201,8 +201,11 @@ async fn run() -> Result<()> {
     // SimpleLogger will send errors to stderr and anything less to stdout.
     SimpleLogger::init(args.log_level, LogConfig::default()).context(error::LoggerSnafu)?;
 
-    info!("Checking pending settings.");
-    check_pending_settings(&args.socket_path, &args.transaction).await;
+    if args.log_level >= LevelFilter::Debug {
+        // We log the pending settings at Debug, so only fetch them if they won't be filtered.
+        info!("Checking pending settings.");
+        check_pending_settings(&args.socket_path, &args.transaction).await;
+    }
 
     info!("Committing settings.");
     commit_pending_settings(&args.socket_path, &args.transaction).await?;
