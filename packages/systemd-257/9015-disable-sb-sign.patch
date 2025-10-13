@@ -1,0 +1,47 @@
+From b6338d1be8abd778ca7f23b3b1f620efa15bd545 Mon Sep 17 00:00:00 2001
+From: Vighnesh Maheshwari <vighmah@amazon.com>
+Date: Wed, 2 Jul 2025 17:17:41 +0000
+Subject: [PATCH] Disable systemd-sbsign
+
+Signed-off-by: Vighnesh Maheshwari <vighmah@amazon.com>
+---
+ meson.build            | 1 +
+ meson_options.txt      | 3 +++
+ src/sbsign/meson.build | 1 +
+ 3 files changed, 5 insertions(+)
+
+diff --git a/meson.build b/meson.build
+index 7ede6f7a96..156be96348 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1707,6 +1707,7 @@ foreach term : ['analyze',
+                 'randomseed',
+                 'resolve',
+                 'rfkill',
++                'sbsign',
+                 'smack',
+                 'sysext',
+                 'sysusers',
+diff --git a/meson_options.txt b/meson_options.txt
+index aedc37413d..7a649cc1ba 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -551,3 +551,6 @@ option('vmlinux-h-path', type : 'string', value : '',
+ 
+ option('default-mountfsd-trusted-directories', type : 'boolean', value: false,
+        description : 'controls whether mountfsd should apply a relaxed policy on DDIs in system DDI directories')
++
++option('sbsign', type : 'boolean', value: false,
++       description : 'controls whether systemd-sbsign is built')
+diff --git a/src/sbsign/meson.build b/src/sbsign/meson.build
+index b6e0dbcde9..261bc4ec42 100644
+--- a/src/sbsign/meson.build
++++ b/src/sbsign/meson.build
+@@ -5,6 +5,7 @@ executables += [
+                 'name' : 'systemd-sbsign',
+                 'conditions' : [
+                         'HAVE_OPENSSL',
++                        'ENABLE_SBSIGN',
+                 ],
+                 'sources' : files('sbsign.c'),
+                 'dependencies' : libopenssl,

@@ -67,6 +67,10 @@ Patch9013: 9013-fix-openssl-aws-lc-divergence-in-data-types.patch
 # Remove unsupported NID_sm2 cipher
 Patch9014: 9014-remove-NID_sm2.patch
 
+# Disable sb-sign since that has a dependency on PKCS7 which is not provided
+# by aws-lc
+Patch9015: 9015-disable-sb-sign.patch
+
 BuildRequires: gperf
 BuildRequires: intltool
 BuildRequires: meson
