@@ -1,0 +1,22 @@
+From 84cb90f65888d27dadd215c682f990a5f82094c2 Mon Sep 17 00:00:00 2001
+From: Vighnesh Maheshwari <vighmah@amazon.com>
+Date: Mon, 16 Jun 2025 22:31:17 +0000
+Subject: [PATCH] remove NID_sm2 support
+
+Signed-off-by: Vighnesh Maheshwari <vighmah@amazon.com>
+---
+ src/shared/tpm2-util.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git i/src/shared/tpm2-util.c w/src/shared/tpm2-util.c
+index 15dd98f0ab..b2d55a95c3 100644
+--- i/src/shared/tpm2-util.c
++++ w/src/shared/tpm2-util.c
+@@ -4358,7 +4358,6 @@ static const struct {
+         { TPM2_ECC_NIST_P256, NID_X9_62_prime256v1, },
+         { TPM2_ECC_NIST_P384, NID_secp384r1,        },
+         { TPM2_ECC_NIST_P521, NID_secp521r1,        },
+-        { TPM2_ECC_SM2_P256,  NID_sm2,              },
+ };
+
+ static int tpm2_ecc_curve_from_openssl_curve_id(int openssl_ecc_curve_id, TPM2_ECC_CURVE *ret) {

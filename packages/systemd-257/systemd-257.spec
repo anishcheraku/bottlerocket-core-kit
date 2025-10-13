@@ -64,6 +64,9 @@ Patch9012: 9012-openssl-util-build-without-ui.patch
 # Fix data type mismatch between aws-lc and openssl
 Patch9013: 9013-fix-openssl-aws-lc-divergence-in-data-types.patch
 
+# Remove unsupported NID_sm2 cipher
+Patch9014: 9014-remove-NID_sm2.patch
+
 BuildRequires: gperf
 BuildRequires: intltool
 BuildRequires: meson
