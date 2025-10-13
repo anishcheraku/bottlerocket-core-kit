@@ -1,0 +1,53 @@
+From cbd9ff7231882d22e79c69b333d5394bcdc144e8 Mon Sep 17 00:00:00 2001
+From: Vighnesh Maheshwari <vighmah@amazon.com>
+Date: Thu, 16 Oct 2025 10:00:47 -0700
+Subject: [PATCH] openssl-util: build without ui.h
+
+Remove some code that depends on openssl/ui.h which is not provided by
+aws-lc. This can probably be submitted upstream.
+
+Signed-off-by: Vighnesh Maheshwari <vighmah@amazon.com>
+---
+ src/shared/openssl-util.h | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/src/shared/openssl-util.h b/src/shared/openssl-util.h
+index e25a175a80..784e764058 100644
+--- a/src/shared/openssl-util.h
++++ b/src/shared/openssl-util.h
+@@ -41,6 +41,9 @@ int parse_openssl_key_source_argument(const char *argument, char **private_key_s
+ #  ifndef OPENSSL_NO_UI_CONSOLE
+ #    include <openssl/ui.h>
+ #  endif
++#  ifndef OPENSSL_HMAC_H
++#    include <openssl/hmac.h>
++#  endif
+ #  include <openssl/x509v3.h>
+ #  ifndef OPENSSL_VERSION_MAJOR
+ /* OPENSSL_VERSION_MAJOR macro was added in OpenSSL 3. Thus, if it doesn't exist,  we must be before OpenSSL 3. */
+@@ -151,7 +154,9 @@ int digest_and_sign(const EVP_MD *md, EVP_PKEY *privkey, const void *data, size_
+ typedef struct X509 X509;
+ typedef struct EVP_PKEY EVP_PKEY;
+ typedef struct EVP_MD EVP_MD;
++#  ifndef OPENSSL_NO_UI_CONSOLE
+ typedef struct UI_METHOD UI_METHOD;
++#  endif
+ typedef struct ASN1_TYPE ASN1_TYPE;
+ typedef struct ASN1_STRING ASN1_STRING;
+
+@@ -182,10 +187,16 @@ DEFINE_TRIVIAL_CLEANUP_FUNC_FULL(EVP_PKEY*, EVP_PKEY_free, NULL);
+ DEFINE_TRIVIAL_CLEANUP_FUNC_FULL(ASN1_TYPE*, ASN1_TYPE_free, NULL);
+ DEFINE_TRIVIAL_CLEANUP_FUNC_FULL(ASN1_STRING*, ASN1_STRING_free, NULL);
+
++#ifndef OPENSSL_NO_UI_CONSOLE
+ struct OpenSSLAskPasswordUI {
+         AskPasswordRequest request;
+         UI_METHOD *method;
+ };
++#else
++struct OpenSSLAskPasswordUI {
++        AskPasswordRequest request;
++};
++#endif /* OPENSSL_NO_UI_CONSOLE */
+
+ OpenSSLAskPasswordUI* openssl_ask_password_ui_free(OpenSSLAskPasswordUI *ui);

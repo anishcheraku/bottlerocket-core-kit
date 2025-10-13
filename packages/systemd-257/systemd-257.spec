@@ -57,6 +57,10 @@ Patch9010: 9010-meson-replace-openssl-dependency-with-libcrypto.patch
 # policy
 Patch9011: 9011-suppress-log-for-units-with-mode-0044.patch
 
+# Remove some code that depends on openssl/ui.h which is not provided by
+# aws-lc
+Patch9012: 9012-openssl-util-build-without-ui.patch
+
 BuildRequires: gperf
 BuildRequires: intltool
 BuildRequires: meson
