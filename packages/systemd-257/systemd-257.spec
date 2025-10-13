@@ -71,6 +71,10 @@ Patch9014: 9014-remove-NID_sm2.patch
 # by aws-lc
 Patch9015: 9015-disable-sb-sign.patch
 
+# Stub out install_secure_boot_auto_enroll since it depends on PKCS7. Instead
+# default to the EOPNOTSUPP condition with a debug log
+Patch9016: 9016-bootctl-disable-secure-boot-autoenroll.patch
+
 BuildRequires: gperf
 BuildRequires: intltool
 BuildRequires: meson

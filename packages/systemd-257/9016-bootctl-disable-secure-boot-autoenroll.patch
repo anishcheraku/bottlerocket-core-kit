@@ -1,0 +1,23 @@
+From ea520d8acb4dd0e07ddca292d1f502fe3373064c Mon Sep 17 00:00:00 2001
+From: Vighnesh Maheshwari <vighmah@amazon.com>
+Date: Wed, 8 Oct 2025 13:57:12 -0700
+Subject: [PATCH] bootctl: disable secure-boot autoenroll
+
+Signed-off-by: Vighnesh Maheshwari <vighmah@amazon.com>
+---
+ src/bootctl/bootctl-install.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/bootctl/bootctl-install.c b/src/bootctl/bootctl-install.c
+index c2b2faef3b..5960efd055 100644
+--- a/src/bootctl/bootctl-install.c
++++ b/src/bootctl/bootctl-install.c
+@@ -609,7 +609,7 @@ static int efi_timestamp(EFI_TIME *ret) {
+ #endif
+
+ static int install_secure_boot_auto_enroll(const char *esp, X509 *certificate, EVP_PKEY *private_key) {
+-#if HAVE_OPENSSL
++#if 0
+         int r;
+
+         _cleanup_free_ uint8_t *dercert = NULL;
