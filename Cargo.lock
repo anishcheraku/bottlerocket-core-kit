@@ -1038,8 +1038,11 @@ dependencies = [
  "libacl",
  "libattr",
  "libcap",
+ "libcrypto",
+ "libcryptsetup",
  "libseccomp",
  "libselinux",
+ "libtss2",
  "libxcrypt",
  "util-linux",
 ]

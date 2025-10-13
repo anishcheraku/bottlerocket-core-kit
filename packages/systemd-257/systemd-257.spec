@@ -87,10 +87,13 @@ BuildRequires: %{_cross_os}libacl-devel
 BuildRequires: %{_cross_os}libattr-devel
 BuildRequires: %{_cross_os}libblkid-devel
 BuildRequires: %{_cross_os}libcap-devel
+BuildRequires: %{_cross_os}libcrypto-devel
+BuildRequires: %{_cross_os}libcryptsetup-devel
 BuildRequires: %{_cross_os}libfdisk-devel
 BuildRequires: %{_cross_os}libmount-devel
 BuildRequires: %{_cross_os}libseccomp-devel
 BuildRequires: %{_cross_os}libselinux-devel
+BuildRequires: %{_cross_os}libtss2-devel
 BuildRequires: %{_cross_os}libuuid-devel
 BuildRequires: %{_cross_os}libxcrypt-devel
 
@@ -99,10 +102,13 @@ Requires: %{_cross_os}libacl
 Requires: %{_cross_os}libattr
 Requires: %{_cross_os}libblkid
 Requires: %{_cross_os}libcap
+Requires: %{_cross_os}libcrypto
+Requires: %{_cross_os}libcryptsetup
 Requires: %{_cross_os}libfdisk
 Requires: %{_cross_os}libmount
 Requires: %{_cross_os}libseccomp
 Requires: %{_cross_os}libselinux
+Requires: %{_cross_os}libtss2
 Requires: %{_cross_os}libuuid
 Requires: %{_cross_os}libxcrypt
 
@@ -305,11 +311,13 @@ CONFIGURE_OPTS=(
  -Dstoragetm=false
  -Dukify=disabled
 
- -Dlibcryptsetup=disabled
- -Dlibcryptsetup-plugins=disabled
- -Dopenssl=disabled
- -Dtpm2=disabled
- -Dtpm=false
+ -Dlibcryptsetup=enabled
+ -Dlibcryptsetup-plugins=enabled
+ -Dopenssl=enabled
+ -Dtpm2=enabled
+ -Dtpm=true
+ -Dsbsign=false
+ -Dopensslui=disabled
 )
 
 %cross_meson "${CONFIGURE_OPTS[@]}"
@@ -598,6 +606,8 @@ install -p -m 0644 %{S:2} %{buildroot}%{_cross_bootconfigdir}/21-cgroup-enable-l
 # Exclude remote filesystem targets.
 %exclude %{_cross_unitdir}/remote-fs-pre.target
 %exclude %{_cross_unitdir}/remote-fs.target
+%exclude %{_cross_unitdir}/remote-cryptsetup.target
+%exclude %{_cross_unitdir}/remote-veritysetup.target
 
 # Exclude user-related functionality.
 %exclude %{_cross_unitdir}/user-runtime-dir@.service
@@ -611,6 +621,7 @@ install -p -m 0644 %{S:2} %{buildroot}%{_cross_bootconfigdir}/21-cgroup-enable-l
 %exclude %{_cross_libdir}/systemd/user-preset/90-systemd.preset
 
 # Exclude units related to the initrd.
+%exclude %{_cross_unitdir}/initrd-root-device.target.wants
 %exclude %{_cross_unitdir}/initrd-root-fs.target.wants
 
 # Exclude repart service since we have custom repart logic.
@@ -632,6 +643,21 @@ install -p -m 0644 %{S:2} %{buildroot}%{_cross_bootconfigdir}/21-cgroup-enable-l
 %exclude %{_cross_unitdir}/system-update-pre.target
 %exclude %{_cross_unitdir}/system-update.target
 %exclude %{_cross_unitdir}/systemd-update-done.service
+
+# Exclude functionality related to pcrextend
+%exclude %{_cross_libdir}/pcrlock.d/350-action-efi-application.pcrlock
+%exclude %{_cross_libdir}/pcrlock.d/400-secureboot-separator.pcrlock.d/300-0x00000000.pcrlock
+%exclude %{_cross_libdir}/pcrlock.d/400-secureboot-separator.pcrlock.d/600-0xffffffff.pcrlock
+%exclude %{_cross_libdir}/pcrlock.d/500-separator.pcrlock.d/300-0x00000000.pcrlock
+%exclude %{_cross_libdir}/pcrlock.d/500-separator.pcrlock.d/600-0xffffffff.pcrlock
+%exclude %{_cross_libdir}/pcrlock.d/700-action-efi-exit-boot-services.pcrlock.d/300-present.pcrlock
+%exclude %{_cross_libdir}/pcrlock.d/700-action-efi-exit-boot-services.pcrlock.d/600-absent.pcrlock
+%exclude %{_cross_libdir}/pcrlock.d/750-enter-initrd.pcrlock
+%exclude %{_cross_libdir}/pcrlock.d/800-leave-initrd.pcrlock
+%exclude %{_cross_libdir}/pcrlock.d/850-sysinit.pcrlock
+%exclude %{_cross_libdir}/pcrlock.d/900-ready.pcrlock
+%exclude %{_cross_libdir}/pcrlock.d/950-shutdown.pcrlock
+%exclude %{_cross_libdir}/pcrlock.d/990-final.pcrlock
 
 %dir %{_cross_libdir}/udev
 %{_cross_libdir}/udev/ata_id
@@ -806,3 +832,28 @@ install -p -m 0644 %{S:2} %{buildroot}%{_cross_bootconfigdir}/21-cgroup-enable-l
 %{_cross_datadir}/dbus-1/system.d/org.freedesktop.resolve1.conf
 %exclude %{_cross_bindir}/systemd-resolve
 %exclude %{_cross_sbindir}/resolvconf
+
+%files cryptsetup
+%{_cross_bindir}/systemd-cryptenroll
+%{_cross_bindir}/systemd-cryptsetup
+%{_cross_libdir}/cryptsetup/libcryptsetup-token-systemd-tpm2.so
+%{_cross_libdir}/systemd/systemd-cryptsetup
+%{_cross_libdir}/systemd/systemd-integritysetup
+%{_cross_libdir}/systemd/systemd-keyutil
+%{_cross_libdir}/systemd/systemd-measure
+%{_cross_libdir}/systemd/systemd-pcrlock
+%{_cross_libdir}/systemd/systemd-veritysetup
+%{_cross_systemdgeneratordir}/systemd-cryptsetup-generator
+%{_cross_systemdgeneratordir}/systemd-integritysetup-generator
+%{_cross_systemdgeneratordir}/systemd-veritysetup-generator
+%{_cross_unitdir}/cryptsetup.target
+%{_cross_unitdir}/cryptsetup-pre.target
+%{_cross_unitdir}/integritysetup.target
+%{_cross_unitdir}/integritysetup-pre.target
+%{_cross_unitdir}/veritysetup.target
+%{_cross_unitdir}/veritysetup-pre.target
+%{_cross_unitdir}/*cryptsetup.slice
+%{_cross_unitdir}/sysinit.target.wants/cryptsetup.target
+%{_cross_unitdir}/sysinit.target.wants/integritysetup.target
+%{_cross_unitdir}/sysinit.target.wants/veritysetup.target
+%{_cross_unitdir}/system-systemd\x2dveritysetup.slice

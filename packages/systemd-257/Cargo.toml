@@ -21,7 +21,10 @@ kmod = { path = "../kmod" }
 libacl = { path = "../libacl" }
 libattr = { path = "../libattr" }
 libcap = { path = "../libcap" }
+libcrypto = { path = "../libcrypto" }
+libcryptsetup = { path = "../libcryptsetup" }
 libseccomp = { path = "../libseccomp" }
 libselinux = { path = "../libselinux" }
+libtss2 = { path = "../libtss2" }
 libxcrypt = { path = "../libxcrypt" }
 util-linux = { path = "../util-linux" }
