@@ -28,6 +28,10 @@ Patch1009: 1009-Adding-detection-of-out-of-bound-pre-bound-memory-re.patch
 Patch1010: 1010-Avoid-mixing-SSE-and-AVX-in-XTS-mode-AVX512-implemen.patch
 Patch1011: 1011-Update-BoringSSL-benchmark-to-use-C-17-2063.patch
 Patch1012: 1012-FIPS-Cherry-pick-Support-allowing-specific-unknown-c.patch
+Patch1013: 1013-cherry-pick-Add-back-X509_STORE_get_verify_cb-and-X5.patch
+Patch1014: 1014-Cherry-pick-TLS-transfer-serialization-changes-to-FI.patch
+Patch1015: 1015-cherry-pick-for-2024-fips-Fix-RSAZABI-test-and-enabl.patch
+Patch1016: 1016-FIPS-2024-CHERRY_PICK-Offer-P521-for-signature_algor.patch
 
 BuildRequires: %{_cross_os}glibc-devel
 Requires: %{_cross_os}glibc
@@ -68,7 +72,7 @@ Requires: %{_cross_os}libssl-devel
 %{summary}.
 
 %prep
-%autosetup -n aws-lc-AWS-LC-FIPS-%{version} -p1
+%autosetup -S git -n aws-lc-AWS-LC-FIPS-%{version} -p1
 
 %build
 %cross_cmake \
