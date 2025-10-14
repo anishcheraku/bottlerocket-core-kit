@@ -1,10 +1,13 @@
-From 096dad878552ea342ddad9f3132453fd7cc4e08b Mon Sep 17 00:00:00 2001
+From fe944258e663e182404f2fa2d6bbefc36a97854b Mon Sep 17 00:00:00 2001
 From: Kush Upadhyay <kushupad@amazon.com>
-Date: Mon, 7 Oct 2024 09:13:38 +0000
+Date: Tue, 7 Oct 2025 11:39:00 +0000
 Subject: [PATCH] agent: Add config to make shell optional
 
 Signed-off-by: Kush Upadhyay <kushupad@amazon.com>
+[Update to 3.3.2746.0]
 Signed-off-by: Yutong Sun <yutongsu@amazon.com>
+[Update to 3.3.3185.0]
+Signed-off-by: Kush Upadhyay <kushupad@amazon.com>
 ---
  agent/appconfig/appconfig.go         |  1 +
  agent/appconfig/contracts.go         |  2 ++
@@ -12,7 +15,7 @@ Signed-off-by: Yutong Sun <yutongsu@amazon.com>
  3 files changed, 28 insertions(+), 11 deletions(-)
 
 diff --git a/agent/appconfig/appconfig.go b/agent/appconfig/appconfig.go
-index 6b278f50..2013cf92 100644
+index e848450..3a90745 100644
 --- a/agent/appconfig/appconfig.go
 +++ b/agent/appconfig/appconfig.go
 @@ -120,6 +120,7 @@ func DefaultConfig() SsmagentConfig {
@@ -20,11 +23,11 @@ index 6b278f50..2013cf92 100644
  		OrchestrationDirectoryCleanup:         DefaultOrchestrationDirCleanup,
  		SessionHandshakeTimeoutSeconds:        DefaultSessionHandshakeTimeoutSeconds,
 +		UseShell:                              false,
+ 		CredentialRetryMaxSleepSeconds:        DefaultCredentialRetryMaxSleepSeconds,
  	}
  	agent := AgentInfo{
- 		Name:                                    "amazon-ssm-agent",
 diff --git a/agent/appconfig/contracts.go b/agent/appconfig/contracts.go
-index 69501310..bf42380f 100644
+index 7142151..997406a 100644
 --- a/agent/appconfig/contracts.go
 +++ b/agent/appconfig/contracts.go
 @@ -55,6 +55,8 @@ type SsmCfg struct {
@@ -33,11 +36,11 @@ index 69501310..bf42380f 100644
  	OrchestrationDirectoryCleanup string
 +	// Flag for shell dependency
 +	UseShell bool
+ 	// Max sleep duration in seconds for credential retry before attempting to refresh credentials on failure
+ 	CredentialRetryMaxSleepSeconds int
  }
- 
- // AgentInfo represents metadata for amazon-ssm-agent
 diff --git a/agent/plugins/runscript/runscript.go b/agent/plugins/runscript/runscript.go
-index c89bf92a..b56e973a 100644
+index c89bf92..b56e973 100644
 --- a/agent/plugins/runscript/runscript.go
 +++ b/agent/plugins/runscript/runscript.go
 @@ -177,23 +177,37 @@ func (p *Plugin) runCommands(pluginID string, pluginInput RunScriptPluginInput,
@@ -89,6 +92,3 @@ index c89bf92a..b56e973a 100644
  	// Execute Command
  	exitCode, err := p.CommandExecuter.NewExecute(p.Context, workingDir, output.GetStdoutWriter(), output.GetStderrWriter(), cancelFlag, executionTimeout, commandName, commandArguments, pluginInput.Environment)
  
--- 
-2.47.0
-
