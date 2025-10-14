@@ -1,0 +1,19 @@
+[[default.rules]]
+send_destination = "org.freedesktop.network1"
+allow = true
+
+[[default.rules]]
+receive_sender = "org.freedesktop.network1"
+allow = true
+
+[[user.systemd-network.rules]]
+own = "org.freedesktop.network1"
+allow = true
+
+[[user.systemd-network.rules]]
+send_destination = "org.freedesktop.network1"
+allow = true
+
+[[user.systemd-network.rules]]
+receive_sender = "org.freedesktop.network1"
+allow = true
