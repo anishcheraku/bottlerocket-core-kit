@@ -26,7 +26,6 @@ supplementing any missing settings with DNS settings from the primary interface'
 is meant to be used as a restart command for DNS API settings.
 */
 
-#[macro_use]
 extern crate serde_plain;
 
 mod addressing;

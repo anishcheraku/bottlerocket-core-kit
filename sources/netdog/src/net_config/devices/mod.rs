@@ -42,15 +42,6 @@ impl Validate for NetworkDeviceV1 {
     }
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(untagged)]
-pub(crate) enum DeviceType {
-    #[serde(rename = "bond")]
-    Bond,
-    #[serde(rename = "vlan")]
-    Vlan,
-}
-
 pub(crate) trait HasIpAddressing {
     fn has_static(&self) -> bool;
 
