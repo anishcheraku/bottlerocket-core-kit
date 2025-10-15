@@ -430,7 +430,7 @@ impl WriteToChild {
             messages_written += 1;
             // Every so often, send a capacity update to the client so it knows what we've written
             // and how many messages we're willing to accept.
-            if messages_written % CAPACITY_UPDATE_INTERVAL == 0 {
+            if messages_written.is_multiple_of(CAPACITY_UPDATE_INTERVAL) {
                 let capacity = Capacity {
                     max_messages_outstanding: MAX_MESSAGES_OUTSTANDING,
                     messages_written,
