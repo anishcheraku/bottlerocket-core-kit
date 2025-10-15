@@ -66,6 +66,18 @@ pub(super) enum Error {
         requested: String,
         preferred: String,
     },
+    #[snafu(display("{driver} is not a supported driver"))]
+    UnsupportedDriver { driver: String },
+    #[snafu(display("{flavor} is not a supported choice for {driver}"))]
+    UnsupportedDriverFlavor { driver: String, flavor: String },
+    #[snafu(display("Failed to check if this is an inf1 instance: {}", source))]
+    CheckInf1Failure { source: pciclient::PciClientError },
+    #[snafu(display("Failed to check if this is an inf2+ instance: {}", source))]
+    CheckInf2Failure { source: pciclient::PciClientError },
+    #[snafu(display("Did not detect inf1 hardware"))]
+    NoInf1Present,
+    #[snafu(display("Did not detect inf2+ hardware"))]
+    NoInf2Present,
 }
 
 pub(crate) type Result<T> = std::result::Result<T, Error>;

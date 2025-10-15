@@ -7,7 +7,10 @@ pciclient provides util functions that can:
 */
 mod private;
 
-use private::{call_list_devices, check_efa_attachment, check_neuron_attachment, PciClient};
+use private::{
+    call_list_devices, check_efa_attachment, check_inf1_attachment, check_inf2_attachment,
+    check_neuron_attachment, PciClient,
+};
 
 use bon::Builder;
 use derive_getters::Getters;
@@ -120,6 +123,16 @@ pub fn is_neuron_attached() -> Result<bool> {
     check_neuron_attachment(PciClient {})
 }
 
+/// Call `lspci` and check if there are inf1 devices attached
+pub fn is_inf1_instance() -> Result<bool> {
+    check_inf1_attachment(PciClient {})
+}
+
+/// Call `lspci` and check if there are inf2 or later devices attached
+pub fn is_inf2_instance() -> Result<bool> {
+    check_inf2_attachment(PciClient {})
+}
+
 mod error {
     use snafu::Snafu;
 
@@ -147,4 +160,5 @@ mod error {
 }
 
 pub use error::PciClientError;
+
 pub type Result<T> = std::result::Result<T, PciClientError>;
