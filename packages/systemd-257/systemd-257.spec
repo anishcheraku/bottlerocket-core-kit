@@ -75,6 +75,9 @@ Patch9015: 9015-disable-sb-sign.patch
 # default to the EOPNOTSUPP condition with a debug log
 Patch9016: 9016-bootctl-disable-secure-boot-autoenroll.patch
 
+# Patch meson to set OPENSSL_NO_UI_CONSOLE CFLAGS for the build
+Patch9017: 9017-meson-set-DOPENSSL_NO_UI_CONSOLE-when-using-openssl.patch
+
 BuildRequires: gperf
 BuildRequires: intltool
 BuildRequires: meson
