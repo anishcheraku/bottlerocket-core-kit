@@ -65,6 +65,9 @@ skip-tree = [
     # breaking changes which will need to be explored for our first party code
     # https://rust-random.github.io/book/update-0.9.html
     { name = "rand", version = "=0.8" },
+    # zbus introduces newer versions of crates that are either
+    # incompatible or way ahead from the versions used in other crates
+    { name = "zbus", version = "=5.11" }
 ]
 
 [bans.workspace-dependencies]

@@ -1,0 +1,26 @@
+[package]
+name = "whippet"
+version = "0.1.0"
+license = "(Apache-2.0 OR MIT) AND Apache-2.0"
+edition = "2021"
+publish = false
+build = "build.rs"
+# Don't rebuild crate just because of changes to README.
+exclude = ["README.md"]
+
+[dependencies]
+argh = { workspace = true }
+indexmap = { workspace = true, features = ["serde"]}
+log = { workspace = true }
+nix = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_repr = { workspace = true }
+simplelog = { workspace = true }
+snafu = { workspace = true }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "process", "signal"] }
+toml = { workspace = true }
+zbus = { workspace = true, features = ["p2p", "tokio"] }
+zvariant = { workspace = true }
+
+[build-dependencies]
+generate-readme.workspace = true

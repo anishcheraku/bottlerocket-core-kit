@@ -1,0 +1,10 @@
+[user.alice]
+rules = [
+    { allow = true, send_interface = "org.example.First" }
+]
+
+[default]
+rules = [
+    { allow = true, own = "org.example.First" }
+]
+
