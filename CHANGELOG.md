@@ -1,3 +1,30 @@
+# v10.8.0 (2025-10-15)
+
+## OS Changes
+* Provide command to detect first and third-party accelerated hardware ([#644])
+* Provide `whippet` as an alternative `dbus-launcher` ([#661], [#678])
+* Make `dbus-broker` require `dbus-launcher` capability ([#677])
+* Provide `dbus-broker-launcher` as a separate package ([#677])
+* Allow multiple sequential calls of `apiclient ephemeral-storage bind` ([#679])
+* Log pending settings only for `debug` or higher log levels ([#690]) - Thanks @fletcherw
+
+## Build Changes
+* Update `bottlerocket-sdk` from 0.64.0 to 0.65.0 ([#684])
+* Fix clippy warnings for Rust 1.90.0 ([#684])
+
+### Third Party Package Updates
+
+- Update `aws-iam-authenticator`, `aws-ssm-agent` ([#684], [#688])
+
+[#644]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/644
+[#661]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/661
+[#677]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/677
+[#678]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/678
+[#679]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/679
+[#684]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/684
+[#688]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/688
+[#690]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/690
+
 # v10.7.1 (2025-10-06)
 
 ### Third Party Package Updates
