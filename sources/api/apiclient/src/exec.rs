@@ -493,7 +493,7 @@ impl ReadFromUser {
 
             // Occasionally log that we're still waiting, if someone is watching at trace level.
             waited += 1;
-            if waited % 100 == 0 {
+            if waited.is_multiple_of(100) {
                 trace!("Waiting for server capacity...");
             }
             sleep(Duration::from_millis(10));

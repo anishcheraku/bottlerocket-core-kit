@@ -521,7 +521,7 @@ impl Checker for K8S04020900Checker {
 }
 
 // =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
-
+#[allow(dead_code)]
 pub struct K8S04021000Checker {}
 
 // Not actually applicable for Bottlerocket, but leaving logic here in case we

@@ -14,7 +14,7 @@ use crate::{
 pub(crate) use generate_hostname::GenerateHostnameArgs;
 pub(crate) use generate_net_config::GenerateNetConfigArgs;
 pub(crate) use node_ip::NodeIpArgs;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 pub(crate) use set_hostname::SetHostnameArgs;
 use snafu::{ensure, OptionExt, ResultExt};
 use std::fmt::Write;
@@ -24,24 +24,6 @@ use std::process::Command;
 use std::{fs, io};
 pub(crate) use write_network_status::WriteNetworkStatusArgs;
 pub(crate) use write_resolv_conf::WriteResolvConfArgs;
-
-#[derive(Debug, PartialEq, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-enum InterfaceType {
-    Dhcp,
-    Static,
-}
-
-#[derive(Debug, PartialEq, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-enum InterfaceFamily {
-    Ipv4,
-    Ipv6,
-}
-
-// Implement `from_str()` so argh can attempt to deserialize args into their proper types
-derive_fromstr_from_deserialize!(InterfaceType);
-derive_fromstr_from_deserialize!(InterfaceFamily);
 
 /// Helper function that serializes the input to JSON and prints it
 fn print_json<S>(val: S) -> Result<()>

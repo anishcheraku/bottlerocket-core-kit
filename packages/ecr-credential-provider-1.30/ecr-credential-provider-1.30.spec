@@ -54,8 +54,6 @@ Conflicts: (%{_cross_os}image-feature(no-fips) or %{name}-bin)
 %build
 %set_cross_go_flags
 
-export GO_MAJOR="1.23"
-
 go build -ldflags="${GOLDFLAGS}" -o=ecr-credential-provider cmd/ecr-credential-provider/*.go
 gofips build -ldflags="${GOLDFLAGS}" -o=fips/ecr-credential-provider cmd/ecr-credential-provider/*.go
 
