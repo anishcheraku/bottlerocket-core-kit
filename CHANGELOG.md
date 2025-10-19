@@ -1,3 +1,14 @@
+# v10.9.0 (2025-11-05)
+
+## OS Changes
+* Update runc to v1.2.7 and include CVE patches ([#6813a59b], [#6e3d3e2e], [#f330515a])
+* containerd-2.1: fix image pull error when range-get request is ignored ([#702])
+
+[#6813a59b]: https://github.com/bottlerocket-os/bottlerocket-core-kit/commit/6813a59bb4b681239f991217e835e43836242b32
+[#6e3d3e2e]: https://github.com/bottlerocket-os/bottlerocket-core-kit/commit/6e3d3e2e563ec556b9fc51eb495a180b69bcf43b
+[#f330515a]: https://github.com/bottlerocket-os/bottlerocket-core-kit/commit/f330515aacc658abdcd4c86b07b6e3ae22de8d13
+[#702]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/702
+
 # v10.8.1 (2025-10-22)
 
 ## Build Changes
