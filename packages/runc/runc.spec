@@ -1,8 +1,8 @@
 %global goproject github.com/opencontainers
 %global gorepo runc
 %global goimport %{goproject}/%{gorepo}
-%global commit 2c9f5602f0ba3d9da1c2596322dfc4e156844890
-%global gover 1.2.6
+%global commit 4774df387790afbddcd2fd905d70ecb8aec9c341
+%global gover 1.2.7
 
 %global _dwz_low_mem_die_limit 0
 
@@ -48,7 +48,7 @@ Conflicts: (%{_cross_os}image-feature(no-fips) or %{name}-bin)
 %{summary}.
 
 %prep
-%{gpgverify} --data=%{S:0} --signature=%{S:1} --keyring=%{S:3}
+%{gpgverify} --data=%{S:0} --signature=%{S:1} --keyring=%{S:2}
 %autosetup -Sgit -n %{gorepo}-%{gover} -p1
 %cross_go_setup %{gorepo}-%{gover} %{goproject} %{goimport}
 
