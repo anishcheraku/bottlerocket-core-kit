@@ -21,6 +21,10 @@ url = "https://github.com/opencontainers/runc/releases/download/v1.2.7/runc.tar.
 path = "runc-v1.2.7.tar.xz.asc"
 sha512 = "78b5fb2800906aa756d83fdfe4c8a04b558e86d4167b86c059c6375a9cb58bf0b044160608bd02f7b6cb1c767f2a0c0ab0b400b61c1ccbb7ada9af8204289a38"
 
+[[package.metadata.build-package.external-files]]
+url = "https://cache.bottlerocket.aws/v1.2.7-Additional-CVE-fixes.patch/3ab3340d3564fdbc42d33dc556ff9bc9232f00cb6ac110eec345691b85f5a192a722d739736aca5d832c3f64a543795e9bb41dc970678977752cb581de469e5c/v1.2.7-Additional-CVE-fixes.patch"
+sha512 = "3ab3340d3564fdbc42d33dc556ff9bc9232f00cb6ac110eec345691b85f5a192a722d739736aca5d832c3f64a543795e9bb41dc970678977752cb581de469e5c"
+
 [build-dependencies]
 glibc = { path = "../glibc" }
 libseccomp = { path = "../libseccomp" }
