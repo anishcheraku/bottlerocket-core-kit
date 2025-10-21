@@ -8,7 +8,7 @@ description = "A flaw was found in amazon-ssm-agent dependency golang.org/x/net 
 [[advisory.products]]
 package-name = "amazon-ssm-agent"
 patched-version = "3.3.2746.0"
-patched-epoch = "1"
+patched-epoch = "0"
 
 [updateinfo]
 author = "yutongsu"
