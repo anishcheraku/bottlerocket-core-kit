@@ -8,7 +8,7 @@ description = "A flaw was found in iputils where a specially crafted ICMP reply 
 [[advisory.products]]
 package-name = "iputils"
 patched-version = "20250605"
-patched-epoch = "1"
+patched-epoch = "0"
 
 [updateinfo]
 author = "vighmah"
