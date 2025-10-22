@@ -1,3 +1,10 @@
+# v10.8.1 (2025-10-22)
+
+## Build Changes
+* Update `bottlerocket-sdk` from 0.65.0 to 0.65.1 ([#698])
+
+[#698]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/698
+
 # v10.8.0 (2025-10-15)
 
 ## OS Changes
