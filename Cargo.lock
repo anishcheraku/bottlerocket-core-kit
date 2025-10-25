@@ -582,6 +582,7 @@ dependencies = [
  "glibc",
  "libaio",
  "libselinux",
+ "libudev",
  "util-linux",
 ]
 
