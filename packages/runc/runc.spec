@@ -22,6 +22,7 @@ Source3: gpgkey-C2428CD75720FACDCF76B6EA17DE5ECB75A1100E.asc
 
 # Patch for CVE fixes
 Source1001: v1.2.7-Additional-CVE-fixes.patch
+Source1002: 1002-openat2-increase-retry-count-to-128.patch
 
 BuildRequires: git
 BuildRequires: %{_cross_os}glibc-devel
@@ -57,6 +58,7 @@ Conflicts: (%{_cross_os}image-feature(no-fips) or %{name}-bin)
 
 # Apply additional runc patches directly
 patch -p1 < %{S:1001}
+patch -p1 < %{S:1002}
 
 %build
 %cross_go_configure %{goimport}
