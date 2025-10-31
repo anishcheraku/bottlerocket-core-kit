@@ -38,6 +38,7 @@ Source1000: clarify.toml
 
 # Patch to support moving from containerd-1.7 to 2.x
 Patch1001: 1001-Revert-Don-t-allow-io_uring-related-syscalls-in-the-.patch
+Patch1002: 1002-Ensure-errContentRangeIgnored-error-when-range-get-r.patch
 
 BuildRequires: git
 BuildRequires: %{_cross_os}glibc-devel
