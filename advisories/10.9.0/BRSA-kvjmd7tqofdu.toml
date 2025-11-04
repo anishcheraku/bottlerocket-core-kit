@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-kvjmd7tqofdu"
+title = "runc CVE-2025-52565"
+cve = "CVE-2025-52565"
+severity = "high"
+description = "When masking files, runc will bind-mount the container's /dev/console to /dev/pts/$n but a symlink at /dev/pts/$n could force runc to bind-mount the target."
+
+[[advisory.products]]
+package-name = "runc"
+patched-version = "1.2.7"
+patched-epoch = "1"
+
+[updateinfo]
+author = "yeazelm"
+issue-date = 2025-11-05T09:28:38Z
+arches = ["x86_64", "aarch64"]
+version = "10.9.0"

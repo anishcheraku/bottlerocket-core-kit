@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-fokfzmhxepqx"
+title = "runc CVE-2025-52881"
+cve = "CVE-2025-52881"
+severity = "high"
+description = "When applying LSM labels, a race condition could cause runc to write the process labels into a dummy tmpfs file which could result in applying incorrect LSM labels to the container process."
+
+[[advisory.products]]
+package-name = "runc"
+patched-version = "1.2.7"
+patched-epoch = "1"
+
+[updateinfo]
+author = "yeazelm"
+issue-date = 2025-11-05T09:28:38Z
+arches = ["x86_64", "aarch64"]
+version = "10.9.0"
