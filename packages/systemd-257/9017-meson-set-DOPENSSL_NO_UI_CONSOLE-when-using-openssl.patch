@@ -1,0 +1,39 @@
+From f602a8397813ee3a4c339b108f48bc146185a8be Mon Sep 17 00:00:00 2001
+From: Vighnesh Maheshwari <vighmah@amazon.com>
+Date: Wed, 15 Oct 2025 15:32:19 -0700
+Subject: [PATCH] meson: set DOPENSSL_NO_UI_CONSOLE when using openssl
+
+Signed-off-by: Vighnesh Maheshwari <vighmah@amazon.com>
+---
+ meson.build       | 4 ++++
+ meson_options.txt | 2 ++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/meson.build b/meson.build
+index 103febfd70..ae5cfc0428 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1389,6 +1389,10 @@ libopenssl = dependency('openssl',
+                         required : get_option('openssl'))
+ conf.set10('HAVE_OPENSSL', libopenssl.found())
+
++if get_option('opensslui').disabled()
++        userspace_c_args += '-DOPENSSL_NO_UI_CONSOLE=1'
++endif
++
+ libp11kit = dependency('p11-kit-1',
+                        version : '>= 0.23.3',
+                        required : get_option('p11kit'))
+diff --git a/meson_options.txt b/meson_options.txt
+index aedc37413d..7b17b0c990 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -439,6 +439,8 @@ option('gnutls', type : 'feature', deprecated : { 'true' : 'enabled', 'false' :
+        description : 'gnutls support')
+ option('openssl', type : 'feature', deprecated : { 'true' : 'enabled', 'false' : 'disabled' },
+        description : 'openssl support')
++option('opensslui', type : 'feature', value : 'disabled',
++       description : 'openssl ui support')
+ option('cryptolib', type : 'combo', choices : ['auto', 'openssl', 'gcrypt'],
+        description : 'whether to use openssl or gcrypt where both are supported')
+ option('p11kit', type : 'feature', deprecated : { 'true' : 'enabled', 'false' : 'disabled' },
