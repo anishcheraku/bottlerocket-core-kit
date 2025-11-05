@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-teob8iclrtit"
+title = "runc CVE-2025-31133"
+cve = "CVE-2025-31133"
+severity = "high"
+description = "When masking files, runc will bind-mount the container's /dev/null inode on top of the file which could be replaced with another procfs file."
+
+[[advisory.products]]
+package-name = "runc"
+patched-version = "1.2.7"
+patched-epoch = "1"
+
+[updateinfo]
+author = "yeazelm"
+issue-date = 2025-11-05T09:28:38Z
+arches = ["aarch64", "x86_64"]
+version = "10.9.0"
