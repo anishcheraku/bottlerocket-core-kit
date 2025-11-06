@@ -13,8 +13,8 @@ path = "../packages.rs"
 releases-url = "https://github.com/aws/amazon-ecs-agent/commits/master/amazon-vpc-cni-plugins"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/aws/amazon-vpc-cni-plugins/archive/be5214353252f8315a1341f4df9ffbd8cf69000c/amazon-vpc-cni-plugins.tar.gz"
-sha512 = "b1aa61d0000ff732dae67213cea2eac49363c048416716e27f36b2b43f6227db8b15ead27c43c5fd623569a49572cb6b2149c86d69363f75cec4620ddc9ef47b"
+url = "https://github.com/aws/amazon-vpc-cni-plugins/archive/a4e9ac076709c882a904afabc4c24c7700600f6b/amazon-vpc-cni-plugins.tar.gz"
+sha512 = "b2cc6db9462e9fb27eb2599cbc9eba7e9dae18b76af9137c99e69ee0f07dec72e2358740a3e0b873c7fe8ed004a2d47a48b4159769aaebc7641f0ec6aa00d613"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
