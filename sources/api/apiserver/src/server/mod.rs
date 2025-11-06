@@ -149,6 +149,10 @@ where
                         web::get().to(list_ephemeral_storage_disks),
                     )
                     .route(
+                        "/ephemeral-storage/list-ebs-volumes",
+                        web::get().to(list_ephemeral_ebs_volumes),
+                    )
+                    .route(
                         "/ephemeral-storage/list-dirs",
                         web::get().to(list_ephemeral_storage_dirs),
                     ),
@@ -726,8 +730,13 @@ async fn get_fips_report(query: web::Query<HashMap<String, String>>) -> Result<H
 
 /// Configure ephemeral storage (raid & format, or just format for single disk)
 async fn initialize_ephemeral_storage(cfg: web::Json<Init>) -> Result<HttpResponse> {
-    ephemeral_storage::initialize(cfg.0.filesystem, cfg.0.disks)
-        .context(error::EphemeralInitializeSnafu {})?;
+    ephemeral_storage::initialize(
+        cfg.0.filesystem,
+        cfg.0.disks,
+        cfg.0.ebs_volumes,
+        cfg.0.prefer,
+    )
+    .context(error::EphemeralInitializeSnafu {})?;
     Ok(HttpResponse::NoContent().finish()) // 204
 }
 /// Bind directories to ephemeral storage (mount array, bind, and unmount)
@@ -754,7 +763,23 @@ async fn list_ephemeral_storage_disks(
     list_ephemeral_response(req, query, disks, text_response).await
 }
 
-/// Lists the known ephemeral disks that can be configured.
+/// Lists the known ephemeral ebs volumes that can be configured.
+async fn list_ephemeral_ebs_volumes(
+    req: HttpRequest,
+    query: web::Query<HashMap<String, String>>,
+) -> Result<HttpResponse> {
+    let disks =
+        ephemeral_storage::ephemeral_ebs_volumes().context(error::EphemeralListDisksSnafu {})?;
+
+    let mut text_response = String::new();
+    for disk in &disks {
+        text_response.push_str(disk);
+        text_response.push('\n');
+    }
+    list_ephemeral_response(req, query, disks, text_response).await
+}
+
+/// Lists a variant-specific set of directories that can be bound to ephemeral storage.
 async fn list_ephemeral_storage_dirs(
     req: HttpRequest,
     query: web::Query<HashMap<String, String>>,

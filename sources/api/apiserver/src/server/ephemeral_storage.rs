@@ -1,6 +1,6 @@
 //! The 'ephemeral_storage' module supports configuring and using local instance storage.
 
-use model::ephemeral_storage::Filesystem;
+use model::ephemeral_storage::{Filesystem, Preference};
 
 use snafu::{ensure, ResultExt};
 use std::collections::HashSet;
@@ -22,6 +22,12 @@ static EPHEMERAL_MNT: &str = ".ephemeral";
 /// Name of the device and its path from the MD driver
 static RAID_DEVICE_DIR: &str = "/dev/md/";
 static RAID_DEVICE_NAME: &str = "ephemeral";
+/// Symlink to ephemeral storage array or disk
+static EPHEMERAL_STORAGE_LINK: &str = "/dev/disk/ephemeral-storage";
+/// Path to ephemeral devices (instance storage disks)
+static EPHEMERAL_PATH: &str = "/dev/disk/ephemeral";
+/// Path to ebs volumes marked for ephemeral storage use
+static EPHEMERAL_EBS_PATH: &str = "/dev/disk/ephemeral-ebs";
 
 pub struct BindDirs {
     pub allowed_exact: HashSet<&'static str>,
@@ -32,14 +38,25 @@ pub struct BindDirs {
 /// initialize prepares the ephemeral storage for formatting and formats it.  For multiple disks
 /// preparation is the creation of a RAID0 array, for a single disk this is a no-op. The array or disk
 /// is then formatted with the specified filesystem (default=xfs) if not formatted already.
-pub fn initialize(fs: Option<Filesystem>, disks: Option<Vec<String>>) -> Result<()> {
+pub fn initialize(
+    fs: Option<Filesystem>,
+    disks: Option<Vec<String>>,
+    ebs_volumes: Option<Vec<String>>,
+    prefer: Option<Vec<Preference>>,
+) -> Result<()> {
     let known_disks = ephemeral_devices()?;
     let known_disks_hash = HashSet::<_>::from_iter(known_disks.iter());
+    let known_ebs_volumes = ephemeral_ebs_volumes()?;
+    let known_ebs_volumes_hash = HashSet::<_>::from_iter(known_ebs_volumes.iter());
 
-    let disks = match disks {
-        Some(disks) => {
-            // we have disks provided, so match them against the list of valid disks
-            for disk in &disks {
+    let any_specified = disks.as_ref().is_some_and(|x| !x.is_empty())
+        || ebs_volumes.as_ref().is_some_and(|x| !x.is_empty());
+
+    let disks = if any_specified {
+        // use all specified ephemeral disks and ebs volumes, if they're all valid
+        let mut selected_disks = vec![];
+        if let Some(d) = disks {
+            for disk in &d {
                 ensure!(
                     known_disks_hash.contains(disk),
                     error::InvalidParameterSnafu {
@@ -48,26 +65,57 @@ pub fn initialize(fs: Option<Filesystem>, disks: Option<Vec<String>>) -> Result<
                     }
                 )
             }
-            disks
+            selected_disks.extend(d);
         }
-        None => {
-            // if there are no disks specified, and none are available we treat the init as a
-            // no-op to allow "ephemeral-storage init"/"ephemeral-storage bind" to work on instances
-            // with and without ephemeral storage
-            if known_disks.is_empty() {
-                info!("no ephemeral disks found, skipping ephemeral storage initialization");
-                return Ok(());
+
+        if let Some(e) = ebs_volumes {
+            for ebs_volume in &e {
+                ensure!(
+                    known_ebs_volumes_hash.contains(ebs_volume),
+                    error::InvalidParameterSnafu {
+                        parameter: "ebs_volumes",
+                        reason: format!("unknown ebs volume {ebs_volume:?}"),
+                    }
+                )
             }
-            // no disks specified, so use the default
-            known_disks
+            selected_disks.extend(e);
         }
+        selected_disks
+    } else {
+        // if there are no specified disks, use preference list to find a non-empty set of disks
+        let preferences = prefer.unwrap_or_else(|| {
+            vec![Preference {
+                ephemeral_disk: true,
+                ebs_volume: false,
+            }]
+        });
+
+        let mut disks = vec![];
+        for preference in preferences {
+            if preference.ephemeral_disk {
+                disks.extend(&known_disks);
+            }
+            if preference.ebs_volume {
+                disks.extend(&known_ebs_volumes);
+            }
+            if !disks.is_empty() {
+                break;
+            }
+        }
+        if disks.is_empty() {
+            // no disks were specified and none of the preferences produced any disks
+            // this is special-cased as a no-op
+            info!("no ephemeral disks found, skipping ephemeral storage initialization");
+            return Ok(());
+        }
+        disks.into_iter().cloned().collect()
     };
 
     ensure!(
         !disks.is_empty(),
         error::InvalidParameterSnafu {
             parameter: "disks",
-            reason: "no local ephemeral disks specified",
+            reason: "no valid local ephemeral disks or ebs volumes specified",
         }
     );
 
@@ -95,22 +143,26 @@ pub fn initialize(fs: Option<Filesystem>, disks: Option<Vec<String>>) -> Result<
         info!("{device_name:?} is already formatted as {fs}, skipping format");
     }
 
+    // Clear previous link if it exists
+    if std::fs::exists(EPHEMERAL_STORAGE_LINK).is_ok_and(|x| x) {
+        std::fs::remove_file(EPHEMERAL_STORAGE_LINK).context(error::DiskUnlinkFailureSnafu {})?;
+    }
+
+    // Create link to formatted device for use in `bind`
+    std::os::unix::fs::symlink(&device_name, EPHEMERAL_STORAGE_LINK)
+        .context(error::DiskSymlinkFailureSnafu {})?;
+
     Ok(())
 }
 
 /// binds the specified directories to the pre-configured array, creating those directories if
 /// they do not exist.
 pub fn bind(variant: &str, dirs: Vec<String>) -> Result<()> {
-    let device_name = match ephemeral_devices()?.len() {
-        // handle the no local instance storage case
-        0 => {
-            info!("no ephemeral disks found, skipping ephemeral storage binding");
-            return Ok(());
-        }
-        // If there is only one device, use that
-        1 => ephemeral_devices()?.first().expect("non-empty").clone(),
-        _ => format!("{RAID_DEVICE_DIR}{RAID_DEVICE_NAME}"),
-    };
+    let device_name = EPHEMERAL_STORAGE_LINK;
+    if !std::fs::exists(device_name).is_ok_and(|x| x) {
+        info!("ephemeral storage not initialized, skipping binding");
+        return Ok(());
+    }
 
     let dirs = if dirs.is_empty() {
         let allowed_dirs = allowed_bind_dirs(variant);
@@ -154,10 +206,7 @@ pub fn bind(variant: &str, dirs: Vec<String>) -> Result<()> {
         std::fs::create_dir_all(&mount_point).context(error::MkdirSnafu {})?;
         info!("mounting {device_name} as {mount_point}");
         let output = Command::new(MOUNT)
-            .args([
-                OsString::from(device_name.clone()),
-                OsString::from(&mount_point),
-            ])
+            .args([OsString::from(device_name), OsString::from(&mount_point)])
             .output()
             .context(error::ExecutionFailureSnafu { command: MOUNT })?;
 
@@ -276,22 +325,29 @@ fn mdadm_create<T: AsRef<str>>(name: T, disks: Vec<T>) -> Result<()> {
     Ok(())
 }
 
-/// ephemeral_devices returns the full path name to the block devices in /dev/disk/ephemeral
+/// ephemeral_devices returns the full path name to the block devices in EPHEMERAL_PATH
 pub fn ephemeral_devices() -> Result<Vec<String>> {
-    const EPHEMERAL_PATH: &str = "/dev/disk/ephemeral";
+    discover_disks(EPHEMERAL_PATH)
+}
+
+/// ephemeral_ebs_volumes returns the full path name to the ebs volumes in EPHEMERAL_EBS_PATH
+pub fn ephemeral_ebs_volumes() -> Result<Vec<String>> {
+    discover_disks(EPHEMERAL_EBS_PATH)
+}
+
+/// discover_disks returns the full path name to the entries in the specified path,
+/// or an empty vector if the specified path does not exist
+fn discover_disks(path: &str) -> Result<Vec<String>> {
     let mut filenames = Vec::new();
-    // for instances without ephemeral storage, we don't error and just return an empty vector so
-    // it can be handled gracefully
-    if fs::metadata(EPHEMERAL_PATH).is_err() {
+    if fs::metadata(path).is_err() {
         return Ok(filenames);
     }
-
-    let entries = std::fs::read_dir(EPHEMERAL_PATH).context(error::DiscoverEphemeralSnafu {
-        path: String::from(EPHEMERAL_PATH),
+    let entries = std::fs::read_dir(path).context(error::DiscoverEphemeralSnafu {
+        path: String::from(path),
     })?;
     for entry in entries {
         let entry = entry.context(error::DiscoverEphemeralSnafu {
-            path: String::from(EPHEMERAL_PATH),
+            path: String::from(path),
         })?;
         filenames.push(entry.path().into_os_string().to_string_lossy().to_string());
     }
@@ -400,6 +456,9 @@ pub mod error {
             dest: String,
             output: std::process::Output,
         },
+
+        #[snafu(display("Failed to remove disk symlink {}", source))]
+        DiskUnlinkFailure { source: std::io::Error },
 
         #[snafu(display("Failed to create disk symlink {}", source))]
         DiskSymlinkFailure { source: std::io::Error },
