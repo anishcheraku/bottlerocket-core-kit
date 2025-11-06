@@ -15,6 +15,9 @@ Patch0001: 0001-pbkdf-check-whether-FIPS-is-enabled-at-runtime.patch
 # cryptsetup only depends on libcrypto, not libssl.
 Patch0002: 0002-build-replace-openssl-with-libcrypto-in-pkgconfig.patch
 
+# Quiet warning about FIPS mode.
+Patch0003: 0003-random-quiet-message-about-FIPS-mode.patch
+
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libblkid-devel
 BuildRequires: %{_cross_os}libcrypto-devel
@@ -77,6 +80,7 @@ autoreconf -fi
   --enable-internal-argon2 \
   --enable-internal-sse-argon2 \
   --enable-selinux \
+  --enable-udev \
   --enable-veritysetup \
   --with-crypto_backend=openssl \
   --with-luks2-pbkdf=pbkdf2 \
