@@ -4151,6 +4151,7 @@ dependencies = [
  "serde_json",
  "snafu",
  "tempfile",
+ "test-case",
  "tokio",
  "tokio-retry",
 ]
