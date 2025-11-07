@@ -1,0 +1,21 @@
+[package]
+name = "docker-engine-25"
+version = "0.1.0"
+edition = "2021"
+publish = false
+build = "../build.rs"
+
+[lib]
+path = "../packages.rs"
+
+[package.metadata.build-package]
+releases-url = "https://github.com/moby/moby/releases"
+
+[[package.metadata.build-package.external-files]]
+url = "https://github.com/moby/moby/archive/v25.0.13/moby-25.0.13.tar.gz"
+sha512 = "bf7254b2977e085eae717b09965f8f8865a89323c2f160d26fdceb8ef74d6871d24be391e4950683c4867bb68b728d9cd822165934c6abbf4ea67a7b24877287"
+
+[build-dependencies]
+glibc = { path = "../glibc" }
+libseccomp = { path = "../libseccomp" }
+systemd-252 = { path = "../systemd-252" }

@@ -1,5 +1,5 @@
 [package]
-name = "docker-engine"
+name = "docker-engine-29"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -12,10 +12,11 @@ path = "../packages.rs"
 releases-url = "https://github.com/moby/moby/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/moby/moby/archive/v25.0.13/moby-25.0.13.tar.gz"
-sha512 = "bf7254b2977e085eae717b09965f8f8865a89323c2f160d26fdceb8ef74d6871d24be391e4950683c4867bb68b728d9cd822165934c6abbf4ea67a7b24877287"
+url = "https://github.com/moby/moby/archive/docker-v29.0.0-rc.2/moby-docker-v29.0.0-rc.2.tar.gz"
+sha512 = "89237d52822608d95327efaded6e27f3b10a5252e4c3065dd5f22cf4614d950bdb67ca9770895ad09847eb7f8f0cacf1062220d2078109e5d21e93890cdb4304"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
 libseccomp = { path = "../libseccomp" }
 systemd-252 = { path = "../systemd-252" }
+nftables = { path = "../nftables" }
