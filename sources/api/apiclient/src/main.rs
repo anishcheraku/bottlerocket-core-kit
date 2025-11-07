@@ -71,8 +71,12 @@ struct ExecArgs {
 /// Stores user-supplied arguments for the 'get' subcommand.
 #[derive(Debug)]
 enum GetArgs {
-    Prefixes(Vec<String>),
-    Uri(String),
+    Prefixes {
+        include: Vec<String>,
+        exclude: Vec<String>,
+        canonicalize: bool,
+    },
+    Uri(String, bool),
 }
 
 /// Stores user-supplied arguments for the 'raw' subcommand.
@@ -226,6 +230,9 @@ fn usage() -> ! {
             [ PREFIX [PREFIX ...] ]    The settings you want to get.  Full settings names work fine,
                                        or you can specify prefixes to fetch all settings under them.
             [ /desired-uri ]           The API URI to fetch.  Cannot be specified with prefixes.
+            --exclude PREFIX           Exclude settings matching this prefix from the results.
+                                       Can be specified multiple times. Only valid with prefixes.
+            --canonicalize             Output as canonical JSON (no whitespace, sorted keys).
 
                                        If neither prefixes nor URI are specified, get will show
                                        settings and OS info.
@@ -492,11 +499,21 @@ fn parse_exec_args(args: Vec<String>) -> Subcommand {
 
 /// Parses arguments for the 'get' subcommand.
 fn parse_get_args(args: Vec<String>) -> Subcommand {
-    let mut prefixes = vec![];
+    let mut include = vec![];
+    let mut exclude = vec![];
     let mut uri = None;
+    let mut canonicalize = false;
 
-    for arg in args.into_iter() {
-        match &arg {
+    let mut iter = args.into_iter();
+    while let Some(arg) = iter.next() {
+        match arg.as_ref() {
+            "--canonicalize" => canonicalize = true,
+            "--exclude" => {
+                let prefix = iter
+                    .next()
+                    .unwrap_or_else(|| usage_msg("Did not give argument to --exclude"));
+                exclude.push(prefix);
+            }
             x if x.starts_with('-') => usage_msg(format!("Unknown argument '{x}'")),
 
             x if x.starts_with('/') => {
@@ -506,26 +523,25 @@ fn parse_get_args(args: Vec<String>) -> Subcommand {
             }
 
             // All other arguments are settings prefixes to fetch.
-            _ => prefixes.push(arg),
+            _ => include.push(arg),
         }
     }
 
     if let Some(uri) = uri {
-        if !prefixes.is_empty() {
+        if !include.is_empty() || !exclude.is_empty() {
             usage_msg("You can specify prefixes or a URI, but not both.");
         }
-        Subcommand::Get(GetArgs::Uri(uri))
-    } else if !prefixes.is_empty() {
-        if uri.is_some() {
-            usage_msg("You can specify prefixes or a URI, but not both.");
-        }
-        Subcommand::Get(GetArgs::Prefixes(prefixes))
+        Subcommand::Get(GetArgs::Uri(uri, canonicalize))
     } else {
-        // A reasonable default is showing OS info and settings.
-        Subcommand::Get(GetArgs::Prefixes(vec![
-            "os.".to_string(),
-            "settings.".to_string(),
-        ]))
+        Subcommand::Get(GetArgs::Prefixes {
+            include: if include.is_empty() {
+                vec!["os.".to_string(), "settings.".to_string()]
+            } else {
+                include
+            },
+            exclude,
+            canonicalize,
+        })
     }
 }
 
@@ -1010,14 +1026,36 @@ async fn run() -> Result<()> {
         }
 
         Subcommand::Get(get) => {
-            let result = match get {
-                GetArgs::Uri(uri) => get::get_uri(&args.socket_path, uri).await,
-                GetArgs::Prefixes(prefixes) => get::get_prefixes(&args.socket_path, prefixes).await,
+            let (value, canonicalize) = match get {
+                GetArgs::Uri(uri, canonicalize) => {
+                    (get::get_uri(&args.socket_path, uri).await, canonicalize)
+                }
+                GetArgs::Prefixes {
+                    include,
+                    exclude,
+                    canonicalize,
+                } => (
+                    get::get_prefixes(&args.socket_path, include, exclude).await,
+                    canonicalize,
+                ),
             };
-            let value = result.context(error::GetSnafu)?;
-            let pretty =
-                serde_json::to_string_pretty(&value).expect("JSON Value already validated as JSON");
-            println!("{pretty}");
+            let value = value.context(error::GetSnafu)?;
+
+            if canonicalize {
+                let mut buf = Vec::new();
+                let mut ser = serde_json::Serializer::with_formatter(
+                    &mut buf,
+                    olpc_cjson::CanonicalFormatter::new(),
+                );
+                value
+                    .serialize(&mut ser)
+                    .expect("JSON Value already validated as JSON");
+                println!("{}", String::from_utf8(buf).expect("Valid UTF-8"));
+            } else {
+                let pretty = serde_json::to_string_pretty(&value)
+                    .expect("JSON Value already validated as JSON");
+                println!("{pretty}");
+            }
         }
 
         Subcommand::Reboot(_reboot) => {
@@ -1355,6 +1393,97 @@ mod tests {
                 assert_eq!(actual.command, expected.command, "Command should match");
             }
             _ => panic!("Expected Exec subcommand: {expected_subcommand:?}, got: {subcommand:?}"),
+        }
+    }
+
+    #[test]
+    fn test_get_with_exclude() {
+        let (_, subcommand) =
+            parse_command_line("apiclient get settings. --exclude settings.network");
+        match subcommand {
+            Subcommand::Get(GetArgs::Prefixes {
+                include,
+                exclude,
+                canonicalize,
+            }) => {
+                assert_eq!(include, vec!["settings."]);
+                assert_eq!(exclude, vec!["settings.network"]);
+                assert_eq!(canonicalize, false);
+            }
+            _ => panic!("Expected Get with Prefixes"),
+        }
+    }
+
+    #[test]
+    fn test_get_with_multiple_excludes() {
+        let (_, subcommand) = parse_command_line(
+            "apiclient get settings. --exclude settings.network --exclude settings.host-containers",
+        );
+        match subcommand {
+            Subcommand::Get(GetArgs::Prefixes {
+                include,
+                exclude,
+                canonicalize,
+            }) => {
+                assert_eq!(include, vec!["settings."]);
+                assert_eq!(
+                    exclude,
+                    vec!["settings.network", "settings.host-containers"]
+                );
+                assert_eq!(canonicalize, false);
+            }
+            _ => panic!("Expected Get with Prefixes"),
+        }
+    }
+
+    #[test]
+    fn test_get_empty() {
+        let (_, subcommand) = parse_command_line("apiclient get");
+        match subcommand {
+            Subcommand::Get(GetArgs::Prefixes {
+                include,
+                exclude,
+                canonicalize,
+            }) => {
+                assert_eq!(include, vec!["os.", "settings."]);
+                assert_eq!(exclude, Vec::<String>::new());
+                assert_eq!(canonicalize, false);
+            }
+            _ => panic!("Expected Get with Prefixes"),
+        }
+    }
+
+    #[test]
+    fn test_get_canonicalize() {
+        let (_, subcommand) = parse_command_line("apiclient get --canonicalize");
+        match subcommand {
+            Subcommand::Get(GetArgs::Prefixes {
+                include,
+                exclude,
+                canonicalize,
+            }) => {
+                assert_eq!(include, vec!["os.", "settings."]);
+                assert_eq!(exclude, Vec::<String>::new());
+                assert_eq!(canonicalize, true);
+            }
+            _ => panic!("Expected Get with Prefixes"),
+        }
+    }
+
+    #[test]
+    fn test_get_exclude_only() {
+        let (_, subcommand) = parse_command_line("apiclient get --exclude settings.network");
+        match subcommand {
+            Subcommand::Get(GetArgs::Prefixes {
+                include,
+                exclude,
+                canonicalize,
+            }) => {
+                assert_eq!(include, vec!["os.", "settings."]);
+                assert_eq!(exclude, vec!["settings.network"]);
+                assert_eq!(canonicalize, false);
+            }
+            _ => panic!("Expected Get with Prefixes"),
         }
     }
 }
