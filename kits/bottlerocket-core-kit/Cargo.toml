@@ -17,6 +17,7 @@ amazon-ssm-agent = { path = "../../packages/amazon-ssm-agent" }
 amazon-vpc-cni-plugins = { path = "../../packages/amazon-vpc-cni-plugins" }
 aws-iam-authenticator = { path = "../../packages/aws-iam-authenticator" }
 aws-otel-collector = { path = "../../packages/aws-otel-collector" }
+aws-signer-notation-plugin = { path = "../../packages/aws-signer-notation-plugin" }
 aws-signing-helper = { path = "../../packages/aws-signing-helper" }
 bash = { path = "../../packages/bash" }
 binutils = { path = "../../packages/binutils" }
@@ -36,6 +37,7 @@ docker-engine-29 = { path = "../../packages/docker-engine-29" }
 docker-init = { path = "../../packages/docker-init" }
 e2fsprogs = { path = "../../packages/e2fsprogs" }
 early-boot-config = { path = "../../packages/early-boot-config" }
+ecr-credential-helper = { path = "../../packages/ecr-credential-helper" }
 ecr-credential-provider-1_28 = { path = "../../packages/ecr-credential-provider-1.28" }
 ecr-credential-provider-1_29 = { path = "../../packages/ecr-credential-provider-1.29" }
 ecr-credential-provider-1_30 = { path = "../../packages/ecr-credential-provider-1.30" }
@@ -111,6 +113,8 @@ makedumpfile = { path = "../../packages/makedumpfile" }
 mdadm = { path = "../../packages/mdadm" }
 netdog = {path = "../../packages/netdog" }
 nftables = {path = "../../packages/nftables" }
+notation = { path = "../../packages/notation" }
+notation-image-verifier = { path = "../../packages/notation-image-verifier" }
 nvidia-container-toolkit = { path = "../../packages/nvidia-container-toolkit" }
 nvidia-k8s-device-plugin = { path = "../../packages/nvidia-k8s-device-plugin" }
 nvme-cli = { path = "../../packages/nvme-cli" }
