@@ -114,7 +114,9 @@ cpuManagerReconcilePeriod: {{settings.kubernetes.cpu-manager-reconcile-period}}
 {{#if settings.kubernetes.cpu-manager-policy-options}}
 cpuManagerPolicyOptions:
 {{#each settings.kubernetes.cpu-manager-policy-options}}
+{{#if (or (eq this "full-pcpus-only") (eq this "strict-cpu-reservation") (eq this "distribute-cpus-across-numa"))}}
     {{this}}: "true"
+{{/if}}
 {{/each}}
 {{/if}}
 {{#if settings.kubernetes.topology-manager-scope}}
@@ -215,6 +217,19 @@ memorySwap:
 {{/if}}
 {{#if settings.kubernetes.single-process-oom-kill}}
 singleProcessOOMKill: {{settings.kubernetes.single-process-oom-kill}}
+{{/if}}
+enableDebuggingHandlers: false
+{{#if settings.kubernetes.image-minimum-gc-age}}
+imageMinimumGCAge: {{settings.kubernetes.image-minimum-gc-age}}
+{{/if}}
+{{#if settings.kubernetes.image-maximum-gc-age}}
+imageMaximumGCAge: {{settings.kubernetes.image-maximum-gc-age}}
+{{/if}}
+{{#if settings.kubernetes.ids-per-pod}}
+idsPerPod: {{settings.kubernetes.ids-per-pod}}
+{{/if}}
+{{#if settings.kubernetes.max-parallel-image-pulls}}
+maxParallelImagePulls: {{settings.kubernetes.max-parallel-image-pulls}}
 {{/if}}
 featureGates:
   DynamicResourceAllocation: true
