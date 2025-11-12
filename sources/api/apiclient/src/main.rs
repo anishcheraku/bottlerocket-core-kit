@@ -7,7 +7,8 @@
 // to the API, which is intended to be reusable by other crates.
 
 use apiclient::{
-    apply, ephemeral_storage, exec, get, lockdown, reboot, report, set, update, SettingsInput,
+    apply, ephemeral_storage, exec, get, lockdown, network, reboot, report, set, update,
+    SettingsInput,
 };
 use log::{info, log_enabled, trace, warn};
 use model::ephemeral_storage::{Filesystem, Preference};
@@ -43,12 +44,13 @@ impl Default for Args {
 }
 
 /// Stores the usage mode specified by the user as a subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum Subcommand {
     Apply(ApplyArgs),
     Exec(ExecArgs),
     Get(GetArgs),
     Lockdown(LockdownArgs),
+    Network(NetworkSubcommand),
     Raw(RawArgs),
     Reboot(RebootArgs),
     Set(SetArgs),
@@ -58,13 +60,13 @@ enum Subcommand {
 }
 
 /// Stores user-supplied arguments for the 'apply' subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct ApplyArgs {
     input_sources: Vec<String>,
 }
 
 /// Stores user-supplied arguments for the 'exec' subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct ExecArgs {
     command: Vec<OsString>,
     target: String,
@@ -72,7 +74,7 @@ struct ExecArgs {
 }
 
 /// Stores user-supplied arguments for the 'get' subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum GetArgs {
     Prefixes {
         include: Vec<String>,
@@ -83,7 +85,7 @@ enum GetArgs {
 }
 
 /// Stores user-supplied arguments for the 'raw' subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct RawArgs {
     method: String,
     uri: String,
@@ -91,11 +93,11 @@ struct RawArgs {
 }
 
 /// Stores user-supplied arguments for the 'lockdown' subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct LockdownArgs {}
 
 /// Stores user-supplied arguments for the 'reboot' subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct RebootArgs {}
 
 /// Stores a vector of user-supplied key-value pairs for the 'set' subcommand.
@@ -105,14 +107,14 @@ pub struct SetKeyPairSettings {
 }
 
 /// Stores user-supplied arguments for the 'set' subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum SetArgs {
     Simple(Vec<String>),
     Json(serde_json::Value),
 }
 
 /// Stores the 'update' subcommand specified by the user.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum UpdateSubcommand {
     Check(UpdateCheckArgs),
     Apply(UpdateApplyArgs),
@@ -120,7 +122,7 @@ enum UpdateSubcommand {
 }
 
 /// The available 'report' subcommands.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum ReportSubcommand {
     Cis(CisReportArgs),
     CisK8s(CisReportArgs),
@@ -128,35 +130,35 @@ enum ReportSubcommand {
 }
 
 /// Stores common user-supplied arguments for the cis report subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct CisReportArgs {
     level: Option<i32>,
     format: Option<String>,
 }
 
 /// Stores common user-supplied arguments for the fips report subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct FipsReportArgs {
     format: Option<String>,
 }
 
 /// Stores user-supplied arguments for the 'update check' subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct UpdateCheckArgs {}
 
 /// Stores user-supplied arguments for the 'update apply' subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct UpdateApplyArgs {
     check: bool,
     reboot: bool,
 }
 
 /// Stores user-supplied arguments for the 'update cancel' subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct UpdateCancelArgs {}
 
 /// Stores the 'ephemeral-storage' subcommand specified by the user.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum EphemeralStorageSubcommand {
     Init(EphemeralStorageInitArgs),
     Bind(EphemeralStorageBindArgs),
@@ -166,7 +168,7 @@ enum EphemeralStorageSubcommand {
 }
 
 /// Stores user-supplied arguments for the 'ephemeral-storage init' subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct EphemeralStorageInitArgs {
     disks: Option<Vec<String>>,
     ebs_volumes: Option<Vec<String>>,
@@ -175,14 +177,26 @@ struct EphemeralStorageInitArgs {
 }
 
 /// Stores user-supplied arguments for the 'ephemeral-storage bind' subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct EphemeralStorageBindArgs {
     targets: Vec<String>,
 }
 /// Stores user-supplied arguments for the 'ephemeral-storage list-disks/list-ebs-volumes/list-dirs' subcommand.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct EphemeralStorageFormatArgs {
     format: Option<String>,
+}
+
+/// Stores the 'network' subcommand specified by the user.
+#[derive(Debug, PartialEq)]
+enum NetworkSubcommand {
+    Configure(NetworkConfigureArgs),
+}
+
+/// Stores user-supplied arguments for the 'network configure' subcommand.
+#[derive(Debug, PartialEq)]
+struct NetworkConfigureArgs {
+    input_source: Option<String>,
 }
 
 /// Informs the user about proper usage of the program and exits.
@@ -203,6 +217,8 @@ fn usage() -> ! {
                                        or from stdin.
             get                        Retrieve and print settings.
             set                        Changes settings and applies them to the system.
+            network configure          Configures network settings from net.toml files at
+                                       given URIs.
             update check               Prints information about available updates.
             update apply               Applies available updates.
             update cancel              Deactivates an applied update.
@@ -247,6 +263,13 @@ fn usage() -> ! {
 
                                        If neither prefixes nor URI are specified, get will show
                                        settings and OS info.
+
+        network configure options:
+            [ URI ]                    URI to a network configuration file (TOML format)
+                                       to apply. Supports file:// and base64: URI schemes.
+                                       If no URI is specified, reads from stdin.
+                                       Configuration is written to /.bottlerocket/net.toml and
+                                       validated at next boot by netdog.
 
         set options:
             KEY=VALUE [KEY=VALUE ...]  The settings you want to set.  For example:
@@ -376,8 +399,8 @@ fn parse_args(args: impl Iterator<Item = String>) -> (Args, Subcommand) {
             }
 
             // Subcommands
-            "raw" | "apply" | "exec" | "get" | "lockdown" | "reboot" | "report" | "set"
-            | "update" | "ephemeral-storage"
+            "raw" | "apply" | "exec" | "get" | "lockdown" | "network" | "reboot" | "report"
+            | "set" | "update" | "ephemeral-storage"
                 if subcommand.is_none() && !arg.starts_with('-') =>
             {
                 subcommand = Some(arg)
@@ -395,6 +418,7 @@ fn parse_args(args: impl Iterator<Item = String>) -> (Args, Subcommand) {
         Some("exec") => (global_args, parse_exec_args(subcommand_args)),
         Some("get") => (global_args, parse_get_args(subcommand_args)),
         Some("lockdown") => (global_args, parse_lockdown_args(subcommand_args)),
+        Some("network") => (global_args, parse_network_args(subcommand_args)),
         Some("reboot") => (global_args, parse_reboot_args(subcommand_args)),
         Some("report") => (global_args, parse_report_args(subcommand_args)),
         Some("set") => (global_args, parse_set_args(subcommand_args)),
@@ -563,6 +587,42 @@ fn parse_lockdown_args(args: Vec<String>) -> Subcommand {
         usage_msg(format!("Unknown arguments: {}", args.join(", ")));
     }
     Subcommand::Lockdown(LockdownArgs {})
+}
+/// Parses the desired subcommand of 'network'.
+fn parse_network_args(args: Vec<String>) -> Subcommand {
+    let mut subcommand = None;
+    let mut subcommand_args = Vec::new();
+
+    for arg in args.into_iter() {
+        match arg.as_ref() {
+            // Subcommands
+            "configure" if subcommand.is_none() => subcommand = Some(arg),
+
+            // Other arguments are passed to the subcommand parser
+            _ => subcommand_args.push(arg),
+        }
+    }
+
+    match subcommand.as_deref() {
+        Some("configure") => parse_network_configure_args(subcommand_args),
+        _ => usage_msg("Missing or unknown subcommand for 'network'"),
+    }
+}
+
+/// Parses arguments for the 'network configure' subcommand.
+fn parse_network_configure_args(args: Vec<String>) -> Subcommand {
+    let mut input_source = None;
+
+    for arg in args.into_iter() {
+        if input_source.is_some() {
+            usage_msg("apiclient network configure takes only one input source URI.")
+        }
+        input_source = Some(arg);
+    }
+
+    Subcommand::Network(NetworkSubcommand::Configure(NetworkConfigureArgs {
+        input_source,
+    }))
 }
 
 /// Parses arguments for the 'reboot' subcommand.
@@ -1084,6 +1144,17 @@ async fn run() -> Result<()> {
                 .context(error::LockdownSnafu)?;
         }
 
+        Subcommand::Network(subcommand) => match subcommand {
+            NetworkSubcommand::Configure(configure_args) => {
+                let content = network::get_content(configure_args.input_source)
+                    .await
+                    .context(error::NetworkGetContentSnafu)?;
+                network::configure(&args.socket_path, content)
+                    .await
+                    .context(error::NetworkConfigureSnafu)?;
+            }
+        },
+
         Subcommand::Reboot(_reboot) => {
             reboot::reboot(&args.socket_path)
                 .await
@@ -1252,7 +1323,9 @@ async fn main() {
 }
 
 mod error {
-    use apiclient::{apply, ephemeral_storage, exec, get, lockdown, reboot, report, set, update};
+    use apiclient::{
+        apply, ephemeral_storage, exec, get, lockdown, network, reboot, report, set, update,
+    };
     use snafu::Snafu;
 
     #[derive(Debug, Snafu)]
@@ -1272,6 +1345,11 @@ mod error {
 
         #[snafu(display("Failed to lockdown: {}", source))]
         Lockdown { source: lockdown::Error },
+        #[snafu(display("Failed to get network configuration content: {}", source))]
+        NetworkGetContent { source: network::Error },
+
+        #[snafu(display("Failed to configure network: {}", source))]
+        NetworkConfigure { source: network::Error },
 
         #[snafu(display("Failed to reboot: {}", source))]
         Reboot { source: reboot::Error },
@@ -1514,5 +1592,60 @@ mod tests {
             }
             _ => panic!("Expected Get with Prefixes"),
         }
+    }
+
+    #[test]
+    fn test_network_configure_parsing_stdin() {
+        // Test that network configure with no arguments defaults to stdin
+        let (global_args, subcommand) = parse_command_line("apiclient network configure");
+
+        // Test global arguments match expected defaults
+        assert_eq!(global_args.log_level, LevelFilter::Info);
+        assert_eq!(global_args.socket_path, "/run/api.sock");
+
+        // Test network configure subcommand with no input source (stdin)
+        let expected = Subcommand::Network(NetworkSubcommand::Configure(NetworkConfigureArgs {
+            input_source: None,
+        }));
+        assert_eq!(subcommand, expected);
+    }
+
+    #[test_case("apiclient network configure file:///tmp/net.toml",
+        global_args!(LevelFilter::Info),
+        "file:///tmp/net.toml";
+        "network configure with file URI")]
+    #[test_case("apiclient network configure base64:dmVyc2lvbiA9IDIKCltldGgwXQpkaGNwNCA9IHRydWU=",
+        global_args!(LevelFilter::Info),
+        "base64:dmVyc2lvbiA9IDIKCltldGgwXQpkaGNwNCA9IHRydWU=";
+        "network configure with base64 URI")]
+    #[test_case("apiclient -v network configure file:///tmp/net.toml",
+        global_args!(LevelFilter::Debug),
+        "file:///tmp/net.toml";
+        "verbose flag with network configure")]
+    #[test_case("apiclient --log-level error network configure base64:test",
+        global_args!(LevelFilter::Error),
+        "base64:test";
+        "log level with network configure")]
+    #[test_case("apiclient --socket-path /tmp/custom.sock network configure file:///etc/net.toml",
+        global_args!(LevelFilter::Info, "/tmp/custom.sock"),
+        "file:///etc/net.toml";
+        "custom socket path with network configure")]
+    fn test_network_configure_parsing(
+        cmd_str: &str,
+        expected_args: Args,
+        expected_input_source: &str,
+    ) {
+        // Given a command line string for network configure
+        let (global_args, subcommand) = parse_command_line(cmd_str);
+
+        // Test global arguments match expected values
+        assert_eq!(global_args.log_level, expected_args.log_level);
+        assert_eq!(global_args.socket_path, expected_args.socket_path);
+
+        // Test network configure subcommand matches expected
+        let expected = Subcommand::Network(NetworkSubcommand::Configure(NetworkConfigureArgs {
+            input_source: Some(expected_input_source.to_string()),
+        }));
+        assert_eq!(subcommand, expected);
     }
 }
