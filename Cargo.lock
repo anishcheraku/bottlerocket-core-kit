@@ -136,6 +136,7 @@ dependencies = [
  "libcrypto",
  "libcryptsetup",
  "libdevmapper",
+ "libdrm",
  "libelf",
  "libexpat",
  "libffi",
@@ -188,6 +189,7 @@ dependencies = [
  "rdma-core",
  "readline",
  "release",
+ "rocm-k8s-device-plugin",
  "rottweiler",
  "runc",
  "selinux-policy",
@@ -634,6 +636,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "libdrm"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+]
+
+[[package]]
 name = "libelf"
 version = "0.1.0"
 dependencies = [
@@ -1046,6 +1055,15 @@ dependencies = [
 [[package]]
 name = "release"
 version = "0.0.0"
+
+[[package]]
+name = "rocm-k8s-device-plugin"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+ "hwloc",
+ "libdrm",
+]
 
 [[package]]
 name = "rottweiler"
