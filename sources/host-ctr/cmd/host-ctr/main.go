@@ -2,22 +2,16 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
 	"os"
 	"os/signal"
-	"regexp"
 	"strings"
 	"syscall"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/ecrpublic"
-	"github.com/awslabs/amazon-ecr-containerd-resolver/ecr"
 	"github.com/containerd/containerd"
 	"github.com/containerd/containerd/api/types/runc/options"
 	"github.com/containerd/containerd/cio"
@@ -33,44 +27,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
-
-// Expecting to match ECR image names of the form:
-//
-// Example 1: 777777777777.dkr.ecr.us-west-2.amazonaws.com/my_image:latest
-// Example 2: 777777777777.dkr.ecr.cn-north-1.amazonaws.com.cn/my_image:latest
-// Example 3: 777777777777.dkr.ecr.eu-isoe-west-1.cloud.adc-e.uk/my_image:latest
-// Example 4: 777777777777.dkr.ecr-fips.us-west-2.amazonaws.com/my_image:latest
-
-// ECR hostname pattern also used in the ecr-credential-provider:
-// https://github.com/kubernetes/cloud-provider-aws/blob/212135d0d7b448cd34e2e11e5e81f59e3e6c2d7a/cmd/ecr-credential-provider/main.go#L45
-var ecrRegex = regexp.MustCompile(`^(\d{12})\.dkr[\.\-]ecr(-fips)?\.([a-zA-Z0-9][a-zA-Z0-9-_]*)\.(amazonaws(\.com(?:\.cn)?|\.eu)|on\.(?:aws|amazonwebservices\.com\.cn)|sc2s\.sgov\.gov|c2s\.ic\.gov|cloud\.adc-e\.uk|csp\.hci\.ic\.gov).*$`)
-
-// A set of currently supported ECR regions which are not yet present in the golang SDK
-var ecrRefPrefixMapping = map[string]string{
-	"ap-southeast-7":  "ecr.aws/arn:aws:ecr:ap-southeast-7:",
-	"mx-central-1":    "ecr.aws/arn:aws:ecr:mx-central-1:",
-	"ap-east-2":       "ecr.aws/arn:aws:ecr:ap-east-2:",
-	"ap-southeast-6":  "ecr.aws/arn:aws:ecr:ap-southeast-6:",
-	"us-northeast-1":  "ecr.aws/arn:aws:ecr:us-northeast-1:",
-	"eu-isoe-west-1":  "ecr.aws/arn:aws-iso-e:ecr:eu-isoe-west-1:",
-	"eusc-de-east-1":  "ecr.aws/arn:aws-eusc:ecr:eusc-de-east-1:",
-	"us-iso-east-1":   "ecr.aws/arn:aws-iso:ecr:us-iso-east-1:",
-	"us-iso-west-1":   "ecr.aws/arn:aws-iso:ecr:us-iso-west-1:",
-	"us-isob-east-1":  "ecr.aws/arn:aws-iso-b:ecr:us-isob-east-1:",
-	"us-isob-west-1":  "ecr.aws/arn:aws-iso-b:ecr:us-isob-west-1:",
-	"us-isof-south-1": "ecr.aws/arn:aws-iso-f:ecr:us-isof-south-1:",
-	"us-isof-east-1":  "ecr.aws/arn:aws-iso-f:ecr:us-isof-east-1:",
-}
-
-// A set of the currently supported FIPS regions for ECR: https://docs.aws.amazon.com/general/latest/gr/ecr.html
-var fipsSupportedEcrRegionSet = map[string]bool{
-	"us-east-1":     true,
-	"us-east-2":     true,
-	"us-west-1":     true,
-	"us-west-2":     true,
-	"us-gov-east-1": true,
-	"us-gov-west-1": true,
-}
 
 const (
 	// The maximum size of an	image label.
@@ -339,22 +295,13 @@ func runCtr(containerdSocket string, namespace string, containerID string, sourc
 	}
 	defer client.Close()
 
-	// Check if the image source is an ECR image. If it is, then we need to handle it with the ECR resolver.
-	isECRImage := ecrRegex.MatchString(source)
 	var img containerd.Image
 	emptyLabels := make(map[string]string)
 
-	if isECRImage {
-		img, err = fetchECRImage(ctx, source, client, registryConfigPath, useCachedImage, emptyLabels)
-		if err != nil {
-			return err
-		}
-	} else {
-		img, err = fetchImage(ctx, source, client, registryConfigPath, useCachedImage, emptyLabels)
-		if err != nil {
-			log.G(ctx).WithField("ref", source).Error(err)
-			return err
-		}
+	img, err = fetchImage(ctx, source, client, registryConfigPath, useCachedImage, emptyLabels)
+	if err != nil {
+		log.G(ctx).WithField("ref", source).Error(err)
+		return err
 	}
 
 	prefix := cType.Prefix()
@@ -580,19 +527,10 @@ func pullImageOnly(containerdSocket string, namespace string, source string, reg
 	}
 	defer client.Close()
 
-	// Check if the image source is an ECR image. If it is, then we need to handle it with the ECR resolver.
-	isECRImage := ecrRegex.MatchString(source)
-	if isECRImage {
-		_, err = fetchECRImage(ctx, source, client, registryConfigPath, useCachedImage, labels)
-		if err != nil {
-			return err
-		}
-	} else {
-		_, err = fetchImage(ctx, source, client, registryConfigPath, useCachedImage, labels)
-		if err != nil {
-			log.G(ctx).WithField("ref", source).Error(err)
-			return err
-		}
+	_, err = fetchImage(ctx, source, client, registryConfigPath, useCachedImage, labels)
+	if err != nil {
+		log.G(ctx).WithField("ref", source).Error(err)
+		return err
 	}
 
 	return nil
@@ -648,162 +586,6 @@ func cleanUp(containerdSocket string, namespace string, containerID string) erro
 	}
 
 	return nil
-}
-
-type parsedECR struct {
-	Region   string
-	Account  string
-	RepoPath string
-	Fips     bool
-}
-
-// parseImageURIAsECR mimics the parsing in ecr.ParseImageURI but only returns metadata pertaining
-// to the parsed URI.
-func parseImageURIAsECR(input string) (*parsedECR, error) {
-	matches := ecrRegex.FindStringSubmatch(input)
-
-	if len(matches) < 3 {
-		return nil, fmt.Errorf("invalid image URI: %s", input)
-	}
-	account := matches[1]
-
-	// Need to include the full repository path and the imageID (e.g. /eks/image-name:tag)
-	tokens := strings.SplitN(input, "/", 2)
-	if len(tokens) != 2 {
-		return nil, fmt.Errorf("invalid image URI: %s", input)
-	}
-	fullRepoPath := tokens[len(tokens)-1]
-	// Run simple checks on the provided repository.
-	switch {
-	case
-		// Must not be empty
-		fullRepoPath == "",
-		// Must not have a partial/unsupplied label
-		strings.HasSuffix(fullRepoPath, ":"),
-		// Must not have a partial/unsupplied digest specifier
-		strings.HasSuffix(fullRepoPath, "@"):
-		return nil, errors.New("incomplete reference provided")
-	}
-
-	isFips := matches[2] == "-fips"
-	region := matches[3]
-
-	return &parsedECR{
-		Region:   region,
-		Account:  account,
-		RepoPath: fullRepoPath,
-		Fips:     isFips,
-	}, nil
-}
-
-// Metadata for specially-treated ECR URIs
-type specialRegions struct {
-	// region => domain mappings
-	EcrRefPrefixMappings map[string]string
-	// The set of regions supporting FIPS
-	FipsSupportedEcrRegions map[string]bool
-}
-
-// parseImageURISpecialRegions mimics the parsing in ecr.ParseImageURI but
-// constructs the canonical ECR references while skipping certain checks.
-// We only do this for special regions that are not yet supported by the aws-go-sdk and for ECR FIPS endpoints.
-// Referenced source: https://github.com/awslabs/amazon-ecr-containerd-resolver/blob/a5058cf091f4fc573813a032db37a9820952f1f9/ecr/ref.go#L70-L71
-func parseImageURISpecialRegions(input string, specialRegions specialRegions) (ecr.ECRSpec, error) {
-	parsedECR, err := parseImageURIAsECR(input)
-	if err != nil {
-		return ecr.ECRSpec{}, err
-	}
-
-	// Return early if the FIPS endpoint is being used. amazon-ecr-containerd-resolver doesn't yet support FIPS urls:
-	// https://github.com/awslabs/amazon-ecr-containerd-resolver/blob/7b72333e780f5a5168936eae79fb89448e2f2a8f/ecr/ref.go#L43
-	// The ecr-prefix helper for admin and control host containers will have already accounted for setting this endpoint
-	// if the region has FIPS support.
-	if parsedECR.Fips {
-		_, isFips := specialRegions.FipsSupportedEcrRegions[parsedECR.Region]
-		if !isFips {
-			return ecr.ECRSpec{}, fmt.Errorf("%s: %s", "invalid FIPS region", parsedECR.Region)
-		}
-		ecrRefPrefix := fmt.Sprintf("ecr.aws/arn:aws:ecr-fips:%s:", parsedECR.Region)
-		return ecr.ParseRef(fmt.Sprintf("%s%s:repository/%s", ecrRefPrefix, parsedECR.Account, parsedECR.RepoPath))
-	}
-
-	// Get the ECR image reference prefix from the AWS region
-	ecrRefPrefix, ok := specialRegions.EcrRefPrefixMappings[parsedECR.Region]
-	if !ok {
-		return ecr.ECRSpec{}, fmt.Errorf("%s: %s", "invalid region in internal mapping", parsedECR.Region)
-	}
-
-	return ecr.ParseRef(fmt.Sprintf("%s%s:repository/%s", ecrRefPrefix, parsedECR.Account, parsedECR.RepoPath))
-}
-
-// fetchECRRef attempts to resolve the ECR reference from an input source string.
-// We check special regions handling first, then fall back to standard parsing if not found.
-func fetchECRRef(ctx context.Context, input string, specialRegions specialRegions) (ecr.ECRSpec, error) {
-	var spec ecr.ECRSpec
-	// First check if this is a special region that needs custom handling
-	spec, err := parseImageURISpecialRegions(input, specialRegions)
-	if err == nil {
-		return spec, nil
-	}
-	log.G(ctx).WithError(err).WithField("source", input).Info("not a special ECR reference, trying standard parsing")
-
-	// Fall back to standard aws-sdk-go-v2 parsing for other cases
-	spec, err = ecr.ParseImageURI(input)
-	if err == nil {
-		return spec, nil
-	}
-
-	log.G(ctx).WithError(err).WithField("source", input).Error("failed to parse ECR reference")
-	return ecr.ECRSpec{}, errors.Wrap(err, "could not parse ECR reference")
-}
-
-// fetchECRImage does some additional conversions before resolving the image reference and fetches the image.
-func fetchECRImage(ctx context.Context, source string, client *containerd.Client, registryConfigPath string, fetchCachedImageIfExist bool, labels map[string]string) (containerd.Image, error) {
-	specialRegions := specialRegions{
-		EcrRefPrefixMappings:    ecrRefPrefixMapping,
-		FipsSupportedEcrRegions: fipsSupportedEcrRegionSet,
-	}
-	ecrRef, err := fetchECRRef(ctx, source, specialRegions)
-	if err != nil {
-		return nil, err
-	}
-	ref := ecrRef.Canonical()
-
-	log.G(ctx).
-		WithField("ref", ref).
-		WithField("source", source).
-		Debug("parsed ECR reference from URI")
-
-	img, err := fetchImage(ctx, ref, client, registryConfigPath, fetchCachedImageIfExist, labels)
-	if err != nil {
-		log.G(ctx).WithField("ref", ref).Error(err)
-		return nil, err
-	}
-
-	// When the image is from ECR, the image reference will be converted from
-	// its ref format. This is of the form of `"ecr.aws/" + ECR repository ARN +
-	// label/digest`.
-	//
-	// See the resolver for details on this format -
-	// https://github.com/awslabs/amazon-ecr-containerd-resolver.
-	//
-	// If the image was pulled from ECR, add `source` ref pointing to the same
-	// image so other clients can locate it using both `source` and the parsed
-	// ECR ref.
-	log.G(ctx).
-		WithField("ref", ref).
-		WithField("source", source).
-		Debug("adding source tag on pulled image")
-	if err := tagImage(ctx, ref, source, client); err != nil {
-		log.G(ctx).
-			WithError(err).
-			WithField("source", source).
-			WithField("ref", ref).
-			Error("failed to add source tag on pulled image")
-		return nil, err
-	}
-
-	return img, nil
 }
 
 // newContainerdClient creates a new containerd client connected to the specified containerd socket.
@@ -1199,124 +981,23 @@ func pullImage(ctx context.Context, source string, client *containerd.Client, re
 	return img, nil
 }
 
-// tagImage adds a tag to the image in containerd's metadata storage.
-//
-// Image tag logic derived from:
-//
-// https://github.com/containerd/containerd/blob/d80513ee8a6995bc7889c93e7858ddbbc51f063d/cmd/ctr/commands/images/tag.go#L67-L86
-func tagImage(ctx context.Context, imageName string, newImageName string, client *containerd.Client) error {
-	log.G(ctx).WithField("img", newImageName).Info("tagging image")
-	// Retrieve image information
-	imageService := client.ImageService()
-	image, err := imageService.Get(ctx, imageName)
-	if err != nil {
-		return err
-	}
-	// Tag with new image name
-	image.Name = newImageName
-	// Attempt to create the image first
-	if _, err = imageService.Create(ctx, image); err != nil {
-		// The image already exists then delete the original and attempt to create the new one
-		if errdefs.IsAlreadyExists(err) {
-			if err = imageService.Delete(ctx, newImageName); err != nil {
-				return err
-			}
-			if _, err = imageService.Create(ctx, image); err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
-	}
-	return nil
-}
-
 // withDynamicResolver provides an initialized resolver for use with ref.
 func withDynamicResolver(ctx context.Context, ref string, registryConfig *RegistryConfig) containerd.RemoteOpt {
-	defaultResolver := func(_ *containerd.Client, _ *containerd.RemoteContext) error { return nil }
-	if registryConfig != nil {
-		defaultResolver = func(_ *containerd.Client, c *containerd.RemoteContext) error {
-			resolver := docker.NewResolver(docker.ResolverOptions{
+	defaultResolver := func(_ *containerd.Client, c *containerd.RemoteContext) error {
+		if registryConfig != nil {
+			c.Resolver = docker.NewResolver(docker.ResolverOptions{
 				Hosts: registryHosts(registryConfig, nil),
 			})
-			c.Resolver = resolver
-			return nil
 		}
+		return nil
 	}
 
 	switch {
-	// For private ECR registries, we need to use the Amazon ECR resolver.
-	// Currently we're unable to support image registry configuration with the ECR resolver.
-	// FIXME Track upstream `amazon-ecr-containerd-resolver` support for image registry configuration.
-	case strings.HasPrefix(ref, "ecr.aws/"):
-		return func(_ *containerd.Client, c *containerd.RemoteContext) error {
-			// Create the Amazon ECR resolver
-			resolver, err := ecr.NewResolver()
-			if err != nil {
-				return errors.Wrap(err, "Failed to create ECR resolver")
-			}
-			log.G(ctx).WithField("ref", ref).Info("pulling with Amazon ECR Resolver")
-			c.Resolver = resolver
-			return nil
-		}
-	// For Amazon ECR Public registries, we should try and fetch credentials before resolving the image reference
+	case isECRPrivateRef(ref):
+		return withECRPrivateResolver(ctx, ref)
 	case strings.HasPrefix(ref, "public.ecr.aws/"):
-		// if we have registryConfig, and the user specified credentials for
-		// 'public.ecr.aws', then use defaultResolver.
-		if registryConfig != nil {
-			if _, found := registryConfig.Credentials["public.ecr.aws"]; found {
-				return defaultResolver
-			}
-		}
-
-		// Try to get credentials for authenticated pulls from ECR Public
-		// The ECR Public API is only available in us-east-1 today
-		cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1"))
-		if err != nil {
-			log.G(ctx).Warn("ecr-public: failed to load AWS config, falling back to default resolver (unauthenticated pull)")
-			return defaultResolver
-		}
-		client := ecrpublic.NewFromConfig(cfg)
-		output, err := client.GetAuthorizationToken(ctx, &ecrpublic.GetAuthorizationTokenInput{})
-		if err != nil {
-			log.G(ctx).Warn("ecr-public: failed to get authorization token, falling back to default resolver (unauthenticated pull)")
-			return defaultResolver
-		}
-		if output == nil || output.AuthorizationData == nil {
-			log.G(ctx).Warn("ecr-public: missing AuthorizationData in ECR Public GetAuthorizationToken response, falling back to default resolver (unauthenticated pull)")
-			return defaultResolver
-		}
-		authToken, err := base64.StdEncoding.DecodeString(aws.ToString(output.AuthorizationData.AuthorizationToken))
-		if err != nil {
-			log.G(ctx).Warn("ecr-public: unable to decode authorization token, falling back to default resolver (unauthenticated pull)")
-			return defaultResolver
-		}
-		tokens := strings.SplitN(string(authToken), ":", 2)
-		if len(tokens) != 2 {
-			log.G(ctx).Warn("ecr-public: invalid credentials decoded from authorization token, falling back to default resolver (unauthenticated pull)")
-			return defaultResolver
-		}
-		// Use the fetched authorization credentials to resolve the image
-		authOpt := docker.WithAuthCreds(func(host string) (string, string, error) {
-			// Double-check to make sure the we're doing this for an ECR Public registry
-			if host != "public.ecr.aws" {
-				return "", "", errors.New("ecr-public: expected image to start with public.ecr.aws")
-			}
-			return tokens[0], tokens[1], nil
-		})
-		authorizer := docker.NewDockerAuthorizer(authOpt)
-		resolverOpt := docker.ResolverOptions{
-			Hosts: registryHosts(registryConfig, &authorizer),
-		}
-
-		return func(_ *containerd.Client, c *containerd.RemoteContext) error {
-			resolver := docker.NewResolver(resolverOpt)
-			log.G(ctx).WithField("ref", ref).Info("pulling from ECR Public")
-			c.Resolver = resolver
-			return nil
-		}
+		return withECRPublicResolver(ctx, ref, registryConfig, defaultResolver)
 	default:
-		// For all other registries
 		return defaultResolver
 	}
 }
