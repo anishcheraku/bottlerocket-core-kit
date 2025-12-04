@@ -1,7 +1,7 @@
 %global gorepo soci-snapshotter
-%global gover 0.11.1
+%global gover 0.12.0
 %global rpmver %{gover}
-%global gitrev 28781de6731978b2e2f0f43573a345e9fa14dbd1
+%global gitrev eef118c6072dc125f0e030089833c4230540929f
 
 Name: %{_cross_os}soci-snapshotter
 Version: %{gover}
@@ -19,10 +19,6 @@ Source100: etc-soci-snapshotter.mount.in
 Source101: soci-snapshotter.service
 Source102: soci-snapshotter.socket
 Source1000: clarify.toml
-
-Patch1001: 1001-remove-image-if-rebase-or-initial-fetch-fails.patch
-Patch1002: 1002-move-some-parallelpull-integration-to-helper-funcs.patch
-Patch1003: 1003-hard-fail-on-config-parsing-errors.patch
 
 BuildRequires: %{_cross_os}glibc-devel
 BuildRequires: %{_cross_os}libz-devel
