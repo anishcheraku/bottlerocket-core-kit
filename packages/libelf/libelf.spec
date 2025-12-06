@@ -1,5 +1,5 @@
 Name: %{_cross_os}libelf
-Version: 0.193
+Version: 0.194
 Release: 1%{?dist}
 Epoch: 1
 Summary: Library for ELF files
