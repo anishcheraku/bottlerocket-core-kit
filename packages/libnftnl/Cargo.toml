@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://netfilter.org/projects/libnftnl/files"
 
 [[package.metadata.build-package.external-files]]
-url = "http://netfilter.org/projects/libnftnl/files/libnftnl-1.3.0.tar.xz"
-sha512 = "a2220dba97cc9a1bbd0d093a0bd0afd491120a814be6343aef35cbeba0e4781289fa84ced36510b6b9d76e99b3ba35f3964a9a40a21f38e2e0fad90c34fd3916"
+url = "http://netfilter.org/projects/libnftnl/files/libnftnl-1.3.1.tar.xz"
+sha512 = "a4e689b003cc2ae2ecf203335265f337d6de7a50af5410d649a567535c109d08ee9dbae9e8572b1af8c67f09ea27877ca059e04ed3b1c12183ef7b4185bdd10f"
 
 [[package.metadata.build-package.external-files]]
-url = "http://netfilter.org/projects/libnftnl/files/libnftnl-1.3.0.tar.xz.sig"
-sha512 = "251707a6a981e84ec0d723885f033c0d03f83f7f64deab3ba83b11cea728b8ab345d07699120909e58c1c233a0c8401db27bf9054e61913223867ec5eb2a501e"
+url = "http://netfilter.org/projects/libnftnl/files/libnftnl-1.3.1.tar.xz.sig"
+sha512 = "a5df7f034c8a56b49e940542d3551ce171b46580a99ead59d2632a444cfe46ad7161119b95931a5fbcda395252f1cea0ed399070c2b7eaf29b962230f5927ea9"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
