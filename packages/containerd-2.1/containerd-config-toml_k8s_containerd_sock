@@ -26,7 +26,7 @@ address = "/run/containerd/containerd.sock"
 {{#if settings.container-runtime.max-concurrent-downloads}}
 max_concurrent_downloads = {{settings.container-runtime.max-concurrent-downloads}}
 {{/if}}
-concurrent_layer_fetch_buffer = {{default 8388608 settings.container-runtime.concurrent-download-chunk-size}}
+concurrent_layer_fetch_buffer = {{default 0 settings.container-runtime.concurrent-download-chunk-size}}
 use_local_image_pull = false
 
 # Pause container image is specified here, shares the same image as kubelet's pod-infra-container-image
@@ -50,7 +50,7 @@ enable_unprivileged_icmp = {{settings.container-runtime.enable-unprivileged-icmp
 {{#if settings.container-runtime.max-concurrent-downloads}}
 max_concurrent_downloads = {{settings.container-runtime.max-concurrent-downloads}}
 {{/if}}
-concurrent_layer_fetch_buffer = {{default 8388608 settings.container-runtime.concurrent-download-chunk-size}}
+concurrent_layer_fetch_buffer = {{default 0 settings.container-runtime.concurrent-download-chunk-size}}
 
 [[plugins."io.containerd.transfer.v1.local".unpack_config]]
 snapshotter = "overlayfs"
