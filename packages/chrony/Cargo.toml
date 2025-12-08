@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://chrony-project.org/releases/"
 
 [[package.metadata.build-package.external-files]]
-url = "https://chrony-project.org/releases/chrony-4.7.tar.gz"
-sha512 = "419594ab8ff0fd42acaf6e4ca1a011d5cf87c8d90ab040e90bb004b43570888329531593f073fb7c5a1093b5754d61c1ae6034d0b86660e4dc37d42ee0f30623"
+url = "https://chrony-project.org/releases/chrony-4.8.tar.gz"
+sha512 = "949b796bb34db32a5c1b9e6b53be6a22e51c59f24a316d585b8a52a52ab1f61bdf0378dc58b282bb0ba4fac1f05e1e99fbe37cb4259aa2b359e7bf679c176aab"
 
 [[package.metadata.build-package.external-files]]
-url = "https://chrony-project.org/releases/chrony-4.7-tar-gz-asc.txt"
-sha512 = "c2351e6e624f60e82973bddd5cb1d84c90ee5e862d7d24dfc2b7a8f60a6a948f7446c9b7d68c5e72be4afccbd5d8f572141a4e0bde9cfeefc59aebb7e4fc74e1"
+url = "https://chrony-project.org/releases/chrony-4.8-tar-gz-asc.txt"
+sha512 = "df7f4e06f74a4b8c9a49e8fe57ea02e0324c5683d036412c32192a09f08e08f33537609cef8df0b4302bfcd63332b3092f33f40c8d02857c93ecea13822b5b47"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
