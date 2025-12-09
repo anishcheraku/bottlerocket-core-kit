@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://github.com/PhilipHazel/pcre2/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/PhilipHazel/pcre2/releases/download/pcre2-10.46/pcre2-10.46.tar.bz2"
-sha512 = "795b0d74efb898347990c29fefc85f37ac81e7795f9d6a5598d1169a03c547df7ff7eac280f708b1fef68d3e7686e0d4cd55f0c6364e287ff2a983bbd1a3c334"
+url = "https://github.com/PhilipHazel/pcre2/releases/download/pcre2-10.47/pcre2-10.47.tar.bz2"
+sha512 = "889a6fdc80f8a7285e4a75d189c183b4588df81bdf048302cf0830e11bbf9b9eeb387ba43dfd3aff8ffb3aa693291e8c535845c06e8ce92d1028cefa6b474804"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/PhilipHazel/pcre2/releases/download/pcre2-10.46/pcre2-10.46.tar.bz2.sig"
-sha512 = "e755150e291f39222cd09cde046ce72e838a1c16f520fce3f63265126c5c6c5d143dc2f11ad8fabea45ce5e3d3cd482c434da1968354b2470e163ebfc3cc9bba"
+url = "https://github.com/PhilipHazel/pcre2/releases/download/pcre2-10.47/pcre2-10.47.tar.bz2.sig"
+sha512 = "fbea8f001533c700e0adae881d2d13f2a5f32c272cb1323fd6b76530b011fb3e8eafdc6eb762c36d91296f66fe2fe3861887d6f5219045a2dad8de55f3825051"
 
 [build-dependencies]
 glibc = { path = "../glibc" }

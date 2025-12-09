@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://sourceware.org/lvm2"
 
 [[package.metadata.build-package.external-files]]
-url = "https://sourceware.org/pub/lvm2/releases/LVM2.2.03.35.tgz"
-sha512 = "e925a7685b1a4d96046187e495627176b7c623418116f01fda6a26e607f9c2d2c3f70fe996a6bbe043d79e0e084a4a7385c853114747e61c2bebc42a16d61f11"
+url = "https://sourceware.org/pub/lvm2/releases/LVM2.2.03.37.tgz"
+sha512 = "c67e9e47c9f117d82b458e43c98e7b2bbf0f176fc86b7fa1a90d04209df14df442f576fd9b1e41be86b161aa744f0db5b6cac9d7b118bc4156354307314c441a"
 
 [[package.metadata.build-package.external-files]]
-url = "https://sourceware.org/pub/lvm2/releases/LVM2.2.03.35.tgz.asc"
-sha512 = "de081006558f8ef998cbfbacc1b887d43702a39bc3dd6dd2a9e59ffd0481889921ef496e8b9133f00699d81877df3c31f5d2ff7091a4de8070836d35576dbebf"
+url = "https://sourceware.org/pub/lvm2/releases/LVM2.2.03.37.tgz.asc"
+sha512 = "98629a6709ba8e145ab3f55fd67d89ad9bcca22e3d9d83d44f58de8afb710ebd48b5841dc790af8a01813d5ca5f84d931e3385c2780b5909b2e6559ca1d77e37"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
