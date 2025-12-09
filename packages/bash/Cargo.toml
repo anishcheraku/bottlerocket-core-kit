@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://ftp.gnu.org/gnu/bash"
 
 [[package.metadata.build-package.external-files]]
-url = "https://ftp.gnu.org/gnu/bash/bash-5.2.37.tar.gz"
-sha512 = "c07e2715cca7c3c8435fcb13aaf2968671f10f9e1fe5edd7c63d7e34fb821c159087b70386e17bdda723d8223057b53810e75eb249b03ebfc847147b06a8101f"
+url = "https://ftp.gnu.org/gnu/bash/bash-5.3.tar.gz"
+sha512 = "426702c8b0fb9e0c9956259973ce5b657890fd47f4f807a64febf20077bb48d0b91474ed6e843d2ef277186b46c5fffa79b808da9b48d4ec027d5e2de1b28ed8"
 
 [[package.metadata.build-package.external-files]]
-url = "https://ftp.gnu.org/gnu/bash/bash-5.2.37.tar.gz.sig"
-sha512 = "5700135e0f6ddb86e577445eeead7ee07df80d00b751ef2c3332b7af76a1f0d7c69be5f72790ce37249d0652532232d1bc8e1e7cb73c105da7337fc5f5c1f539"
+url = "https://ftp.gnu.org/gnu/bash/bash-5.3.tar.gz.sig"
+sha512 = "c77c0898f03e80a042574a486686cc296b96426f6cdb7a6d2376ecd5182ba03477bfcbd95ea3db499c11866d3f4ae99012a37662ccb6f83dfd6b59f671349dc7"
 
 [build-dependencies]
 glibc = { path = "../glibc" }

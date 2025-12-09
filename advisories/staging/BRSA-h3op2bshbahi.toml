@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-h3op2bshbahi"
+title = "open-vm-tools CVE-2025-41244"
+cve = "CVE-2025-41244"
+severity = "high"
+description = "A local privilege escalation vulnerability was found in open-vm-tools where a non-administrative user on a VM with SDMP enabled could escalate privileges to root."
+
+[[advisory.products]]
+package-name = "open-vm-tools"
+patched-version = "13.0.5"
+patched-epoch = "0"
+
+[updateinfo]
+author = "vighmah"
+issue-date = 2025-12-08T23:10:57Z
+arches = ["aarch64", "x86_64"]
+version = "staging"
