@@ -1,3 +1,40 @@
+# v12.0.0 (2025-12-10)
+
+## OS Changes
+- Disable concurrent layer fetch by default in `containerd-2.1` ([#764])
+- Add latest instance types to `eni-max-pods` mapping ([#763])
+- Update `host-ctr` go dependencies ([#758])
+- Update ordering for drivers target to load before settings are applied ([#749])
+
+### Third Party Package Updates
+- Update `amazon-ssm-agent`([#768])
+- Update core system utilities: `bash`, `chrony`, `coreutils`, `iproute`, `strace`, and `open-vm-tools` ([#765])
+- Update multiple core libraries: `libnftnl`, `nftables`, `libpcre`, `libglib`, `libelf`, `libdevmapper`, and `libncurses` ([#767])
+- Update `rdma-core` and enable PCI support in `hwloc` ([#725])
+- Update `soci-snapshotter` ([#759])
+- Update to latest versions of `ecr-credential-provider` and `kubernetes` packages ([#758])
+- Update `libnvidia-container`, `nvidia-container-toolkit`, and `nvidia-k8s-device-plugin` ([#758])
+
+## Build Changes
+- Update `twoliter` to v0.14.0 ([#765])
+- Update `bottlerocket-sdk` to v0.66.0 ([#769])
+
+## Orchestrator Changes
+### Kubernetes
+- Drop `kubernetes-1.28` and `ecr-credential-provider-1.28` packages ([#761])
+
+[#725]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/725
+[#749]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/749
+[#758]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/758
+[#759]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/759
+[#761]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/761
+[#763]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/763
+[#764]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/764
+[#765]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/765
+[#767]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/767
+[#768]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/768
+[#769]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/769
+
 # v11.1.0 (2025-11-26)
 
 ## OS Changes
