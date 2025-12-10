@@ -20,7 +20,7 @@ address = "/run/containerd/containerd.sock"
 
 [plugins."io.containerd.transfer.v1.local"]
 max_concurrent_downloads = 10
-concurrent_layer_fetch_buffer = 8388608
+concurrent_layer_fetch_buffer = 0
 
 [[plugins."io.containerd.transfer.v1.local".unpack_config]]
 snapshotter = "overlayfs"
