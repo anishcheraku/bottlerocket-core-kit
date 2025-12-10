@@ -36,7 +36,6 @@ Requires: %{_cross_os}systemd-devel
     --disable-gl \
     --disable-libxml2 \
     --disable-opencl \
-    --disable-pci \
     --disable-plugins \
     --exec-prefix=%{_cross_prefix} \
     --program-prefix=""
