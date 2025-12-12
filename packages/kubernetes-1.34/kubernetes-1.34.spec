@@ -54,6 +54,7 @@ Source12: kubelet-server-key
 Source13: etc-kubernetes-pki-private.mount
 Source14: credential-provider-config-yaml
 Source15: logdog.kubelet.conf
+Source16: multi-user-uphold-kubelet.conf
 
 # ExecStartPre drop-ins
 Source20: prestart-load-pause-ctr.conf
@@ -197,6 +198,9 @@ install -p -m 0755 ${fips_output}/kube-proxy %{buildroot}%{_cross_fips_bindir}
 install -d %{buildroot}%{_cross_unitdir}
 install -p -m 0644 %{S:1} %{S:10} %{S:13} %{buildroot}%{_cross_unitdir}
 
+install -d %{buildroot}%{_cross_unitdir}/multi-user.target.d
+install -p -m 0644 %{S:16} %{buildroot}%{_cross_unitdir}/multi-user.target.d/10-kubelet-service.conf
+
 install -d %{buildroot}%{_cross_unitdir}/kubelet.service.d
 install -p -m 0644 %{S:20} %{S:21} %{S:22} %{buildroot}%{_cross_unitdir}/kubelet.service.d
 
@@ -242,6 +246,8 @@ install -p -m 0644 %{S:102} %{buildroot}%{_cross_templatedir}/pod-infra-containe
 %{_cross_unitdir}/kubelet.service.d/prestart-load-pause-ctr.conf
 %{_cross_unitdir}/kubelet.service.d/make-kubelet-dirs.conf
 %{_cross_unitdir}/kubelet.service.d/dockershim-symlink.conf
+%dir %{_cross_unitdir}/multi-user.target.d
+%{_cross_unitdir}/multi-user.target.d/10-kubelet-service.conf
 %dir %{_cross_templatedir}
 %{_cross_templatedir}/kubelet-env
 %{_cross_templatedir}/kubelet-config
