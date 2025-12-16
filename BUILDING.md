@@ -30,32 +30,9 @@ To get it, run:
 cargo install cargo-make
 ```
 
-### OCI Artifacts
-
-Building a kit results in building OCI artifacts, there are two ways to build these artifacts: `crane` or `docker` with the `containerd-snapshotter` feature enabled.
-
-We recommend using `crane` (and `krane`) over `docker` as it has shown better performance in our testing.
-
 #### Docker
-We recommend [Docker](https://docs.docker.com/install/#supported-platforms) 20.10.10 or later. The default seccomp policy of older versions of Docker do not support the `clone3` syscall in recent versions of Fedora or Ubuntu, on which the Bottlerocket SDK is based.
-Builds rely on Docker's integrated BuildKit support, which has received many fixes and improvements in newer versions.
-
 You'll need to have Docker installed and running, with your user account added to the `docker` group.
 Docker's [post-installation steps for Linux](https://docs.docker.com/install/linux/linux-postinstall/) will walk you through that.
-You'll also need to enable the containerd-snapshotter and buildkit features for your docker daemon. This is required to ensure docker compatibility with OCI Images (which kits are stored in).
-The following configuration is needed in your `/etc/docker/daemon.json`
-```json
-{
-  "features": {
-    "buildkit": true,
-    "containerd-snapshotter": true
-  }
-}
-```
-#### Crane
-[Crane](https://github.com/google/go-containerregistry/blob/main/cmd/crane/README.md) is a tool for interacting with remote images and registries.. It does not require a daemon and thus you don't need the above Docker features to use it. Twoliter supports utilizing `crane` (or `krane`) instead of `docker` if it is installed.
-
-The installation instructions for [crane](https://github.com/google/go-containerregistry/tree/main/cmd/crane) should help you set it up for use with Twoliter.
 
 ## Build the core kit
 
