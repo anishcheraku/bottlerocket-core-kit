@@ -141,6 +141,7 @@ Source1651: local-mount-encrypted.conf
 Source1652: repart-local-encrypted.conf
 
 Requires: %{_cross_os}audit
+Requires: %{_cross_os}auditd
 Requires: %{_cross_os}chrony
 Requires: %{_cross_os}conntrack-tools
 Requires: %{_cross_os}containerd
