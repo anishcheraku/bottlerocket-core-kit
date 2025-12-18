@@ -180,6 +180,16 @@ Provides: %{_cross_os}systemd-resolved = %{package_priority_epoch}:
 %description resolved
 %{summary}.
 
+%package journald-audit
+Summary: Files for journald audit socket
+Requires: %{name}
+Requires: %{_cross_os}audit-rules
+Provides: %{_cross_os}auditd = %{package_priority_epoch}:
+Conflicts: %{_cross_os}auditd
+
+%description journald-audit
+%{summary}.
+
 %prep
 %autosetup -n systemd-stable-%{version} -p1
 
@@ -481,7 +491,6 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_unitdir}/slices.target
 %{_cross_unitdir}/sockets.target
 %dir %{_cross_unitdir}/sockets.target.wants
-%{_cross_unitdir}/sockets.target.wants/systemd-journald-audit.socket
 %{_cross_unitdir}/sockets.target.wants/systemd-journald-dev-log.socket
 %{_cross_unitdir}/sockets.target.wants/systemd-journald.socket
 %{_cross_unitdir}/sockets.target.wants/systemd-udevd-control.socket
@@ -524,7 +533,6 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_unitdir}/systemd-halt.service
 %{_cross_unitdir}/systemd-journal-catalog-update.service
 %{_cross_unitdir}/systemd-journal-flush.service
-%{_cross_unitdir}/systemd-journald-audit.socket
 %{_cross_unitdir}/systemd-journald-dev-log.socket
 %{_cross_unitdir}/systemd-journald-varlink@.socket
 %{_cross_unitdir}/systemd-journald.service
@@ -800,3 +808,7 @@ find %{buildroot} -type f -name README -print -delete
 %{_cross_unitdir}/sysinit.target.wants/cryptsetup.target
 %{_cross_unitdir}/sysinit.target.wants/integritysetup.target
 %{_cross_unitdir}/sysinit.target.wants/veritysetup.target
+
+%files journald-audit
+%{_cross_unitdir}/systemd-journald-audit.socket
+%{_cross_unitdir}/sockets.target.wants/systemd-journald-audit.socket
