@@ -165,6 +165,16 @@ Provides: %{_cross_os}systemd-resolved = %{package_priority_epoch}:
 %description resolved
 %{summary}.
 
+%package journald-audit
+Summary: Files for journald audit socket
+Requires: %{name}
+Requires: %{_cross_os}audit-rules
+Provides: %{_cross_os}auditd = %{package_priority_epoch}:
+Conflicts: %{_cross_os}auditd
+
+%description journald-audit
+%{summary}.
+
 %prep
 %autosetup -n systemd-%{version} -p1
 
@@ -542,7 +552,6 @@ install -p -m 0644 %{S:2} %{buildroot}%{_cross_bootconfigdir}/21-cgroup-enable-l
 %{_cross_unitdir}/systemd-halt.service
 %{_cross_unitdir}/systemd-journal-catalog-update.service
 %{_cross_unitdir}/systemd-journal-flush.service
-%{_cross_unitdir}/systemd-journald-audit.socket
 %{_cross_unitdir}/systemd-journald-dev-log.socket
 %{_cross_unitdir}/systemd-journald-varlink@.socket
 %{_cross_unitdir}/systemd-journald.service
@@ -871,3 +880,6 @@ install -p -m 0644 %{S:2} %{buildroot}%{_cross_bootconfigdir}/21-cgroup-enable-l
 %{_cross_unitdir}/sysinit.target.wants/integritysetup.target
 %{_cross_unitdir}/sysinit.target.wants/veritysetup.target
 %{_cross_unitdir}/system-systemd\x2dveritysetup.slice
+
+%files journald-audit
+%{_cross_unitdir}/systemd-journald-audit.socket

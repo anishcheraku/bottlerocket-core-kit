@@ -27,6 +27,13 @@ Requires: %{name}
 %description -n %{_cross_os}audit
 %{summary}.
 
+%package -n %{_cross_os}audit-rules
+Summary: Default audit rules for Bottlerocket
+Requires: %{_cross_os}audit
+
+%description -n %{_cross_os}audit-rules
+%{summary}.
+
 %prep
 %autosetup -n audit-userspace-%{version} -p1
 
@@ -83,10 +90,12 @@ install -p -m 0644 %{S:11} %{buildroot}%{_cross_datadir}/audit
 
 %files -n %{_cross_os}audit
 %{_cross_sbindir}/auditctl
-%{_cross_unitdir}/audit-rules.service
-%{_cross_datadir}/audit/audit.rules
 %exclude %{_cross_sbindir}/auditd
 %exclude %{_cross_sbindir}/aureport
 %exclude %{_cross_sbindir}/ausearch
+
+%files -n %{_cross_os}audit-rules
+%{_cross_unitdir}/audit-rules.service
+%{_cross_datadir}/audit/audit.rules
 
 %changelog
