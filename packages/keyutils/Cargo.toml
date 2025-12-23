@@ -9,11 +9,11 @@ build = "../build.rs"
 path = "../packages.rs"
 
 [package.metadata.build-package]
-releases-url = "https://people.redhat.com/~dhowells/keyutils/"
+releases-url = "https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/keyutils.git"
 
 [[package.metadata.build-package.external-files]]
-url = "https://people.redhat.com/~dhowells/keyutils/keyutils-1.6.1.tar.bz2"
-sha512 = "ea6e20b2594234c7f51581eef2b8fd19c109fa9eacaaef8dfbb4f237bd1d6fdf071ec23b4ff334cb22a46461d09d17cf499987fd1f00e66f27506888876961e1"
+url = "https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/keyutils.git/snapshot/keyutils-1.6.3.tar.gz"
+sha512 = "f65965b8566037078b8eeffa66c6fdbe121c8c2bea7fa5bce04cf7ba5ccc50d5b48e51f4a67ca91e4d5d9a12469e7e3eb3036c920ab25e3feba6e93b4c149cf9"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
