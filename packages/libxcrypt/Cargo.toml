@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://github.com/besser82/libxcrypt/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/besser82/libxcrypt/releases/download/v4.4.38/libxcrypt-4.4.38.tar.xz"
-sha512 = "66c6f7e69d64ec6d9cca5c240bcd056c4f2802aab84325bef5c3aff189a0f81bc0944f473cbde8fdcb12cad8a9d35599afb045a5bc4be577e1c67066555bc116"
+url = "https://github.com/besser82/libxcrypt/releases/download/v4.5.2/libxcrypt-4.5.2.tar.xz"
+sha512 = "87b363e2bdc03ea993a9d154eb59a75ef77edd0490a9b58d443de4e1b4eec5196408a1eb9b739718fd92f565fe5157469c1ea3d336a4a54ac0947750b16c44c1"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/besser82/libxcrypt/releases/download/v4.4.38/libxcrypt-4.4.38.tar.xz.asc"
-sha512 = "4563bddc8581b9abca4ecc02d5d0578ec141a3dedf378f64ffd5838217c48f079bf0840a0d1100a909b471490a4a2a60a2e153fed4491625079f20f754edc443"
+url = "https://github.com/besser82/libxcrypt/releases/download/v4.5.2/libxcrypt-4.5.2.tar.xz.asc"
+sha512 = "bbd40cd8538cdf0762f888b35922907956ced69f0d31866b6d750c1d47aa033e19249a6d45a565c34826430cb1e232f7335fb9018ad68f3e5f417716a8e885fb"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
