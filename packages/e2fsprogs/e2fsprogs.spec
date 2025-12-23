@@ -1,5 +1,5 @@
 Name: %{_cross_os}e2fsprogs
-Version: 1.47.2
+Version: 1.47.3
 Release: 1%{?dist}
 Epoch: 1
 Summary: Tools for managing ext2, ext3, and ext4 file systems
@@ -37,6 +37,11 @@ Requires: %{_cross_os}e2fsprogs-libs
 %autosetup -n e2fsprogs-%{version} -p1
 
 %build
+# e2fsprogs enables some fsverity functionality, which uses an ioctl()
+# that was introduced only in kernel 5.12. We set this to no to skip it
+# since bottlerocket-sdk currently uses kernel 5.10.
+export ac_cv_header_linux_fsverity_h=no
+
 %cross_configure \
   CFLAGS="${CFLAGS} -fno-strict-aliasing" \
   --enable-elf-shlibs \
