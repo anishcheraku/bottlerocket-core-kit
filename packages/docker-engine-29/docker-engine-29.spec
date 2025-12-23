@@ -3,9 +3,9 @@
 %global goorg github.com/moby
 %global goimport %{goorg}/moby
 
-%global gover 29.0.0
+%global gover 29.0.4
 %global rpmver %{gover}
-%global gitrev d105562beff448ae44d6e3a2f7738b235fd197b5
+%global gitrev 4612690e23f7c4200af175e12cae206b2ee00c7b
 
 %global source_date_epoch 1363394400
 
@@ -143,3 +143,4 @@ install -p -m 0644 %{S:5} %{buildroot}%{_cross_templatedir}/docker-daemon-nvidia
 %{_cross_fips_bindir}/docker-proxy
 
 %changelog
+
