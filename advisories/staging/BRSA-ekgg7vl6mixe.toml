@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-ekgg7vl6mixe"
+title = "cni-plugins CVE-2025-67499"
+cve = "CVE-2025-67499"
+severity = "moderate"
+description = "A flaw was found in cni-plugins where if the portmap plugin is configured with the nftables backend, it forwards all traffic with the same destination port as the host port, ignoring the destination IP."
+
+[[advisory.products]]
+package-name = "cni-plugins"
+patched-version = "1.9.0"
+patched-epoch = "1"
+
+[updateinfo]
+author = "kushupad"
+issue-date = 2025-12-17T00:14:15Z
+arches = ["aarch64", "x86_64"]
+version = "staging"
