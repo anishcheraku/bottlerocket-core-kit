@@ -1,0 +1,68 @@
+From efde4273b89c623e036109bfb949926e7fc89b50 Mon Sep 17 00:00:00 2001
+From: Matthew Yeazel <yeazelm@amazon.com>
+Date: Wed, 31 Dec 2025 19:46:25 +0000
+Subject: [PATCH] Update MPS roots for immutable host OS
+
+The code assumes its in the container for the device plugin. The paths
+it creates for tracking state and shared memory won't work on
+Bottlerocket since the root filesystem is immutable. Move these paths to
+/run to allow the files to be created.
+
+Signed-off-by: Matthew Yeazel <yeazelm@amazon.com>
+---
+ cmd/mps-control-daemon/main.go            | 4 ++--
+ cmd/mps-control-daemon/mount/mount-shm.go | 2 +-
+ cmd/mps-control-daemon/mps/root.go        | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/cmd/mps-control-daemon/main.go b/cmd/mps-control-daemon/main.go
+index bb5502f..ec296a4 100644
+--- a/cmd/mps-control-daemon/main.go
++++ b/cmd/mps-control-daemon/main.go
+@@ -214,7 +214,7 @@ func startDaemons(c *cli.Context, cfg *Config) ([]*mps.Daemon, bool, error) {
+ 			return mpsDaemons, true, nil
+ 		}
+ 	}
+-	readyFile, err := os.Create("/mps/.ready")
++	readyFile, err := os.Create("/run/mps/.ready")
+ 	if err != nil {
+ 		return mpsDaemons, true, fmt.Errorf("failed to create .ready file")
+ 	}
+@@ -224,7 +224,7 @@ func startDaemons(c *cli.Context, cfg *Config) ([]*mps.Daemon, bool, error) {
+ }
+ 
+ func stopDaemons(mpsDaemons ...*mps.Daemon) error {
+-	if err := os.Remove("/mps/.ready"); err != nil {
++	if err := os.Remove("/run/mps/.ready"); err != nil {
+ 		klog.Warningf("Failed to remove .ready file: %v", err)
+ 	}
+ 	klog.Info("Stopping MPS daemons.")
+diff --git a/cmd/mps-control-daemon/mount/mount-shm.go b/cmd/mps-control-daemon/mount/mount-shm.go
+index 83825e8..507a1e4 100644
+--- a/cmd/mps-control-daemon/mount/mount-shm.go
++++ b/cmd/mps-control-daemon/mount/mount-shm.go
+@@ -49,7 +49,7 @@ func mountShm(c *cli.Context) error {
+ 	mounter := mount.New(mountExecutable)
+ 
+ 	// TODO: /mps should be configurable.
+-	shmDir := "/mps/shm"
++	shmDir := "/run/mps/shm"
+ 	err = mount.CleanupMountPoint(shmDir, mounter, true)
+ 	if err != nil {
+ 		return fmt.Errorf("error unmounting %v: %w", shmDir, err)
+diff --git a/cmd/mps-control-daemon/mps/root.go b/cmd/mps-control-daemon/mps/root.go
+index 90655d1..805e58d 100644
+--- a/cmd/mps-control-daemon/mps/root.go
++++ b/cmd/mps-control-daemon/mps/root.go
+@@ -23,7 +23,7 @@ import (
+ )
+ 
+ const (
+-	ContainerRoot = Root("/mps")
++	ContainerRoot = Root("/run/mps")
+ )
+ 
+ // Root represents an MPS root.
+-- 
+2.52.0
+

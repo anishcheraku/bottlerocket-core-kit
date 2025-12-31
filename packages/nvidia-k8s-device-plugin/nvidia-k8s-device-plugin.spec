@@ -17,6 +17,10 @@ Source1: nvidia-k8s-device-plugin.service
 Source2: nvidia-k8s-device-plugin-conf
 Source3: nvidia-k8s-device-plugin-exec-start-conf
 Source4: nvidia-k8s-device-plugin-mig-conf
+Source5: nvidia-mps-control-daemon.service
+Source6: nvidia-mps-control-daemon-exec-start-conf
+
+Patch0001: 0001-Update-MPS-roots-for-immutable-host-OS.patch
 
 BuildRequires: %{_cross_os}glibc-devel
 Requires: %{name}(binaries)
@@ -54,34 +58,46 @@ export CGO_LDFLAGS="-Wl,-z,relro -Wl,--export-dynamic"
 export GOLDFLAGS="-compressdwarf=false -linkmode=external -extldflags '${CGO_LDFLAGS}'"
 
 go build -ldflags="${GOLDFLAGS}" -o nvidia-device-plugin ./cmd/nvidia-device-plugin/
+go build -ldflags="${GOLDFLAGS}" -o mps-control-daemon ./cmd/mps-control-daemon/
 gofips build -ldflags="${GOLDFLAGS}" -o fips/nvidia-device-plugin ./cmd/nvidia-device-plugin/
+gofips build -ldflags="${GOLDFLAGS}" -o fips/mps-control-daemon ./cmd/mps-control-daemon/
 
 %install
 install -d %{buildroot}%{_cross_bindir}
 install -p -m 0755 nvidia-device-plugin %{buildroot}%{_cross_bindir}
+install -p -m 0755 mps-control-daemon %{buildroot}%{_cross_bindir}
 
 install -d %{buildroot}%{_cross_fips_bindir}
 install -p -m 0755 fips/nvidia-device-plugin %{buildroot}%{_cross_fips_bindir}
+install -p -m 0755 fips/mps-control-daemon %{buildroot}%{_cross_fips_bindir}
 
 install -d %{buildroot}%{_cross_unitdir}
 install -p -m 0644 %{S:1} %{buildroot}%{_cross_unitdir}
+install -p -m 0644 %{S:5} %{buildroot}%{_cross_unitdir}
 install -d %{buildroot}%{_cross_unitdir}/nvidia-k8s-device-plugin.service.d
+install -d %{buildroot}%{_cross_unitdir}/nvidia-mps-control-daemon.service.d
 install -D -m 0644 %{S:2} %{buildroot}%{_cross_templatedir}/nvidia-k8s-device-plugin-conf
 install -D -m 0644 %{S:3} %{buildroot}%{_cross_templatedir}/nvidia-k8s-device-plugin-exec-start-conf
 install -D -m 0644 %{S:4} %{buildroot}%{_cross_templatedir}/nvidia-k8s-device-plugin-mig-conf
+install -D -m 0644 %{S:6} %{buildroot}%{_cross_templatedir}/nvidia-mps-control-daemon-exec-start-conf
 
 
 %files
 %license LICENSE
 %{_cross_attribution_file}
 %{_cross_unitdir}/nvidia-k8s-device-plugin.service
+%{_cross_unitdir}/nvidia-mps-control-daemon.service
 %dir %{_cross_unitdir}/nvidia-k8s-device-plugin.service.d
+%dir %{_cross_unitdir}/nvidia-mps-control-daemon.service.d
 %{_cross_templatedir}/nvidia-k8s-device-plugin-conf
 %{_cross_templatedir}/nvidia-k8s-device-plugin-exec-start-conf
 %{_cross_templatedir}/nvidia-k8s-device-plugin-mig-conf
+%{_cross_templatedir}/nvidia-mps-control-daemon-exec-start-conf
 
 %files bin
 %{_cross_bindir}/nvidia-device-plugin
+%{_cross_bindir}/mps-control-daemon
 
 %files fips-bin
 %{_cross_fips_bindir}/nvidia-device-plugin
+%{_cross_fips_bindir}/mps-control-daemon
