@@ -12,8 +12,8 @@ path = "../packages.rs"
 releases-url = "https://github.com/ROCm/k8s-device-plugin/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/ROCm/k8s-device-plugin/archive/v1.31.0.8.tar.gz"
-sha512 = "23a127b46ad15cabbdd9abe18a8b75140340dcb10f41c9efdcfd30b38db7142edabaf6a97ed2c621f0414c78c0cb87fdc81a30b5e3fb016d16cbd11210143326"
+url = "https://github.com/ROCm/k8s-device-plugin/archive/v1.31.0.9.tar.gz"
+sha512 = "3bcc09c11afae5d6e20b1af7373b9db78e02e43acd4d451284237d176f36b67fd6a3a67701f872eb2e5093a928e854f13c976bf41cfa994f6704b1c481340269"
 
 [build-dependencies]
 glibc = { path = "../glibc" }

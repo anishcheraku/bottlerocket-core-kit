@@ -2,7 +2,7 @@
 %global gorepo k8s-device-plugin
 %global goimport %{goproject}/%{gorepo}
 
-%global gover 1.31.0.8
+%global gover 1.31.0.9
 %global rpmver %{gover}
 
 Name: %{_cross_os}rocm-k8s-device-plugin
