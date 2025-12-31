@@ -1,5 +1,12 @@
 %global _cross_first_party 1
 %undefine _debugsource_packages
+%global cross_generate_sbom %{shrink: \
+  mkdir -p %{_builddir}/sbom-temp && \
+  sbomtool generate \
+    --name static-pods \
+    --out-dir %{_builddir}/sbom-temp \
+    --build-dir %{_builddir}/sources \
+    --spdx --cyclonedx}
 
 Name: %{_cross_os}static-pods
 Version: 0.1
