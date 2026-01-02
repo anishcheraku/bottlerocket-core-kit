@@ -1,3 +1,38 @@
+# v12.1.0 (2026-01-02)
+
+## OS Changes
+- Add `audit-rules` subpackage to `libaudit` and `journald-audit` subpackage to `systemd` ([#781])
+- Add `rocm-container-toolkit` package for AMD GPU support ([#778])
+- Override SBOM generation for Rust packages ([#787])
+
+### Third Party Package Updates
+- Update `cni-plugins` to v1.9.0 ([#774])
+- Update `rocm-k8s-device-plugin` to v1.31.0.9 ([#788])
+
+## Build Changes
+- Update `twoliter` to v0.15.1 ([#779])
+
+## Orchestrator Changes
+### Kubernetes
+- Add `multi-user.target` drop-in for kubelet restarts across all versions ([#773])
+- Add `kubernetes-1.35` package with beta source and `ecr-credential-provider-1.35` package with official source ([#777])
+- Add latest instance types to `eni-max-pods` mapping ([#776], [#782])
+
+## Documentation
+- Remove OCI consideration from BUILDING.md ([#615])
+
+[#615]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/615
+[#773]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/773
+[#774]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/774
+[#776]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/776
+[#777]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/777
+[#778]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/778
+[#779]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/779
+[#781]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/781
+[#782]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/782
+[#787]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/787
+[#788]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/788
+
 # v12.0.1 (2025-12-12)
 
 ## OS Changes
