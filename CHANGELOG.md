@@ -1,5 +1,9 @@
 # v12.2.0 (2026-01-08)
 
+## OS Changes
+### Third Party Package Updates
+- Update `aws-signing-helper`, `aws-iam-authenticator`, `containerd-1.7`, `containerd-2.1` ([#784])
+
 ## Build Changes
 - Update `twoliter` to v0.16.0 ([#793])
 
