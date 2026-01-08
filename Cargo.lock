@@ -189,6 +189,7 @@ dependencies = [
  "rdma-core",
  "readline",
  "release",
+ "rocm-container-toolkit",
  "rocm-k8s-device-plugin",
  "rottweiler",
  "runc",

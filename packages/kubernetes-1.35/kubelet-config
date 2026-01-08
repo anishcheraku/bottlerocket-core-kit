@@ -209,6 +209,7 @@ reservedMemory:
 reservedSystemCPUs: {{settings.kubernetes.reserved-cpus}}
 {{/if}}
 failSwapOn: false
+failCgroupV1: false
 {{#if settings.kubernetes.memory-swap-behavior}}
 memorySwap:
   swapBehavior: {{settings.kubernetes.memory-swap-behavior}}
