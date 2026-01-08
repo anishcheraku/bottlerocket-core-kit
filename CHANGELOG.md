@@ -1,3 +1,17 @@
+# v12.2.0 (2026-01-08)
+
+## Build Changes
+- Update `twoliter` to v0.16.0 ([#793])
+
+## Orchestrator Changes
+### Kubernetes
+* Update `kubernetes-1.35` package with official sources ([#792])
+- Update to latest versions of `kubernetes` packages ([#784])
+
+[#784]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/784
+[#792]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/792
+[#793]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/793
+
 # v12.1.0 (2026-01-02)
 
 ## OS Changes
