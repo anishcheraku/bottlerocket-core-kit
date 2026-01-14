@@ -137,7 +137,6 @@ dependencies = [
  "libdevmapper",
  "libdrm",
  "libelf",
- "libexpat",
  "libffi",
  "libgcc",
  "libglib",
@@ -640,13 +639,6 @@ version = "0.1.0"
 dependencies = [
  "glibc",
  "libz",
-]
-
-[[package]]
-name = "libexpat"
-version = "0.1.0"
-dependencies = [
- "glibc",
 ]
 
 [[package]]

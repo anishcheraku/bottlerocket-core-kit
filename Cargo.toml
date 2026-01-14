@@ -67,7 +67,6 @@ members = [
   "packages/libdevmapper",
   "packages/libdrm",
   "packages/libelf",
-  "packages/libexpat",
   "packages/libffi",
   "packages/libgcc",
   "packages/libglib",
