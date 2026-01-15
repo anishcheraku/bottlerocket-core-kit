@@ -31,6 +31,8 @@ lazy_static! {
         "7164", // trn1 device id 0
         "7264", // inf2 device id 0
         "7364", // trn2 device id 0
+        "7564", // trn3 device id 0
+        "7565", // trn3 device id 1
     };
 }
 
