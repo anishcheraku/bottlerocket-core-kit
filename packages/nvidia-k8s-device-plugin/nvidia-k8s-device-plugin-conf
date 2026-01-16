@@ -16,6 +16,11 @@ flags:
   {{/if}}
   failOnInitError: true
   nvidiaDriverRoot: "/"
+{{#if settings.kubelet-device-plugins.nvidia.device-sharing-strategy}}
+{{#if (eq settings.kubelet-device-plugins.nvidia.device-sharing-strategy "mps")}}
+  mpsRoot: "/run/nvidia/mps"
+{{/if}}
+{{/if}}
   plugin:
     passDeviceSpecs: {{default true settings.kubelet-device-plugins.nvidia.pass-device-specs}}
     {{#if settings.kubelet-device-plugins.nvidia.device-list-strategy}}
@@ -38,5 +43,13 @@ sharing:
     resources:
     - name: "nvidia.com/gpu"
       replicas: {{default 2 settings.kubelet-device-plugins.nvidia.time-slicing.replicas}}
+{{/if}}
+{{#if (eq settings.kubelet-device-plugins.nvidia.device-sharing-strategy "mps")}}
+sharing:
+  mps:
+    renameByDefault: {{default true settings.kubelet-device-plugins.nvidia.mps.rename-by-default}}
+    resources:
+    - name: "nvidia.com/gpu"
+      replicas: {{default 2 settings.kubelet-device-plugins.nvidia.mps.replicas}}
 {{/if}}
 {{/if}}
