@@ -12,8 +12,8 @@ path = "../packages.rs"
 releases-url = "https://github.com/moby/moby/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/moby/moby/archive/docker-v29.0.0/moby-docker-v29.0.0.tar.gz"
-sha512 = "e05c96fc30c5ffc74aa23bb1425e47c74c1ee2beda64a55115394d619cb493ffbce3222108025d007c5eea6805efe35dadcb84edfd8daa98f1a4f215a84e0f7d"
+url = "https://github.com/moby/moby/archive/docker-v29.0.4/moby-docker-v29.0.4.tar.gz"
+sha512 = "475770b282bdfd0f9f9343fb9818384253d3e17b9976599ad1de52f64e67a1f88a18a40d8b296f37299485fe2e6eabfee6ae6be6547c0fc936053872aa4ef1f7"
 
 [[package.metadata.build-package.external-files]]
 url = "https://cache.bottlerocket.aws/0003-Switch-containerd-image-backend-s-image-pull-to-tran.patch/293883e478e87baac370342346a17281cab62e31abdbb03aa9b38efd0e1d8afeb883e81d1274445a25220f6b09dfe7f2b32727b585f01305517e126596751f6f/0003-Switch-containerd-image-backend-s-image-pull-to-tran.patch"
