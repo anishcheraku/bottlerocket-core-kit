@@ -1,11 +1,11 @@
 Name: %{_cross_os}keyutils
-Version: 1.6.1
+Version: 1.6.3
 Release: 1%{?dist}
 Epoch: 1
 Summary: Linux key management utilities
 License: GPL-2.0-or-later AND GPL-2.1-or-later
 Url: http://people.redhat.com/~dhowells/keyutils/
-Source0: http://people.redhat.com/~dhowells/keyutils/keyutils-%{version}.tar.bz2
+Source0: https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/keyutils.git/snapshot/keyutils-%{version}.tar.gz
 Source1: keyutils-tmpfiles.conf
 Source2: request-key.conf
 
