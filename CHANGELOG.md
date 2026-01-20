@@ -1,3 +1,38 @@
+# v12.3.0 (2026-01-21)
+
+## OS Changes
+- Replace `amazon-ecr-containerd-resolver` with Docker resolver in `host-ctr` ([#760])
+- Add MPS control daemon support to `nvidia-k8s-device-plugin` ([#789])
+- Add trn3 device ids to `pciclient` ([#800])
+- Switch to using Go built-in runtime FIPS support ([#783])
+
+### Third Party Package Updates
+- Update `docker-cli-29`, `docker-engine-29` ([#785])
+- Patch `containerd-2.1` to update GRPC ([#801])
+- Update `libnvme`, `xfsprogs`, `nvme-cli`, `makedumpfile`, `keyutils`, `e2fsprogs` ([#794])
+- Update `readline`, `libxcrypt`, `liburcu`, `libcap` ([#795])
+- Update `ecr-credential-helper` ([#796])
+
+## Build Changes
+- Bump `bottlerocket-settings-models` to 0.20.0 ([#803])
+- Update `bottlerocket-sdk` to v0.70.0 ([#783])
+
+## Orchestrator Changes
+### Kubernetes
+- Add latest instance types to `eni-max-pods` mapping ([#805])
+
+[#760]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/760
+[#783]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/785
+[#785]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/785
+[#789]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/789
+[#794]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/794
+[#795]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/795
+[#796]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/796
+[#800]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/800
+[#801]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/801
+[#803]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/803
+[#805]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/805
+
 # v12.2.0 (2026-01-08)
 
 ## OS Changes
