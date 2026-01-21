@@ -110,6 +110,7 @@ Source1108: systemd-sysusers-selinux.conf
 Source1109: modprobe-no-exit.conf
 Source1110: tmp-mount-noexec.conf
 Source1111: network-pre-target-dbus-dep.conf
+Source1112: fips-go.conf
 
 # network link rules
 Source1200: 80-release.link
@@ -230,6 +231,9 @@ install -p -m 0644 %{S:81} %{buildroot}%{_cross_sysctldir}/81-release-swap.conf
 
 install -d %{buildroot}%{_cross_unitdir}/service.d
 install -p -m 0644 %{S:1104} %{buildroot}%{_cross_unitdir}/service.d/00-aws-config.conf
+
+install -d %{buildroot}%{_cross_unitdir}/service.d
+install -p -m 0644 %{S:1112} %{buildroot}%{_cross_unitdir}/service.d/00-fips-go.conf
 
 install -d %{buildroot}%{_cross_libdir}/systemd/system.conf.d
 install -p -m 0644 %{S:98} %{buildroot}%{_cross_libdir}/systemd/system.conf.d/80-release.conf
@@ -467,6 +471,7 @@ ln -s preconfigured.target %{buildroot}%{_cross_unitdir}/default.target
 %files fips
 %{_cross_bootconfigdir}/10-fips.conf
 %{_cross_tmpfilesdir}/release-fips.conf
+%{_cross_unitdir}/service.d/00-fips-go.conf
 %{_cross_unitdir}/*-bin.mount
 %{_cross_unitdir}/*-libexec.mount
 %{_cross_unitdir}/fipscheck.target

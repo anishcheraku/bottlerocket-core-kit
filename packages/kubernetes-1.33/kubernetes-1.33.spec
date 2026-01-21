@@ -162,11 +162,6 @@ export KUBE_CGO_OVERRIDES="kube-proxy"
 make WHAT="cmd/kubelet"
 make WHAT="cmd/kube-proxy"
 
-export KUBE_OUTPUT_SUBPATH="_fips_output/local"
-export GOEXPERIMENT="boringcrypto"
-make WHAT="cmd/kubelet"
-make WHAT="cmd/kube-proxy"
-
 # build the pause container
 cd build/pause/linux/
 
@@ -190,10 +185,9 @@ install -d %{buildroot}%{_cross_bindir}
 install -p -m 0755 ${output}/kubelet %{buildroot}%{_cross_bindir}
 install -p -m 0755 ${output}/kube-proxy %{buildroot}%{_cross_bindir}
 
-fips_output="./_fips_output/local/bin/linux/%{_cross_go_arch}"
 install -d %{buildroot}%{_cross_fips_bindir}
-install -p -m 0755 ${fips_output}/kubelet %{buildroot}%{_cross_fips_bindir}
-install -p -m 0755 ${fips_output}/kube-proxy %{buildroot}%{_cross_fips_bindir}
+install -p -m 0755 ${output}/kubelet %{buildroot}%{_cross_fips_bindir}
+install -p -m 0755 ${output}/kube-proxy %{buildroot}%{_cross_fips_bindir}
 
 install -d %{buildroot}%{_cross_unitdir}
 install -p -m 0644 %{S:1} %{S:10} %{S:13} %{buildroot}%{_cross_unitdir}
