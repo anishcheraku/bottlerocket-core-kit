@@ -86,7 +86,6 @@ dependencies = [
  "cni-plugins",
  "conntrack-tools",
  "containerd-1_7",
- "containerd-2_0",
  "containerd-2_1",
  "coreutils",
  "dbus-broker",
@@ -138,7 +137,6 @@ dependencies = [
  "libdevmapper",
  "libdrm",
  "libelf",
- "libexpat",
  "libffi",
  "libgcc",
  "libglib",
@@ -250,13 +248,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "containerd-2_0"
-version = "0.1.0"
-dependencies = [
- "glibc",
-]
-
-[[package]]
 name = "containerd-2_1"
 version = "0.1.0"
 dependencies = [
@@ -280,7 +271,6 @@ name = "dbus-broker"
 version = "0.1.0"
 dependencies = [
  "glibc",
- "libexpat",
  "libselinux",
  "systemd-252",
 ]
@@ -649,13 +639,6 @@ version = "0.1.0"
 dependencies = [
  "glibc",
  "libz",
-]
-
-[[package]]
-name = "libexpat"
-version = "0.1.0"
-dependencies = [
- "glibc",
 ]
 
 [[package]]

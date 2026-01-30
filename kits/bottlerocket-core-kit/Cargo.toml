@@ -26,7 +26,6 @@ cni = { path = "../../packages/cni" }
 cni-plugins = { path = "../../packages/cni-plugins" }
 conntrack-tools = { path = "../../packages/conntrack-tools" }
 containerd-1_7 = { path = "../../packages/containerd-1.7" }
-containerd-2_0 = { path = "../../packages/containerd-2.0" }
 containerd-2_1 = { path = "../../packages/containerd-2.1" }
 coreutils = { path = "../../packages/coreutils" }
 dbus-broker = { path = "../../packages/dbus-broker" }
@@ -78,7 +77,6 @@ libcryptsetup = { path = "../../packages/libcryptsetup" }
 libdevmapper = { path = "../../packages/libdevmapper" }
 libdrm = { path = "../../packages/libdrm" }
 libelf = { path = "../../packages/libelf" }
-libexpat = { path = "../../packages/libexpat" }
 libffi = { path = "../../packages/libffi" }
 libjson-c = { path = "../../packages/libjson-c" }
 libgcc = { path = "../../packages/libgcc" }

@@ -21,6 +21,5 @@ sha512 = "7201751d2ebfe418cd5f5301e27c3d679526faa3b950bbcde385ef68dd29ec902ed29d
 
 [build-dependencies]
 glibc = { path = "../glibc" }
-libexpat = { path = "../libexpat" }
 libselinux = { path = "../libselinux" }
 systemd-252 = { path = "../systemd-252" }
