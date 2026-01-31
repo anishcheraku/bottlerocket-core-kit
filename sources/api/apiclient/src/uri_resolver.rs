@@ -6,6 +6,7 @@
 //! To add a new scheme, implement its `TryFrom` and `UriResolver::resolve()`.
 use crate::apply::SettingsInput;
 use async_trait::async_trait;
+use base64::{engine, Engine as _};
 use reqwest::Url;
 use resolver_error::*;
 use snafu::{ensure, OptionExt, ResultExt, Snafu};
@@ -89,6 +90,45 @@ async fn read_from_async<R: tokio::io::AsyncRead + Unpin>(
 impl UriResolver for StdinUri {
     async fn resolve(&self) -> ResolverResult<String> {
         read_from_async(&mut tokio::io::stdin()).await
+    }
+}
+
+pub struct Base64Uri {
+    encoded_data: String,
+}
+
+impl TryFrom<&SettingsInput> for Base64Uri {
+    type Error = ResolverError;
+    fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
+        use resolver_error::*;
+        const PREFIX: &str = "base64:";
+        let encoded_data = input.input.strip_prefix(PREFIX).context(Base64UriSnafu {
+            input_source: input.input.clone(),
+        })?;
+        ensure!(
+            !encoded_data.is_empty(),
+            Base64UriSnafu {
+                input_source: input.input.clone()
+            }
+        );
+        Ok(Base64Uri {
+            encoded_data: encoded_data.to_string(),
+        })
+    }
+}
+
+#[async_trait]
+impl UriResolver for Base64Uri {
+    async fn resolve(&self) -> ResolverResult<String> {
+        use resolver_error::*;
+        let bytes = engine::general_purpose::STANDARD
+            .decode(&self.encoded_data)
+            .context(Base64DecodeSnafu {
+                input_source: format!("base64:{}", self.encoded_data),
+            })?;
+        String::from_utf8(bytes).context(Utf8DecodeSnafu {
+            uri: format!("base64:{}", self.encoded_data),
+        })
     }
 }
 
@@ -178,6 +218,15 @@ pub enum ResolverError {
     #[snafu(display("Invalid ARN '{}': {}", input_source, reason))]
     InvalidArnFormat { input_source: String, reason: String },
 
+    #[snafu(display("Invalid base64 URI scheme for '{}', expected base64:", input_source))]
+    Base64Uri { input_source: String },
+
+    #[snafu(display("Failed to decode base64 data from '{}': {}", input_source, source))]
+    Base64Decode {
+        input_source: String,
+        source: base64::DecodeError,
+    },
+
     #[snafu(display("Failed to read standard input: {}", source))]
     StdinRead { source: std::io::Error },
 
@@ -202,7 +251,7 @@ pub enum ResolverError {
     #[snafu(display("Failed to read HTTP response body from '{}': {}", uri, source))]
     HttpBody { uri: String, source: reqwest::Error },
 
-    #[snafu(display("Failed to decode HTTP response as UTF-8 for {uri}"))]
+    #[snafu(display("Failed to decode as UTF-8 for {uri}"))]
     Utf8Decode { source: std::string::FromUtf8Error, uri: String },
 
     #[cfg(feature = "tls")]
@@ -221,7 +270,7 @@ impl From<crate::cloud_resolvers::CloudError> for ResolverError {
 
 #[cfg(test)]
 mod tests {
-    use super::{FileUri, UriResolver};
+    use super::{Base64Uri, FileUri, UriResolver};
     use std::io::Write;
     use std::path::PathBuf;
     use tempfile::NamedTempFile;
@@ -236,11 +285,39 @@ mod tests {
         assert_eq!(result, "test, tempfile!");
         Ok(())
     }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn base64_uri_decodes_valid_data() -> Result<(), Box<dyn std::error::Error>> {
+        let base64_uri = Base64Uri {
+            encoded_data: "SGVsbG8gV29ybGQ=".to_string(),
+        };
+        let result = base64_uri.resolve().await?;
+        assert_eq!(result, "Hello World");
+        Ok(())
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn base64_uri_fails_on_invalid_base64() {
+        let base64_uri = Base64Uri {
+            encoded_data: "not!valid!base64!".to_string(),
+        };
+        let result = base64_uri.resolve().await;
+        assert!(result.is_err(), "invalid base64 should fail");
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn base64_uri_fails_on_non_utf8() {
+        let base64_uri = Base64Uri {
+            encoded_data: "/w==".to_string(),
+        };
+        let result = base64_uri.resolve().await;
+        assert!(result.is_err(), "non-UTF8 data should fail");
+    }
 }
 
 #[cfg(test)]
 mod parse_uri_tests {
-    use super::{FileUri, HttpUri, StdinUri};
+    use super::{Base64Uri, FileUri, HttpUri, StdinUri};
     #[cfg(feature = "tls")]
     use super::{S3Uri, SecretsManagerArn, SecretsManagerUri, SsmArn, SsmUri};
     use crate::apply::SettingsInput;
@@ -384,6 +461,24 @@ mod parse_uri_tests {
     fn parse_ssm_uri_fail(input: &str) {
         let settings = SettingsInput::new(input);
         assert!(SsmUri::try_from(&settings).is_err(), "invalid SSM URI should fail");
+    }
+
+    #[test_case("base64:SGVsbG8gV29ybGQ=", "SGVsbG8gV29ybGQ="; "base64_ok")]
+    fn parse_base64(input: &str, exp_data: &str) {
+        let settings = SettingsInput::new(input);
+        let uri = Base64Uri::try_from(&settings).expect("should parse base64 URI");
+        assert_eq!(uri.encoded_data, exp_data, "base64 encoded data");
+    }
+
+    #[test_case("base64";                      "missing_colon")]
+    #[test_case("base64:";                     "empty_data")]
+    #[test_case("file://data";                 "wrong_scheme")]
+    fn parse_base64_fail(input: &str) {
+        let settings = SettingsInput::new(input);
+        assert!(
+            Base64Uri::try_from(&settings).is_err(),
+            "invalid base64 URI should fail"
+        );
     }
 }
 

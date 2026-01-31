@@ -107,14 +107,14 @@ macro_rules! try_resolvers {
     };
 }
 
-/// Choose which UriResolver applies to `input` (stdin, file://, http(s)://, s3://, secretsmanager://, and ssm://).
+/// Choose which UriResolver applies to `input` (stdin, base64:, file://, http(s)://, s3://, secretsmanager://, and ssm://).
 fn select_resolver(input: &SettingsInput) -> Result<Box<dyn crate::uri_resolver::UriResolver>> {
     use crate::uri_resolver::*;
 
     // NOTE: Order matters! More specific resolvers must come before general ones.
     // - StdinUri first (exact match for "-")
     // - ARN resolvers before URI resolvers (ARNs are more specific)
-    try_resolvers!(input, StdinUri, FileUri, HttpUri,);
+    try_resolvers!(input, StdinUri, Base64Uri, FileUri, HttpUri,);
 
     #[cfg(feature = "tls")]
     try_resolvers!(
