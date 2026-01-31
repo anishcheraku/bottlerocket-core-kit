@@ -2,7 +2,7 @@
 //!
 //! This module is only compiled when the `tls` feature is enabled.
 
-use crate::apply::SettingsInput;
+use crate::uri_resolver::SettingsInput;
 use crate::uri_resolver::{ResolverResult, UriResolver, MAX_SIZE_BYTES};
 use async_trait::async_trait;
 use snafu::{ensure, OptionExt, ResultExt, Snafu};

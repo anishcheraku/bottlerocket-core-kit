@@ -3,8 +3,7 @@
 //!  - `StdinUri` for "-", `FileUri` for `file://`, `HttpUri` for `http(s)://`
 //!  - `S3Uri` for `s3://`, `SecretsManagerUri` for `secretsmanager://`, `SsmUri` for `ssm://`
 //!
-//! To add a new scheme, implement its `TryFrom` and `UriResolver::resolve()`.
-use crate::apply::SettingsInput;
+//! To add a new scheme, implement its `TryFrom` and `UriResolver::resolve()`.  
 use async_trait::async_trait;
 use base64::{engine, Engine as _};
 use reqwest::Url;
@@ -54,6 +53,55 @@ pub async fn read_bounded_response(
 
 #[cfg(feature = "tls")]
 pub use crate::cloud_resolvers::{S3Uri, SecretsManagerArn, SecretsManagerUri, SsmArn, SsmUri};
+
+pub struct SettingsInput {
+    pub input: String,
+    pub parsed_url: Option<Url>,
+}
+
+impl SettingsInput {
+    pub fn new(input: impl Into<String>) -> Self {
+        let input = input.into();
+        let parsed_url = match Url::parse(&input) {
+            Ok(url) => Some(url),
+            Err(err) => {
+                log::debug!("URL parse failed for '{}': {}", input, err);
+                None
+            }
+        };
+        SettingsInput { input, parsed_url }
+    }
+}
+
+macro_rules! try_resolvers {
+    ($input:expr, $($resolver_type:ty),+ $(,)?) => {
+        $(
+            if let Ok(r) = <$resolver_type>::try_from($input) {
+                log::debug!("select_resolver: picked {}", stringify!($resolver_type));
+                return Ok(Box::new(r));
+            }
+        )+
+    };
+}
+
+pub fn select_resolver(input: &SettingsInput) -> ResolverResult<Box<dyn UriResolver>> {
+    try_resolvers!(input, StdinUri, Base64Uri, FileUri, HttpUri,);
+
+    #[cfg(feature = "tls")]
+    try_resolvers!(
+        input,
+        S3Uri,
+        SecretsManagerArn,
+        SecretsManagerUri,
+        SsmArn,
+        SsmUri,
+    );
+
+    resolver_error::NoResolverSnafu {
+        input_source: input.input.clone(),
+    }
+    .fail()
+}
 
 #[async_trait]
 pub trait UriResolver: Any {
@@ -215,6 +263,9 @@ impl UriResolver for HttpUri {
 #[derive(Debug, Snafu)]
 #[snafu(module, visibility(pub(crate)))]
 pub enum ResolverError {
+    #[snafu(display("No URI resolver found for '{}'", input_source))]
+    NoResolver { input_source: String },
+
     #[snafu(display("Invalid ARN '{}': {}", input_source, reason))]
     InvalidArnFormat { input_source: String, reason: String },
 
@@ -317,10 +368,9 @@ mod tests {
 
 #[cfg(test)]
 mod parse_uri_tests {
-    use super::{Base64Uri, FileUri, HttpUri, StdinUri};
+    use super::{Base64Uri, FileUri, HttpUri, SettingsInput, StdinUri};
     #[cfg(feature = "tls")]
     use super::{S3Uri, SecretsManagerArn, SecretsManagerUri, SsmArn, SsmUri};
-    use crate::apply::SettingsInput;
     use std::convert::TryFrom;
     use test_case::test_case;
 
@@ -484,8 +534,7 @@ mod parse_uri_tests {
 
 #[cfg(all(test, feature = "tls"))]
 mod s3_uri_tests {
-    use super::S3Uri;
-    use crate::apply::SettingsInput;
+    use super::{S3Uri, SettingsInput};
     use std::convert::TryFrom;
     use test_case::test_case;
 

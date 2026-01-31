@@ -1,14 +1,12 @@
 //! This module allows application of settings from URIs or stdin.  The inputs are expected to be
 //! TOML settings files, in the same format as user data, or the JSON equivalent.  The inputs are
 //! pulled and applied to the API server in a single transaction.
-use crate::apply::error::ResolverFailureSnafu;
 use crate::rando;
+use crate::uri_resolver::{select_resolver, SettingsInput};
 use futures::future::{join, ready};
 use futures::stream::{self, StreamExt};
-use reqwest::Url;
 use serde::de::{Deserialize, IntoDeserializer};
 use snafu::{OptionExt, ResultExt};
-use std::convert::TryFrom;
 use std::path::Path;
 
 /// Reads settings in TOML or JSON format from files at the requested URIs (or from stdin, if given
@@ -66,70 +64,14 @@ where
     Ok(())
 }
 
-/// Holds the raw input string and the URL (if it parses).
-pub struct SettingsInput {
-    pub input: String,
-    pub parsed_url: Option<Url>,
-}
-impl SettingsInput {
-    pub(crate) fn new(input: impl Into<String>) -> Self {
-        let input = input.into();
-        let parsed_url = match Url::parse(&input) {
-            Ok(url) => Some(url),
-            Err(err) => {
-                log::debug!("URL parse failed for '{}': {}", input, err);
-                None
-            }
-        };
-        SettingsInput { input, parsed_url }
-    }
-}
-
 /// Retrieves the given source location and returns the result in a String.
 async fn get<S>(input_source: S) -> Result<String>
 where
     S: AsRef<str>,
 {
     let settings = SettingsInput::new(input_source.as_ref());
-    let resolver = select_resolver(&settings)?;
-    resolver.resolve().await.context(ResolverFailureSnafu)
-}
-
-/// Macro to try multiple settings resolver types in sequence, returning the first one that succeeds.
-macro_rules! try_resolvers {
-    ($input:expr, $($resolver_type:ty),+ $(,)?) => {
-        $(
-            if let Ok(r) = <$resolver_type>::try_from($input) {
-                log::debug!("select_resolver: picked {}", stringify!($resolver_type));
-                return Ok(Box::new(r));
-            }
-        )+
-    };
-}
-
-/// Choose which UriResolver applies to `input` (stdin, base64:, file://, http(s)://, s3://, secretsmanager://, and ssm://).
-fn select_resolver(input: &SettingsInput) -> Result<Box<dyn crate::uri_resolver::UriResolver>> {
-    use crate::uri_resolver::*;
-
-    // NOTE: Order matters! More specific resolvers must come before general ones.
-    // - StdinUri first (exact match for "-")
-    // - ARN resolvers before URI resolvers (ARNs are more specific)
-    try_resolvers!(input, StdinUri, Base64Uri, FileUri, HttpUri,);
-
-    #[cfg(feature = "tls")]
-    try_resolvers!(
-        input,
-        S3Uri,
-        SecretsManagerArn,
-        SecretsManagerUri,
-        SsmArn,
-        SsmUri,
-    );
-
-    error::NoResolverSnafu {
-        input_source: input.input.clone(),
-    }
-    .fail()
+    let resolver = select_resolver(&settings).context(error::ResolverFailureSnafu)?;
+    resolver.resolve().await.context(error::ResolverFailureSnafu)
 }
 
 /// Takes a string of TOML or JSON settings data and reserializes
@@ -177,9 +119,6 @@ mod error {
             #[snafu(source(from(crate::Error, Box::new)))]
             source: Box<crate::Error>,
         },
-
-        #[snafu(display("No URI resolver found for '{}'", input_source))]
-        NoResolver { input_source: String },
 
         #[snafu(display(
             "Input '{}' is not valid TOML or JSON.  (TOML error: {})  (JSON error: {})",
@@ -264,8 +203,7 @@ pub type Result<T> = std::result::Result<T, error::Error>;
 
 #[cfg(test)]
 mod resolver_selection_tests {
-    use super::select_resolver;
-    use crate::apply::SettingsInput;
+    use crate::uri_resolver::{select_resolver, SettingsInput};
     use std::any::{Any, TypeId};
     use test_case::test_case;
 
@@ -325,7 +263,7 @@ mod format_change_tests {
 
 #[cfg(test)]
 mod resolver_error_tests {
-    use super::{select_resolver, SettingsInput};
+    use crate::uri_resolver::{select_resolver, SettingsInput};
 
     #[test]
     fn unsupported_scheme() {
