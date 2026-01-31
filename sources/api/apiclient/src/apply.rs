@@ -111,6 +111,9 @@ macro_rules! try_resolvers {
 fn select_resolver(input: &SettingsInput) -> Result<Box<dyn crate::uri_resolver::UriResolver>> {
     use crate::uri_resolver::*;
 
+    // NOTE: Order matters! More specific resolvers must come before general ones.
+    // - StdinUri first (exact match for "-")
+    // - ARN resolvers before URI resolvers (ARNs are more specific)
     try_resolvers!(input, StdinUri, FileUri, HttpUri,);
 
     #[cfg(feature = "tls")]
@@ -292,5 +295,41 @@ mod resolver_selection_tests {
         let resolver = select_resolver(&settings).expect("should have a resolver for this scheme");
         let any = resolver.as_ref() as &dyn Any;
         assert_eq!(any.type_id(), expected);
+    }
+}
+
+#[cfg(test)]
+mod format_change_tests {
+    use super::format_change;
+
+    #[test]
+    fn valid_toml() {
+        let input = "[settings]\nfoo = \"bar\"";
+        let result = format_change(input, "test").unwrap();
+        assert_eq!(result, r#"{"foo":"bar"}"#);
+    }
+
+    #[test]
+    fn valid_json() {
+        let input = r#"{"settings": {"foo": "bar"}}"#;
+        let result = format_change(input, "test").unwrap();
+        assert_eq!(result, r#"{"foo":"bar"}"#);
+    }
+
+    #[test]
+    fn missing_settings_key() {
+        let input = r#"foo = "bar""#;
+        assert!(format_change(input, "test").is_err());
+    }
+}
+
+#[cfg(test)]
+mod resolver_error_tests {
+    use super::{select_resolver, SettingsInput};
+
+    #[test]
+    fn unsupported_scheme() {
+        let settings = SettingsInput::new("ftp://example.com/file");
+        assert!(select_resolver(&settings).is_err());
     }
 }
