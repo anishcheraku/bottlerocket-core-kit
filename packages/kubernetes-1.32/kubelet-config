@@ -197,12 +197,6 @@ reservedMemory:
 {{#if this.memory}}
       memory: {{this.memory}}
 {{/if}}
-{{#if this.hugepages-1Gi}}
-      hugepages-1Gi: {{this.hugepages-1Gi}}
-{{/if}}
-{{#if this.hugepages-2Mi}}
-      hugepages-2Mi: {{this.hugepages-2Mi}}
-{{/if}}
 {{/if}}
 {{/each}}
 {{/if}}
