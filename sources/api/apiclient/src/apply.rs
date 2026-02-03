@@ -71,7 +71,10 @@ where
 {
     let settings = SettingsInput::new(input_source.as_ref());
     let resolver = select_resolver(&settings).context(error::ResolverFailureSnafu)?;
-    resolver.resolve().await.context(error::ResolverFailureSnafu)
+    resolver
+        .resolve()
+        .await
+        .context(error::ResolverFailureSnafu)
 }
 
 /// Takes a string of TOML or JSON settings data and reserializes
@@ -220,7 +223,6 @@ mod resolver_selection_tests {
     }
 
     // TLS-dependent resolvers
-    #[cfg(feature = "tls")]
     #[test_case("https://amazon.com",                                               TypeId::of::<crate::tls_resolvers::HttpsUri>();                 "https")]
     #[test_case("s3://mybucket/path",                                               TypeId::of::<crate::uri_resolver::S3Uri>();                     "s3")]
     #[test_case("secretsmanager://sec",                                             TypeId::of::<crate::uri_resolver::SecretsManagerUri>();         "secrets")]

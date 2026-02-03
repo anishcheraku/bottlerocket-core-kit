@@ -28,9 +28,9 @@ pub mod network;
 pub mod reboot;
 pub mod report;
 pub mod set;
-pub mod update;
 #[cfg(feature = "tls")]
-pub mod cloud_resolvers;
+pub mod tls_resolvers;
+pub mod update;
 pub mod uri_resolver;
 
 mod error {
