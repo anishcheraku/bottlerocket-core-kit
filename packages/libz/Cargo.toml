@@ -12,8 +12,8 @@ path = "../packages.rs"
 releases-url = "https://github.com/zlib-ng/zlib-ng/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/zlib-ng/zlib-ng/archive/2.2.5/zlib-ng-2.2.5.tar.gz"
-sha512 = "b599ea24375d08fa098ed7c3b14548e0d9731a155a024a0904b0ae4a6d3491a69f0c0574d66b6e4af1e40f10e38b6b555d4c4b1fe3589ca83a5f97fbd92f635f"
+url = "https://github.com/zlib-ng/zlib-ng/archive/2.3.3/zlib-ng-2.3.3.tar.gz"
+sha512 = "e2057c764f1d5aaee738edee7e977182c5b097e3c95489dcd8de813f237d92a05daaa86d68d44b331d9fec5d1802586a8f6cfb658ba849874aaa14e72a8107f5"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
