@@ -1,5 +1,5 @@
 Name: %{_cross_os}mdadm
-Version: 4.4
+Version: 4.5
 Release: 1%{?dist}
 Summary: mdadm is used for controlling Linux md devices (aka RAID arrays)
 License: GPL-2.0-only
