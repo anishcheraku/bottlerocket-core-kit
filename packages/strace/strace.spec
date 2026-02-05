@@ -1,12 +1,12 @@
 Name: %{_cross_os}strace
-Version: 6.17
+Version: 6.18
 Release: 1%{?dist}
 Summary: Linux syscall tracer
 License: LGPL-2.1-or-later
 URL: https://strace.io/
 Source0: https://strace.io/files/%{version}/strace-%{version}.tar.xz
 Source1: https://strace.io/files/%{version}/strace-%{version}.tar.xz.asc
-Source2: gpgkey-296D6F29A020808E8717A8842DB5BD89A340AEB7.asc
+Source2: gpgkey-FB3DCD19FF874735E4F61CE64E9FE8522F160EC2.asc
 BuildRequires: %{_cross_os}glibc-devel
 
 %description
