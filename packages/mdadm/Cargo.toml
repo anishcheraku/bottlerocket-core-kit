@@ -12,9 +12,9 @@ path = "../packages.rs"
 releases-url = "https://github.com/md-raid-utilities/mdadm/releases"
 
 [[package.metadata.build-package.external-files]]
-url = "https://github.com/md-raid-utilities/mdadm/archive/mdadm-4.4/mdadm-4.4.tar.gz"
-path = "mdadm-4.4.tar.gz"
-sha512 = "7999457dd1d7b29307b1cc6932a6d444429f8d1a444a714cdf749cc7a80cc21f51bf65e644a029c97a96055537cced37b8bb8ade8c5a1f3977c3da8442517670"
+url = "https://github.com/md-raid-utilities/mdadm/archive/mdadm-4.5/mdadm-4.5.tar.gz"
+path = "mdadm-4.5.tar.gz"
+sha512 = "00441dd5a0a25855e52b693610fd68eac2a8f38bfdbeadad175cdd2eff5d0cde622ebd6602251584b835b175153d8e063f42ac177537923007ed1a830ed74501"
 
 
 [build-dependencies]

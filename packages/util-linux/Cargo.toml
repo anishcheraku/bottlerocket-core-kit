@@ -12,12 +12,12 @@ path = "../packages.rs"
 releases-url = "https://www.kernel.org/pub/linux/utils/util-linux"
 
 [[package.metadata.build-package.external-files]]
-url = "https://www.kernel.org/pub/linux/utils/util-linux/v2.41/util-linux-2.41.2.tar.xz"
-sha512 = "696c87e7cf185acc9b4b969ddade6155ea2945ae494eaecfd7b1f35d9607166cb09be79878fb793dd31b4d4dcac8c9be4be76af3886185db7ae8b58c303fb0cf"
+url = "https://www.kernel.org/pub/linux/utils/util-linux/v2.41/util-linux-2.41.3.tar.xz"
+sha512 = "3d299f0e05a4c982a04dbcbaaeff1222152feedf51c56c5dbdeb75999c68269d652a994f5cdf4c1ee42bb7b28475dd0792192c299fd9bc3b45198c5b153dad00"
 
 [[package.metadata.build-package.external-files]]
-url = "https://www.kernel.org/pub/linux/utils/util-linux/v2.41/util-linux-2.41.2.tar.sign"
-sha512 = "05ecccd24fbeea38a8579907629264550a309cfdfa63fa6eab756c0fc3cd182e9764101731424c1421d1ed950c2c1e41cf210abcd9c2837323c657292cdc9a0d"
+url = "https://www.kernel.org/pub/linux/utils/util-linux/v2.41/util-linux-2.41.3.tar.sign"
+sha512 = "5aa90af75595867c534dc2853c16e742e0139f4c9bfb5a9dfc3e54bb27d8516d26bd074e7c24477910bb8ee63be8c1eb289bbdf56356cb60db991998d6793ef4"
 
 [build-dependencies]
 glibc = { path = "../glibc" }
@@ -25,3 +25,4 @@ libacl = { path = "../libacl" }
 libselinux = { path = "../libselinux" }
 libxcrypt = { path = "../libxcrypt" }
 libncurses = { path = "../libncurses" }
+
