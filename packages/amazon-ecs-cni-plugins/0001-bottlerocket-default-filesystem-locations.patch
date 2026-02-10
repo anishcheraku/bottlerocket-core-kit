@@ -1,8 +1,9 @@
-From 17d96b85504988622545e08cdf0c3b2563f662d4 Mon Sep 17 00:00:00 2001
+From 26377eed2a145dadce368f6aaa00898cdfb8d341 Mon Sep 17 00:00:00 2001
 From: Samuel Karp <skarp@amazon.com>
 Date: Fri, 26 Mar 2021 16:07:25 -0700
 Subject: [PATCH] bottlerocket: default filesystem locations
 
+Signed-off-by: Arnaldo Garcia Rincon <agarrcia@amazon.com>
 ---
  plugins/ecs-bridge/main.go    | 2 +-
  plugins/eni/main.go           | 2 +-
@@ -37,13 +38,13 @@ index ad81cfc..f483bd9 100644
  
  func init() {
 diff --git a/plugins/ipam/config/config.go b/plugins/ipam/config/config.go
-index 7a4378f..f1b9c93 100644
+index b3704c3..3189d14 100644
 --- a/plugins/ipam/config/config.go
 +++ b/plugins/ipam/config/config.go
-@@ -31,7 +31,7 @@ const (
- 	EnvIpamTimeout           = "IPAM_DB_CONNECTION_TIMEOUT"
- 	LastKnownIPKey           = "lastKnownIP"
+@@ -33,7 +33,7 @@ const (
+ 	LastKnownIPv4Key         = "lastKnownIPv4"
  	GatewayValue             = "GateWay"
+ 	GatewayV6Value           = "GateWayV6"
 -	DefaultDBPath            = "/data/eni-ipam.db"
 +	DefaultDBPath            = "/var/lib/ecs/eni-ipam.db"
  	BucketName               = "IPAM"
@@ -63,5 +64,5 @@ index dadabb0..f0906dd 100644
  
  func main() {
 -- 
-2.31.0
+2.52.0
 

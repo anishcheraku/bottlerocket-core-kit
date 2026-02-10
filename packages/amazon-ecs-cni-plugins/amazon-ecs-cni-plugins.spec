@@ -1,11 +1,11 @@
 %global ecscni_goproject github.com/aws
 %global ecscni_gorepo amazon-ecs-cni-plugins
 %global ecscni_goimport %{ecscni_goproject}/%{ecscni_gorepo}
-%global ecscni_gitrev 7b4ec6016ab221469fa3abfc00ea7c05f236c26c
+%global ecscni_gitrev 3302076781563428b69e0856b8fdd59b2ac0658f
 
 Name: %{_cross_os}amazon-ecs-cni-plugins
-# https://github.com/aws/amazon-ecs-cni-plugins/blob/7b4ec6016ab221469fa3abfc00ea7c05f236c26c/VERSION#L1
-Version: 2024.09.0
+# https://github.com/aws/amazon-ecs-cni-plugins/blob/3302076781563428b69e0856b8fdd59b2ac0658f/VERSION#L1
+Version: 2026.01.0
 Release: 1%{?dist}
 Epoch: 1
 Summary: Networking plugins for ECS task networking
