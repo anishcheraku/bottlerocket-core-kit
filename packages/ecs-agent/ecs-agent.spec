@@ -2,10 +2,10 @@
 %global agent_gorepo amazon-ecs-agent
 %global agent_goimport %{agent_goproject}/%{agent_gorepo}
 
-%global agent_gover 1.91.2
+%global agent_gover 1.101.2
 
 # git rev-parse --short=8
-%global agent_gitrev b7e96508
+%global agent_gitrev a686342f
 
 # Construct reproducible tar archives
 # See https://reproducible-builds.org/docs/archives/
@@ -57,6 +57,9 @@ Patch0005: 0005-bottlerocket-change-execcmd-directories-for-Bottlero.patch
 
 # Bottlerocket-specific - fix container metadata path
 Patch0006: 0006-containermetadata-don-t-use-dataDirOnHost-for-metada.patch
+
+# Fix FIPS + custom endpoint conflict in SDK v2
+Patch0007: 0007-fix-ecr-fips-endpoint-conflict.patch
 
 BuildRequires: %{_cross_os}glibc-devel
 
