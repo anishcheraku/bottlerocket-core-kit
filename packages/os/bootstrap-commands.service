@@ -2,7 +2,8 @@
 Description=Bootstrap Commands
 # We depend on systemd-logind.service for running systemd-inhibit.
 After=systemd-logind.service settings-applier.service apiserver.service
-Requires=systemd-logind.service settings-applier.service apiserver.service
+Requires=settings-applier.service
+Wants=systemd-logind.service apiserver.service
 RefuseManualStart=true
 RefuseManualStop=true
 ConditionPathExists=/etc/bootstrap-commands/bootstrap-commands.toml
