@@ -61,7 +61,6 @@ export PKG_CONFIG_PATH='%{_cross_pkgconfigdir}' \\\
 %{_cross_sbindir}/lnstat
 %{_cross_sbindir}/nstat
 %{_cross_sbindir}/rdma
-%{_cross_sbindir}/routel
 %{_cross_sbindir}/rtacct
 %{_cross_sbindir}/rtmon
 %{_cross_sbindir}/rtstat
@@ -77,5 +76,6 @@ export PKG_CONFIG_PATH='%{_cross_pkgconfigdir}' \\\
 %exclude %{_cross_bashdir}/*
 %exclude %{_cross_mandir}/*
 %exclude %{_cross_includedir}/*
+%exclude %{_cross_sbindir}/routel
 
 %changelog
