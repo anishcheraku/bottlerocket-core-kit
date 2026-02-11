@@ -2,10 +2,10 @@
 //!
 //! This module is only compiled when the `tls` feature is enabled.
 
-use crate::uri_resolver::resolver_error::InvalidArnFormatSnafu;
+use crate::uri_resolver::resolver_error::{InvalidArnFormatSnafu, ResponseSizeOverflowSnafu};
 use crate::uri_resolver::SettingsInput;
 use crate::uri_resolver::{
-    resolve_http_url, ResolverResult, UriResolver, OPERATION_TIMEOUT_SECS,
+    resolve_http_url, ResolverResult, UriResolver, MAX_SIZE_BYTES, OPERATION_TIMEOUT_SECS,
 };
 use async_trait::async_trait;
 use reqwest::Url;
@@ -13,11 +13,13 @@ use snafu::{ensure, OptionExt, ResultExt, Snafu};
 use std::convert::TryFrom;
 use tokio::io::AsyncReadExt;
 
-use aws_config;
+use aws_config::{self, timeout::TimeoutConfig};
 use aws_sdk_s3;
 use aws_sdk_secretsmanager;
 use aws_sdk_ssm;
 use aws_smithy_types::error::metadata::ProvideErrorMetadata;
+use std::time::Duration;
+use tls_resolver_error::*;
 
 /// Formats an AWS SDK error as "code: message" for user-friendly display.
 fn format_sdk_error(e: &impl ProvideErrorMetadata) -> String {
@@ -29,6 +31,24 @@ fn format_sdk_error(e: &impl ProvideErrorMetadata) -> String {
     }
 }
 
+/// Returns AWS SDK config with standard timeouts.
+async fn aws_sdk_config() -> aws_config::SdkConfig {
+    aws_sdk_config_with_region(None).await
+}
+
+/// Returns AWS SDK config with standard timeouts and optional region override.
+async fn aws_sdk_config_with_region(region: Option<&str>) -> aws_config::SdkConfig {
+    let mut builder = aws_config::defaults(aws_config::BehaviorVersion::latest()).timeout_config(
+        TimeoutConfig::builder()
+            .operation_timeout(Duration::from_secs(OPERATION_TIMEOUT_SECS))
+            .build(),
+    );
+    if let Some(r) = region {
+        builder = builder.region(aws_config::Region::new(r.to_owned()));
+    }
+    builder.load().await
+}
+
 pub struct HttpsUri {
     url: Url,
 }
@@ -36,7 +56,6 @@ pub struct HttpsUri {
 impl TryFrom<&SettingsInput> for HttpsUri {
     type Error = crate::uri_resolver::ResolverError;
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
-        use tls_resolver_error::*;
         let url = input.parsed_url.as_ref().context(InvalidHttpsUriSnafu {
             input_source: input.input.clone(),
         })?;
@@ -96,7 +115,6 @@ pub struct S3Uri {
 impl TryFrom<&SettingsInput> for S3Uri {
     type Error = crate::uri_resolver::ResolverError;
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
-        use tls_resolver_error::*;
         const PREFIX: &str = "s3://";
         let uri_str = input.input.as_str();
         let remainder = uri_str.strip_prefix(PREFIX).context(S3UriSchemeSnafu {
@@ -131,9 +149,6 @@ impl TryFrom<&SettingsInput> for S3Uri {
 #[async_trait]
 impl UriResolver for S3Uri {
     async fn resolve(&self) -> ResolverResult<String> {
-        use crate::uri_resolver::resolver_error::ResponseSizeOverflowSnafu;
-        use tls_resolver_error::*;
-
         let cfg = aws_sdk_config().await;
         let client = aws_sdk_s3::Client::new(&cfg);
 
@@ -210,7 +225,6 @@ pub struct SecretsManagerArn {
 impl TryFrom<&SettingsInput> for SecretsManagerArn {
     type Error = crate::uri_resolver::ResolverError;
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
-        use tls_resolver_error::SecretsManagerArnSnafu;
         let arn = Arn::parse(input.input.as_str())?;
         ensure!(
             arn.service == "secretsmanager",
@@ -228,13 +242,7 @@ impl TryFrom<&SettingsInput> for SecretsManagerArn {
 #[async_trait]
 impl UriResolver for SecretsManagerArn {
     async fn resolve(&self) -> ResolverResult<String> {
-        use tls_resolver_error::*;
-        let cfg = aws_config::defaults(aws_config::BehaviorVersion::latest())
-            .region(aws_sdk_secretsmanager::config::Region::new(
-                self.region.clone(),
-            ))
-            .load()
-            .await;
+        let cfg = aws_sdk_config_with_region(Some(&self.region)).await;
         let client = aws_sdk_secretsmanager::Client::new(&cfg);
         let resp = client
             .get_secret_value()
@@ -265,7 +273,6 @@ pub struct SecretsManagerUri {
 impl TryFrom<&SettingsInput> for SecretsManagerUri {
     type Error = crate::uri_resolver::ResolverError;
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
-        use tls_resolver_error::*;
         const PREFIX: &str = "secretsmanager://";
         let uri_str = input.input.as_str();
         let remainder = uri_str
@@ -288,8 +295,7 @@ impl TryFrom<&SettingsInput> for SecretsManagerUri {
 #[async_trait]
 impl UriResolver for SecretsManagerUri {
     async fn resolve(&self) -> ResolverResult<String> {
-        use tls_resolver_error::*;
-        let cfg = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
+        let cfg = aws_sdk_config().await;
         let client = aws_sdk_secretsmanager::Client::new(&cfg);
         let resp = client
             .get_secret_value()
@@ -317,7 +323,6 @@ pub struct SsmArn {
 impl TryFrom<&SettingsInput> for SsmArn {
     type Error = crate::uri_resolver::ResolverError;
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
-        use tls_resolver_error::SsmArnSnafu;
         let arn = Arn::parse(input.input.as_str())?;
         ensure!(
             arn.service == "ssm",
@@ -335,11 +340,7 @@ impl TryFrom<&SettingsInput> for SsmArn {
 #[async_trait]
 impl UriResolver for SsmArn {
     async fn resolve(&self) -> ResolverResult<String> {
-        use tls_resolver_error::*;
-        let cfg = aws_config::defaults(aws_config::BehaviorVersion::latest())
-            .region(aws_sdk_ssm::config::Region::new(self.region.clone()))
-            .load()
-            .await;
+        let cfg = aws_sdk_config_with_region(Some(&self.region)).await;
         let client = aws_sdk_ssm::Client::new(&cfg);
         let resp = client
             .get_parameter()
@@ -372,7 +373,6 @@ pub struct SsmUri {
 impl TryFrom<&SettingsInput> for SsmUri {
     type Error = crate::uri_resolver::ResolverError;
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
-        use tls_resolver_error::*;
         const PREFIX: &str = "ssm://";
         let uri_str = input.input.as_str();
         let remainder = uri_str.strip_prefix(PREFIX).context(SsmUriSnafu {
@@ -393,8 +393,7 @@ impl TryFrom<&SettingsInput> for SsmUri {
 #[async_trait]
 impl UriResolver for SsmUri {
     async fn resolve(&self) -> ResolverResult<String> {
-        use tls_resolver_error::*;
-        let config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
+        let config = aws_sdk_config().await;
         let client = aws_sdk_ssm::Client::new(&config);
         let resp = client
             .get_parameter()

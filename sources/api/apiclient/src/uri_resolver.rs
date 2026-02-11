@@ -12,12 +12,18 @@ use snafu::{ensure, OptionExt, ResultExt, Snafu};
 use std::any::Any;
 use std::convert::TryFrom;
 use std::path::PathBuf;
+use std::time::Duration;
 use tokio::io::AsyncReadExt;
 
 /// Maximum allowed object size for remote URI resolvers (2 MiB).
 /// Applies to: http://, https://, s3://, ssm://, secretsmanager://, and ARN forms.
 /// Matches actix-web's default JSON payload limit in apiserver.
 pub const MAX_SIZE_BYTES: u64 = 2 * 1024 * 1024;
+
+/// Timeout for establishing an HTTP/HTTPS connection.
+pub const CONNECT_TIMEOUT_SECS: u64 = 10;
+/// Maximum time for an entire request for all remote resolvers.
+pub const OPERATION_TIMEOUT_SECS: u64 = 30;
 
 /// Reads HTTP response body with a size limit, streaming chunks to avoid unbounded allocation.
 /// Checks Content-Length header first for early rejection, then streams with hard limit.
@@ -57,7 +63,11 @@ pub async fn read_bounded_response(
 /// Shared HTTP/HTTPS resolution logic.
 pub async fn resolve_http_url(url: &Url) -> ResolverResult<String> {
     let uri_str = url.to_string();
-    let client = http_client().context(resolver_error::HttpClientBuildSnafu)?;
+    let client = reqwest::Client::builder()
+        .connect_timeout(Duration::from_secs(CONNECT_TIMEOUT_SECS))
+        .timeout(Duration::from_secs(OPERATION_TIMEOUT_SECS))
+        .build()
+        .context(resolver_error::HttpClientBuildSnafu)?;
     let resp = client
         .get(url.clone())
         .send()
@@ -174,7 +184,6 @@ pub struct Base64Uri {
 impl TryFrom<&SettingsInput> for Base64Uri {
     type Error = ResolverError;
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
-        use resolver_error::*;
         const PREFIX: &str = "base64:";
         let encoded_data = input.input.strip_prefix(PREFIX).context(Base64UriSnafu {
             input_source: input.input.clone(),
@@ -194,7 +203,6 @@ impl TryFrom<&SettingsInput> for Base64Uri {
 #[async_trait]
 impl UriResolver for Base64Uri {
     async fn resolve(&self) -> ResolverResult<String> {
-        use resolver_error::*;
         let bytes = engine::general_purpose::STANDARD
             .decode(&self.encoded_data)
             .context(Base64DecodeSnafu {
@@ -213,7 +221,6 @@ pub struct FileUri {
 impl TryFrom<&SettingsInput> for FileUri {
     type Error = ResolverError;
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
-        use resolver_error::*;
         let url = input.parsed_url.clone().context(FileUriSnafu {
             input_source: input.input.clone(),
         })?;
@@ -233,7 +240,6 @@ impl TryFrom<&SettingsInput> for FileUri {
 #[async_trait]
 impl UriResolver for FileUri {
     async fn resolve(&self) -> ResolverResult<String> {
-        use resolver_error::*;
         tokio::fs::read_to_string(&self.path)
             .await
             .context(FileReadSnafu {
@@ -249,7 +255,6 @@ pub struct HttpUri {
 impl TryFrom<&SettingsInput> for HttpUri {
     type Error = ResolverError;
     fn try_from(input: &SettingsInput) -> ResolverResult<Self> {
-        use resolver_error::*;
         let url = input.parsed_url.clone().context(InvalidHttpUriSnafu {
             input_source: input.input.clone(),
         })?;
@@ -496,7 +501,6 @@ mod parse_uri_tests {
         );
     }
 
-
     #[test_case("base64:SGVsbG8gV29ybGQ=", "SGVsbG8gV29ybGQ="; "base64_ok")]
     fn parse_base64(input: &str, exp_data: &str) {
         let settings = SettingsInput::new(input);
@@ -515,4 +519,3 @@ mod parse_uri_tests {
         );
     }
 }
-
